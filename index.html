@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aryavarta Automation Portal</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; text-align: center; padding: 15px; background-color: #f3f4f6; margin: 0; }
+    .container { background: white; padding: 25px 15px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 400px; margin: 20px auto; }
+    .logo-container { width: 100%; display: flex; justify-content: center; margin-bottom: 15px; min-height: 60px; }
+    .company-logo { max-width: 220px; max-height: 110px; object-fit: contain; }
+    h2 { color: #1f2937; margin-bottom: 5px; margin-top: 5px; }
+    p { color: #6b7280; font-size: 14px; margin-bottom: 15px; }
+    .status-badge { width: 90%; margin: 10px auto 20px auto; padding: 12px; background-color: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 6px; font-size: 14px; color: #1e40af; font-weight: 600; text-align: left; box-sizing: border-box; line-height: 1.4; }
+    label { display: block; text-align: left; font-weight: bold; margin: 15px 5% 5px 5%; color: #374151; font-size: 14px; }
+    select { width: 90%; padding: 12px; margin-bottom: 20px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; box-sizing: border-box; background-color: #fff; }
+    .btn { width: 90%; padding: 15px; margin-top: 15px; background-color: #10b981; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+    .btn:disabled { background-color: #9ca3af; cursor: not-allowed; }
+    .btn.clock-out { background-color: #dc2626; } 
+    #status { margin-top: 25px; font-weight: 600; font-size: 15px; padding: 10px; border-radius: 6px; line-height: 1.4; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo-container">
+      <!-- Direct embed path of Aryavarta Automation Logo -->
+      <img src="https://googleusercontent.com" class="company-logo" alt="Logo">
+    </div>
+    <h2>Head Office Portal</h2>
+    <p>Chikhali Attendance Check-In</p>
+    
+    <div class="status-badge" id="liveStatusCard">Welcome! Please select your name to begin.</div>
+
+    <label for="empName">Employee Full Name</label>
+    <select id="empName" onchange="checkLiveStatus(this.value)">
+      <option value="" disabled selected>-- Select Your Name --</option>
+      <option value="Aman Singh">Aman Singh</option>
+      <option value="Amasidha Pujari">Amasidha Pujari</option>
+      <option value="Ashish Ingle">Ashish Ingle</option>
+      <option value="Bhushan Shirsath">Bhushan Shirsath</option>
+      <option value="Gorakh Rathod">Gorakh Rathod</option>
+      <option value="Kalpesh Somaji">Kalpesh Somaji</option>
+      <option value="Kshitija Raut">Kshitija Raut</option>
+      <option value="Manisha Kambale">Manisha Kambale</option>
+      <option value="Mohnish Apturkar">Mohnish Apturkar</option>
+      <option value="Pankaj Jadhav">Pankaj Jadhav</option>
+      <option value="Pranita Mane">Pranita Mane</option>
+      <option value="Pratik Shinde">Pratik Shinde</option>
+      <option value="Rameshwar Khotkar">Rameshwar Khotkar</option>
+      <option value="Samsher Khan">Samsher Khan</option>
+      <option value="Shashikant Sharma">Shashikant Sharma</option>
+      <option value="Shivappa Done">Shivappa Done</option>
+      <option value="Sumeet Singh">Sumeet Singh</option>
+      <option value="Tafizur Rehman">Tafizur Rehman</option>
+      <option value="Trupti Shende">Trupti Shende</option>
+      <option value="Vikash Modanwal">Vikash Modanwal</option>
+      <option value="Vinod Zoje">Vinod Zoje</option>
+    </select>
+    
+    <label for="workMode">Work Assignment Mode</label>
+    <select id="workMode" onchange="toggleMode(this.value)">
+      <option value="Office">Working from Office (150m Radius Lock)</option>
+      <option value="WFH">Working from Home (Bypass Boundary)</option>
+      <option value="Site">Working from Site (Bypass Boundary)</option>
+    </select>
+
+    <button type="button" class="btn" id="submitBtn" onclick="initiatePunch()">Confirm Clock In 📥</button>
+    <div id="status"></div>
+  </div>
+
+  <script>
+    // CRUCIAL STEP: Paste your Google Web App Link between these quotation marks!
+    const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwquZGro0VtZ-I4jegMaMiigBASs1yJ8WY50i_JkC8tofCK6o4oHPhgG3t3lF0c-IH2/exec";
+
+    let locationData = { lat: null, lon: null };
+
+    function checkLiveStatus(employeeName) {
+      let statusCard = document.getElementById("liveStatusCard");
+      let submitBtn = document.getElementById("submitBtn");
+      statusCard.innerHTML = "🔄 Fetching current shift log...";
+      
+      fetch(`${GOOGLE_WEB_APP_URL}?name=${encodeURIComponent(employeeName)}`)
+        .then(response => response.json())
+        .then(status => {
+          statusCard.innerHTML = status.text;
+          if (status.hasClockedIn) {
+            submitBtn.innerHTML = "Confirm Clock Out 🚪";
+            submitBtn.classList.add("clock-out");
+          } else {
+            submitBtn.innerHTML = "Confirm Clock In 📥";
+            submitBtn.classList.remove("clock-out");
+          }
+        })
+        .catch(() => { statusCard.innerHTML = "Ready to log shift."; });
+    }
+
+    function toggleMode(val) {
+      let statusDiv = document.getElementById("status");
+      if (val === "WFH") statusDiv.innerHTML = "ℹ️ WFH Selected. Office spatial geofences are bypassed.";
+      else if (val === "Site") statusDiv.innerHTML = "ℹ️ Site Assignment Selected. Office spatial geofences are bypassed.";
+      else statusDiv.innerHTML = "";
+    }
+
+    function initiatePunch() {
+      let name = document.getElementById("empName").value;
+      let mode = document.getElementById("workMode").value;
+      let statusDiv = document.getElementById("status");
+      let submitBtn = document.getElementById("submitBtn");
+      
+      if (!name) return alert("Please select your name from the dropdown list.");
+      
+      submitBtn.disabled = true;
+      statusDiv.style.color = "#d97706";
+      statusDiv.innerHTML = "🔄 Processing secure location verification...";
+
+      if (mode === "Office") {
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            locationData.lat = pos.coords.latitude;
+            locationData.lon = pos.coords.longitude;
+            sendToBackend(name, mode);
+          },
+          err => {
+            submitBtn.disabled = false;
+            statusDiv.style.color = "#dc2626";
+            statusDiv.innerHTML = "❌ GPS Error: Location data unavailable. Ensure phone location services are on.";
+          },
+          { enableHighAccuracy: true, timeout: 8000 }
+        );
+      } else {
+        sendToBackend(name, mode);
+      }
+    }
+
+    function sendToBackend(name, mode) {
+      document.getElementById("status").innerHTML = "🚀 Transmitting logs to master sheet database...";
+      
+      let payload = { name: name, mode: mode, lat: locationData.lat, lon: locationData.lon };
+      
+      fetch(GOOGLE_WEB_APP_URL, {
+        method: "POST",
+        mode: "no-cors", // Bypasses browser security locks entirely
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        document.getElementById("submitBtn").disabled = false;
+        document.getElementById("status").style.color = "#059669";
+        document.getElementById("status").innerHTML = "✅ Attendance Activity Received Successfully! Form Reset.";
+        document.getElementById('empName').selectedIndex = 0;
+        document.getElementById('liveStatusCard').innerHTML = "Welcome! Please select your name to begin.";
+        document.getElementById('submitBtn').innerHTML = "Confirm Clock In 📥";
+        document.getElementById('submitBtn').classList.remove("clock-out");
+      })
+      .catch(error => {
+        document.getElementById("submitBtn").disabled = false;
+        document.getElementById("status").style.color = "#dc2626";
+        document.getElementById("status").innerHTML = "❌ Communication exception occurred.";
+      });
+    }
+  </script>
+</body>
+</html>
