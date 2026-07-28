@@ -8,9 +8,9 @@
     body { font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; text-align: center; padding: 15px; background-color: #f3f4f6; margin: 0; }
     .container { background: white; padding: 25px 15px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 400px; margin: 20px auto; }
     
-    /* VECTOR EMBED STYLING */
-    .logo-container { width: 100%; display: flex; justify-content: center; margin-bottom: 15px; min-height: 60px; }
-    .company-logo-svg { width: 100%; max-width: 280px; height: auto; display: block; }
+    /* LOGO STYLING */
+    .logo-container { width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }
+    .company-logo-img { width: 100%; max-width: 280px; height: auto; display: block; object-fit: contain; }
 
     h2 { color: #1f2937; margin-bottom: 5px; margin-top: 5px; }
     p { color: #6b7280; font-size: 14px; margin-bottom: 20px; }
@@ -29,26 +29,9 @@
 <body>
   <div class="container">
     
+    <!-- TOP LOGO IMAGE -->
     <div class="logo-container">
-      <!-- HIGH-RESOLUTION EMBEDDED GRAPHIC PATHWAY -->
-      <svg class="company-logo-svg" viewBox="0 0 1000 667" xmlns="http://w3.org">
-        <defs>
-          <clipPath id="logoClip">
-            <polygon points="500,160 300,560 700,560"/>
-          </clipPath>
-        </defs>
-        <!-- Triangle Base Grid Mapping -->
-        <g clip-path="url(#logoClip)">
-          <polygon points="500,160 300,560 700,560" fill="#ED1C24"/>
-          <path d="M500,160 L700,560 L360,560 C420,530 460,460 500,420 C540,380 620,330 650,260 Z" fill="#1B75BC"/>
-          <path d="M470,560 Q510,480 480,410 T560,260 L610,270 Q530,410 540,470 T495,560 Z" fill="#FFFFFF"/>
-          <!-- Sunburst Element Drawing Profiles -->
-          <path d="M480,410 L440,360 M480,410 L410,380 M480,410 L390,410 M480,410 L395,440 M480,410 L415,465 M480,410 L445,480 M480,410 L480,485" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/>
-        </g>
-        <!-- High-Precision Core Typography Layers -->
-        <text x="500" y="618" font-family="'Trebuchet MS', Arial, sans-serif" font-size="64" font-weight="bold" fill="#ED1C24" text-anchor="middle" letter-spacing="1">aryavarta automation</text>
-        <text x="500" y="662" font-family="'Courier New', Courier, monospace" font-size="28" font-weight="bold" fill="#1B75BC" text-anchor="middle" letter-spacing="4">SYNONYMS FOR EXCELLENCE</text>
-      </svg>
+      <img src="logo.png" alt="Aryavarta Automation Logo" class="company-logo-img">
     </div>
 
     <h2>Head Office Portal</h2>
@@ -96,7 +79,6 @@
   </div>
 
   <script>
-    // PASTE YOUR GOOGLE WEB APP MACRO SERVICE LINK INSIDE THESE QUOTES:
     const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwquZGro0VtZ-I4jegMaMiigBASs1yJ8WY50i_JkC8tofCK6o4oHPhgG3t3lF0c-IH2/exec";
 
     let locationData = { lat: null, lon: null };
