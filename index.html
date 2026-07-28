@@ -8,15 +8,9 @@
     body { font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; text-align: center; padding: 15px; background-color: #f3f4f6; margin: 0; }
     .container { background: white; padding: 25px 15px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 400px; margin: 20px auto; }
     
-    /* VECTOR LOGO SYSTEM CODE - BYPASSES ALL HARDWARE BLOCKS PERMANENTLY */
-    .logo-badge-container { display: flex; flex-direction: column; align-items: center; margin: 10px auto 25px auto; width: 100%; max-width: 280px; }
-    .logo-vector-box { width: 140px; height: 90px; position: relative; margin-bottom: 8px; overflow: hidden; }
-    .triangle-base { width: 0; height: 0; position: absolute; top: 0; left: 0; border-left: 70px solid transparent; border-right: 70px solid transparent; border-bottom: 90px solid #e11d48; }
-    .blue-valley { width: 0; height: 0; position: absolute; bottom: 0; right: 0; border-left: 65px solid transparent; border-bottom: 55px solid #2563eb; }
-    .river-path { position: absolute; bottom: 0; left: 45px; width: 30px; height: 60px; background-color: #ffffff; border-radius: 50% 50% 0 0 / 100% 100% 0 0; transform: skewX(-25deg); }
-    .river-path-two { position: absolute; bottom: 35px; left: 58px; width: 15px; height: 40px; background-color: #ffffff; border-radius: 50%; transform: rotate(35deg); }
-    .company-title-text { font-family: "Trebuchet MS", Arial, sans-serif; font-size: 21px; font-weight: bold; color: #dc2626; letter-spacing: -0.5px; margin: 2px 0 0 0; text-transform: lowercase; }
-    .company-sub-text { font-family: "Courier New", Courier, monospace; font-size: 10.5px; font-weight: bold; color: #2563eb; margin: 2px 0 0 0; letter-spacing: 0.5px; }
+    /* VECTOR EMBED STYLING */
+    .logo-container { width: 100%; display: flex; justify-content: center; margin-bottom: 15px; min-height: 60px; }
+    .company-logo-svg { width: 100%; max-width: 280px; height: auto; display: block; }
 
     h2 { color: #1f2937; margin-bottom: 5px; margin-top: 5px; }
     p { color: #6b7280; font-size: 14px; margin-bottom: 20px; }
@@ -35,16 +29,26 @@
 <body>
   <div class="container">
     
-    <!-- EMBEDDED CORPORATE BRAND IDENTITY COMPONENT -->
-    <div class="logo-badge-container">
-      <div class="logo-vector-box">
-        <div class="triangle-base"></div>
-        <div class="blue-valley"></div>
-        <div class="river-path"></div>
-        <div class="river-path-two"></div>
-      </div>
-      <div class="company-title-text">aryavarta automation</div>
-      <div class="company-sub-text">SYNONYMS FOR EXCELLENCE</div>
+    <div class="logo-container">
+      <!-- HIGH-RESOLUTION EMBEDDED GRAPHIC PATHWAY -->
+      <svg class="company-logo-svg" viewBox="0 0 1000 667" xmlns="http://w3.org">
+        <defs>
+          <clipPath id="logoClip">
+            <polygon points="500,160 300,560 700,560"/>
+          </clipPath>
+        </defs>
+        <!-- Triangle Base Grid Mapping -->
+        <g clip-path="url(#logoClip)">
+          <polygon points="500,160 300,560 700,560" fill="#ED1C24"/>
+          <path d="M500,160 L700,560 L360,560 C420,530 460,460 500,420 C540,380 620,330 650,260 Z" fill="#1B75BC"/>
+          <path d="M470,560 Q510,480 480,410 T560,260 L610,270 Q530,410 540,470 T495,560 Z" fill="#FFFFFF"/>
+          <!-- Sunburst Element Drawing Profiles -->
+          <path d="M480,410 L440,360 M480,410 L410,380 M480,410 L390,410 M480,410 L395,440 M480,410 L415,465 M480,410 L445,480 M480,410 L480,485" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/>
+        </g>
+        <!-- High-Precision Core Typography Layers -->
+        <text x="500" y="618" font-family="'Trebuchet MS', Arial, sans-serif" font-size="64" font-weight="bold" fill="#ED1C24" text-anchor="middle" letter-spacing="1">aryavarta automation</text>
+        <text x="500" y="662" font-family="'Courier New', Courier, monospace" font-size="28" font-weight="bold" fill="#1B75BC" text-anchor="middle" letter-spacing="4">SYNONYMS FOR EXCELLENCE</text>
+      </svg>
     </div>
 
     <h2>Head Office Portal</h2>
@@ -92,7 +96,7 @@
   </div>
 
   <script>
-    // PASTE YOUR LIVE ACTIVE GOOGLE WEB APP MACRO EXECUTION URL STRING DIRECTLY INSIDE THESE QUOTES:
+    // PASTE YOUR GOOGLE WEB APP MACRO SERVICE LINK INSIDE THESE QUOTES:
     const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwquZGro0VtZ-I4jegMaMiigBASs1yJ8WY50i_JkC8tofCK6o4oHPhgG3t3lF0c-IH2/exec";
 
     let locationData = { lat: null, lon: null };
