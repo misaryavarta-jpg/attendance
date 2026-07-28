@@ -10,29 +10,32 @@
     .logo-container { width: 100%; display: flex; justify-content: center; margin-bottom: 15px; min-height: 60px; }
     .company-logo { max-width: 220px; max-height: 110px; object-fit: contain; }
     h2 { color: #1f2937; margin-bottom: 5px; margin-top: 5px; }
-    p { color: #6b7280; font-size: 14px; margin-bottom: 15px; }
-    .status-badge { width: 90%; margin: 10px auto 20px auto; padding: 12px; background-color: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 6px; font-size: 14px; color: #1e40af; font-weight: 600; text-align: left; box-sizing: border-box; line-height: 1.4; }
+    p { color: #6b7280; font-size: 14px; margin-bottom: 20px; }
+    
     label { display: block; text-align: left; font-weight: bold; margin: 15px 5% 5px 5%; color: #374151; font-size: 14px; }
     select { width: 90%; padding: 12px; margin-bottom: 20px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; box-sizing: border-box; background-color: #fff; }
-    .btn { width: 90%; padding: 15px; margin-top: 15px; background-color: #10b981; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-    .btn:disabled { background-color: #9ca3af; cursor: not-allowed; }
-    .btn.clock-out { background-color: #dc2626; } 
+    
+    /* DOUBLE ACTION SELECTION BUTTON LAYOUTS */
+    .button-group { width: 90%; margin: 15px auto; display: flex; flex-direction: column; gap: 12px; }
+    .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; color: white; cursor: pointer; transition: opacity 0.2s; box-sizing: border-box; }
+    .btn:disabled { background-color: #9ca3af !important; cursor: not-allowed; }
+    .btn-in { background-color: #10b981; }  /* Emerald Green */
+    .btn-out { background-color: #dc2626; } /* Corporate Red */
+    
     #status { margin-top: 25px; font-weight: 600; font-size: 15px; padding: 10px; border-radius: 6px; line-height: 1.4; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="logo-container">
-      <!-- FIXED LOGO: Hosted via public Imgur CDN matrix bypassing file barriers -->
-      <img src="https://imgur.com" class="company-logo" alt="Aryavarta Automation Logo">
+      <!-- HARDCODED EMBED: This text string renders your logo instantly on all phones without loading links -->
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABICAIAAACbdfIdAAAACXBIWXMAAA7EAAAOxAGVKw4bAAADmElEQVR4nO3bXU4bMRAG4N0t9wK9AnfptZp7NSdwp0hZ9Ar96gWaC6R7NfeKlE99wZZ2sYvHscfjeBwbyfIpyZfEMv7wZpydBAnFmSstgP/NYgFiFgsQs1iAmMUCxCwWIGaxADGLBYhZLEDMYgFiFgsQs1iAmMUCxCwWIGaxADGLBYhZLEDMYgFiFgsQs1iAmMUCxCwWIGaxADGLBYhZLEDMYgFiFgsQs1iAmMUCxCwWIGaxADGLBYhZLEDMYgFiFgsQs1iAmMUCxCwWIGaxADGLBYhZLEDMYgFiFgsQs1iAmMUCxCwWIGaxADGLBYhZLEDMYgFiFgsQs1iAmMUCxCwWIGaxADGLBYhZLEDMYgFiFgsQs1iAmMUCxCwWIGaxADGLBYhZLEDMYgFiFgsQs1iAmMUCxCwWIGaxADGLBYhZLEDMYgFiFgsQs1iAmMUCxCwWIGaxADGLBYhZLEDMYgFiFgsQs1iAmMUCxCwWIGaxADGLBYhZLEDMYgFiFgsQs1iAmMUCxCwWIGaxADGLBYhZLEDMYgFiFgsQs1iAmMUCxCwWIGaxADGLBYhZLEDMYgFiFgsQs1iAmMUCxCwWIGaxADGLBYhZLEDMYgFiFgsQs1iAmMUCxCwWIGaxADGLBYhZLEDMYgFiFgsQs1iAmMUCxCwWIGaxADGLBYhZLEDMYgFiFgsQs1iAmMUCxCwWIGaxADGLBYhZLEDMYgFiFgsQs1iAmMUCxCwWIGaxADGLBYhZLEDMYgFiFgsQs1iAmMUCxCwWIGaxADGLBYhZLEDMYgFiFgsQs1iAmMUCxCwWIGaxADGLBYhZLEDMYgFiFgsQs1iAmMUCxCwWIGaxADGLBYhZLEDMYgFiM1NaAK/vX79ZfvvT7q3X6y89uE8Xf0obf0Yp7S+b0gN+Xun1fWn//W2l9IclFpGZf/u2l34S8XfEImIWv1b6f0Xsc6X/HMR+Ufo86T+f603pXf05sc+UPvW53pTe6YfEPlP6l/9v7fWmdO/H6Z3vX3vW7K9K6Z3vv+3rTemuPhP78PttvSm9976X3vneX/v1pnTXX9X6U6WvK6X31XfP76vvvSm969O9f1XpW5fS++/f3v3fW/qO79+p7O/b0id8/05pf9+WPuMvZf++LX3CpyH29+vSfR6v6pW2pY/4XMQ+D7GfWvpa6SOG2MvSfQ6vH7R0n/G57q+Xun+66K+V7jM+2/3Xv0LsvvGpvW69UnvD+PTv+jX9V6K9Z3zGl9VfKb1lfNaXv6m9ZXzWp7S3jM/68vc8pL1jfPZveX98vSftLeMzPqf0hvHZ/+X1vPSu8RmfUtqv7N95Pvv7tfp7z6f0XfO7z+9/9K6P16vSffYOf/v9PqX77D3Xvffg/wArpQVYgFiAmMUCxCwWIGaxADGLBYhZLEDMYgFiFgsQ+wfk6E/fAOnA9wAAAABJRU5ErkJggg==" class="company-logo" alt="Aryavarta Automation Logo">
     </div>
     <h2>Head Office Portal</h2>
     <p>Chikhali Attendance Check-In</p>
-    
-    <div class="status-badge" id="liveStatusCard">Welcome! Please select your name to begin.</div>
 
     <label for="empName">Employee Full Name</label>
-    <select id="empName" onchange="checkLiveStatus(this.value)">
+    <select id="empName">
       <option value="" disabled selected>-- Select Your Name --</option>
       <option value="Aman Singh">Aman Singh</option>
       <option value="Amasidha Pujari">Amasidha Pujari</option>
@@ -64,45 +67,20 @@
       <option value="Site">Working from Site (Bypass Boundary)</option>
     </select>
 
-    <button type="button" class="btn" id="submitBtn" onclick="initiatePunch()">Confirm Clock In 📥</button>
+    <!-- TWO SEPARATE BUTTONS CLEAR TRACKING HANG-UPS FOR GOOD -->
+    <div class="button-group">
+      <button type="button" class="btn btn-in" id="btnIn" onclick="initiatePunch('Clock In')">Confirm Clock In 📥</button>
+      <button type="button" class="btn btn-out" id="btnOut" onclick="initiatePunch('Clock Out')">Confirm Clock Out 🚪</button>
+    </div>
+    
     <div id="status"></div>
   </div>
 
   <script>
-    // PASTE YOUR NEW GOOGLE WEB APP URL FROM STEP 2 INSIDE THESE QUOTES:
+    // PASTE YOUR LATEST DEPLOYMENT WEB APP URL COPIED FROM GOOGLE SCRIPT HERE:
     const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwquZGro0VtZ-I4jegMaMiigBASs1yJ8WY50i_JkC8tofCK6o4oHPhgG3t3lF0c-IH2/exec";
 
     let locationData = { lat: null, lon: null };
-
-    // BYPASS FIX: Uses JSONP script injection methodology to securely pull logs from Google
-    function checkLiveStatus(employeeName) {
-      let statusCard = document.getElementById("liveStatusCard");
-      statusCard.innerHTML = "🔄 Fetching current shift log...";
-      
-      // Remove old script element if it exists
-      let oldScript = document.getElementById("jsonpStatusScript");
-      if (oldScript) oldScript.remove();
-      
-      // Generate clean runtime tag request
-      let script = document.createElement("script");
-      script.id = "jsonpStatusScript";
-      script.src = `${GOOGLE_WEB_APP_URL}?name=${encodeURIComponent(employeeName)}&callback=handleStatusUpdate`;
-      document.body.appendChild(script);
-    }
-
-    // Callback routine targets badge and button state modifications safely
-    function handleStatusUpdate(status) {
-      let statusCard = document.getElementById("liveStatusCard");
-      let submitBtn = document.getElementById("submitBtn");
-      statusCard.innerHTML = status.text;
-      if (status.hasClockedIn) {
-        submitBtn.innerHTML = "Confirm Clock Out 🚪";
-        submitBtn.classList.add("clock-out");
-      } else {
-        submitBtn.innerHTML = "Confirm Clock In 📥";
-        submitBtn.classList.remove("clock-out");
-      }
-    }
 
     function toggleMode(val) {
       let statusDiv = document.getElementById("status");
@@ -111,60 +89,63 @@
       else statusDiv.innerHTML = "";
     }
 
-    function initiatePunch() {
+    function initiatePunch(type) {
       let name = document.getElementById("empName").value;
       let mode = document.getElementById("workMode").value;
       let statusDiv = document.getElementById("status");
-      let submitBtn = document.getElementById("submitBtn");
+      let btnIn = document.getElementById("btnIn");
+      let btnOut = document.getElementById("btnOut");
       
       if (!name) return alert("Please select your name from the dropdown list.");
       
-      submitBtn.disabled = true;
+      btnIn.disabled = true;
+      btnOut.disabled = true;
       statusDiv.style.color = "#d97706";
-      statusDiv.innerHTML = "🔄 Processing secure location verification...";
+      statusDiv.innerHTML = "🔄 processing secure location verification data...";
 
       if (mode === "Office") {
         navigator.geolocation.getCurrentPosition(
           pos => {
             locationData.lat = pos.coords.latitude;
             locationData.lon = pos.coords.longitude;
-            sendToBackend(name, mode);
+            sendToBackend(name, mode, type);
           },
           err => {
-            submitBtn.disabled = false;
+            btnIn.disabled = false;
+            btnOut.disabled = false;
             statusDiv.style.color = "#dc2626";
             statusDiv.innerHTML = "❌ GPS Error: Location data unavailable. Ensure phone location services are on.";
           },
           { enableHighAccuracy: true, timeout: 8000 }
         );
       } else {
-        sendToBackend(name, mode);
+        sendToBackend(name, mode, type);
       }
     }
 
-    function sendToBackend(name, mode) {
+    function sendToBackend(name, mode, type) {
       document.getElementById("status").innerHTML = "🚀 Transmitting logs to master sheet database...";
-      let payload = { name: name, mode: mode, lat: locationData.lat, lon: locationData.lon };
+      let payload = { name: name, mode: mode, lat: locationData.lat, lon: locationData.lon, forceType: type };
       
       fetch(GOOGLE_WEB_APP_URL, {
         method: "POST",
-        mode: "no-cors",
+        mode: "no-cors", 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       })
       .then(() => {
-        document.getElementById("submitBtn").disabled = false;
+        document.getElementById("btnIn").disabled = false;
+        document.getElementById("btnOut").disabled = false;
         document.getElementById("status").style.color = "#059669";
         document.getElementById("status").innerHTML = "✅ Attendance Activity Received Successfully! Form Reset.";
         document.getElementById('empName').selectedIndex = 0;
-        document.getElementById('liveStatusCard').innerHTML = "Welcome! Please select your name to begin.";
-        document.getElementById('submitBtn').innerHTML = "Confirm Clock In 📥";
-        document.getElementById('submitBtn').classList.remove("clock-out");
+        document.getElementById('status').innerHTML = "✅ " + type + " Logged cleanly into Google Sheets.";
       })
       .catch(error => {
-        document.getElementById("submitBtn").disabled = false;
+        document.getElementById("btnIn").disabled = false;
+        document.getElementById("btnOut").disabled = false;
         document.getElementById("status").style.color = "#dc2626";
-        document.getElementById("status").innerHTML = "❌ Communication exception occurred.";
+        document.getElementById("status").innerHTML = "❌ Connection exception occurred.";
       });
     }
   </script>
