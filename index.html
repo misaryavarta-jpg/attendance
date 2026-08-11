@@ -20,8 +20,8 @@
     .button-group { width: 90%; margin: 15px auto; display: flex; flex-direction: column; gap: 12px; }
     .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; color: white; cursor: pointer; transition: opacity 0.2s; box-sizing: border-box; }
     .btn:disabled { background-color: #9ca3af !important; cursor: not-allowed; }
-    .btn-in { background-color: #10b981; }  
-    .btn-out { background-color: #dc2626; } 
+    .btn-in { background-color: #10b981; display: none; }  
+    .btn-out { background-color: #dc2626; display: none; } 
     
     #status { margin-top: 25px; font-weight: 600; font-size: 15px; padding: 10px; border-radius: 6px; line-height: 1.4; }
   </style>
@@ -29,7 +29,6 @@
 <body>
   <div class="container">
     
-    <!-- TOP LOGO IMAGE -->
     <div class="logo-container">
       <img src="logo.png" alt="Aryavarta Automation Logo" class="company-logo-img">
     </div>
@@ -38,7 +37,7 @@
     <p>Chikhali Attendance Check-In</p>
 
     <label for="empName">Employee Full Name</label>
-    <select id="empName">
+    <select id="empName" onchange="checkEmployeeStatus(this.value)">
       <option value="" disabled selected>-- Select Your Name --</option>
       <option value="Aman Singh">Aman Singh</option>
       <option value="Amasidha Pujari">Amasidha Pujari</option>
@@ -63,8 +62,8 @@
       <option value="Vinod Zoje">Vinod Zoje</option>
     </select>
     
-    <label for="workMode">Work Assignment Mode</label>
-    <select id="workMode" onchange="toggleMode(this.value)">
+    <label for="workMode" id="lblWorkMode" style="display:none;">Work Assignment Mode</label>
+    <select id="workMode" onchange="toggleMode(this.value)" style="display:none;">
       <option value="Office">Working from Office (150m Radius Lock)</option>
       <option value="WFH">Working from Home (Bypass Boundary)</option>
       <option value="Site">Working from Site (Bypass Boundary)</option>
@@ -82,6 +81,57 @@
     const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwquZGro0VtZ-I4jegMaMiigBASs1yJ8WY50i_JkC8tofCK6o4oHPhgG3t3lF0c-IH2/exec";
 
     let locationData = { lat: null, lon: null };
+
+    function checkEmployeeStatus(name) {
+      let statusDiv = document.getElementById("status");
+      let btnIn = document.getElementById("btnIn");
+      let btnOut = document.getElementById("btnOut");
+      let workMode = document.getElementById("workMode");
+      let lblWorkMode = document.getElementById("lblWorkMode");
+
+      if (!name) return;
+
+      btnIn.style.display = "none";
+      btnOut.style.display = "none";
+      workMode.style.display = "none";
+      lblWorkMode.style.display = "none";
+
+      statusDiv.style.color = "#d97706";
+      statusDiv.innerHTML = "🔍 Verifying today's attendance status...";
+
+      fetch(GOOGLE_WEB_APP_URL + "?name=" + encodeURIComponent(name))
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "NEEDS_CLOCK_IN") {
+            btnIn.style.display = "block";
+            btnOut.style.display = "none";
+            workMode.style.display = "block";
+            lblWorkMode.style.display = "block";
+            statusDiv.innerHTML = "";
+          } else if (data.status === "NEEDS_CLOCK_OUT") {
+            btnIn.style.display = "none";
+            btnOut.style.display = "block";
+            workMode.style.display = "block";
+            lblWorkMode.style.display = "block";
+            statusDiv.style.color = "#2563eb";
+            statusDiv.innerHTML = "ℹ️ You are currently Clocked In. Click below when ready to Clock Out.";
+          } else if (data.status === "COMPLETED") {
+            btnIn.style.display = "none";
+            btnOut.style.display = "none";
+            workMode.style.display = "none";
+            lblWorkMode.style.display = "none";
+            statusDiv.style.color = "#059669";
+            statusDiv.innerHTML = "✅ You have completed both Clock In & Clock Out for today.";
+          }
+        })
+        .catch(err => {
+          // Fallback if network check fails
+          btnIn.style.display = "block";
+          workMode.style.display = "block";
+          lblWorkMode.style.display = "block";
+          statusDiv.innerHTML = "";
+        });
+    }
 
     function toggleMode(val) {
       let statusDiv = document.getElementById("status");
@@ -137,8 +187,15 @@
       .then(() => {
         document.getElementById("btnIn").disabled = false;
         document.getElementById("btnOut").disabled = false;
-        document.getElementById("status").style.color = "#059669";
         document.getElementById('empName').selectedIndex = 0;
+        
+        // Hide form fields & show success state
+        document.getElementById("btnIn").style.display = "none";
+        document.getElementById("btnOut").style.display = "none";
+        document.getElementById("workMode").style.display = "none";
+        document.getElementById("lblWorkMode").style.display = "none";
+
+        document.getElementById("status").style.color = "#059669";
         document.getElementById('status').innerHTML = "✅ " + type + " Logged cleanly into Google Sheets.";
       })
       .catch(error => {
