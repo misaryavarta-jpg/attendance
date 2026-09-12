@@ -2,209 +2,381 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Aryavarta Automation Portal</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; text-align: center; padding: 15px; background-color: #f3f4f6; margin: 0; }
-    .container { background: white; padding: 25px 15px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 400px; margin: 20px auto; }
+    .container { background: white; padding: 25px 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); max-width: 400px; margin: 15px auto; }
     
-    /* LOGO STYLING */
-    .logo-container { width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }
-    .company-logo-img { width: 100%; max-width: 280px; height: auto; display: block; object-fit: contain; }
+    .logo-container { width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 12px; }
+    .company-logo-img { width: 100%; max-width: 250px; height: auto; display: block; object-fit: contain; }
 
-    h2 { color: #1f2937; margin-bottom: 5px; margin-top: 5px; }
-    p { color: #6b7280; font-size: 14px; margin-bottom: 20px; }
-    label { display: block; text-align: left; font-weight: bold; margin: 15px 5% 5px 5%; color: #374151; font-size: 14px; }
-    select { width: 90%; padding: 12px; margin-bottom: 20px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; box-sizing: border-box; background-color: #fff; }
+    h2 { color: #1f2937; margin: 5px 0; font-size: 20px; }
+    p { color: #6b7280; font-size: 13px; margin: 0 0 15px 0; }
     
-    .button-group { width: 90%; margin: 15px auto; display: flex; flex-direction: column; gap: 12px; }
-    .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; color: white; cursor: pointer; transition: opacity 0.2s; box-sizing: border-box; }
+    /* Auto Detected User Badge */
+    .user-card { background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 10px; padding: 12px; margin-bottom: 15px; text-align: left; }
+    .user-card p { margin: 2px 0; font-size: 13px; color: #0369a1; }
+    .user-card strong { color: #0c4a6e; font-size: 15px; }
+
+    label { display: block; text-align: left; font-weight: bold; margin: 12px 0 5px 0; color: #374151; font-size: 13px; }
+    select, input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 15px; box-sizing: border-box; background-color: #fff; }
+    
+    .button-group { width: 100%; margin: 10px auto; display: flex; flex-direction: column; gap: 10px; }
+    .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; color: white; cursor: pointer; transition: 0.2s; box-sizing: border-box; }
     .btn:disabled { background-color: #9ca3af !important; cursor: not-allowed; }
-    .btn-in { background-color: #10b981; display: none; }  
-    .btn-out { background-color: #dc2626; display: none; } 
+    .btn-in { background-color: #10b981; }  
+    .btn-out { background-color: #dc2626; } 
+    .btn-secondary { background-color: #4b5563; }
+    .btn-leave { background-color: #d97706; }
+    .btn-cal { background-color: #2563eb; }
+
+    #status { margin-top: 15px; font-weight: 600; font-size: 14px; padding: 10px; border-radius: 6px; line-height: 1.4; }
+
+    /* Modal Styling */
+    .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
+    .modal-content { background: white; width: 90%; max-width: 380px; border-radius: 14px; padding: 20px; box-sizing: border-box; text-align: left; max-height: 85vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .modal-header h3 { margin: 0; font-size: 17px; color: #111827; }
+    .close-btn { font-size: 22px; cursor: pointer; color: #6b7280; font-weight: bold; }
     
-    #status { margin-top: 25px; font-weight: 600; font-size: 15px; padding: 10px; border-radius: 6px; line-height: 1.4; }
+    /* Calendar UI */
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-top: 10px; }
+    .cal-header { font-weight: bold; font-size: 12px; color: #4b5563; padding: 4px 0; }
+    .cal-cell { font-size: 12px; padding: 8px 0; border-radius: 6px; background: #f3f4f6; color: #1f2937; }
+    .cal-present { background: #d1fae5; color: #065f46; font-weight: bold; }
+    .cal-leave { background: #fef3c7; color: #92400e; font-weight: bold; }
+    .cal-sunday { background: #fee2e2; color: #991b1b; }
   </style>
 </head>
 <body>
+
   <div class="container">
-    
     <div class="logo-container">
       <img src="logo.png" alt="Aryavarta Automation Logo" class="company-logo-img">
     </div>
 
-    <h2>Head Office Portal</h2>
-    <p>Chikhali Attendance Check-In</p>
+    <h2>Aryavarta Automation</h2>
+    <p>Chikhali Head Office Portal</p>
 
-    <label for="empName">Employee Full Name</label>
-    <select id="empName" onchange="checkEmployeeStatus(this.value)">
-      <option value="" disabled selected>-- Select Your Name --</option>
-      <option value="Aman Singh">Aman Singh</option>
-      <option value="Amasidha Pujari">Amasidha Pujari</option>
-      <option value="Ashish Ingle">Ashish Ingle</option>
-      <option value="Bhushan Shirsath">Bhushan Shirsath</option>
-      <option value="Gorakh Rathod">Gorakh Rathod</option>
-      <option value="Kalpesh Somaji">Kalpesh Somaji</option>
-      <option value="Kshitija Raut">Kshitija Raut</option>
-      <option value="Manisha Kambale">Manisha Kambale</option>
-      <option value="Mohnish Apturkar">Mohnish Apturkar</option>
-      <option value="Pankaj Jadhav">Pankaj Jadhav</option>
-      <option value="Pranita Mane">Pranita Mane</option>
-      <option value="Pratik Shinde">Pratik Shinde</option>
-      <option value="Rameshwar Khotkar">Rameshwar Khotkar</option>
-      <option value="Samsher Khan">Samsher Khan</option>
-      <option value="Shashikant Sharma">Shashikant Sharma</option>
-      <option value="Shivappa Done">Shivappa Done</option>
-      <option value="Sumeet Singh">Sumeet Singh</option>
-      <option value="Tafizur Rehman">Tafizur Rehman</option>
-      <option value="Trupti Shende">Trupti Shende</option>
-      <option value="Vikash Modanwal">Vikash Modanwal</option>
-      <option value="Vinod Zoje">Vinod Zoje</option>
-      <option value="Ram Mahagaonkar">Ram Mahagaonkar</option>
-    </select>
-    
-    <label for="workMode" id="lblWorkMode" style="display:none;">Work Assignment Mode</label>
-    <select id="workMode" onchange="toggleMode(this.value)" style="display:none;">
-      <option value="Office">Working from Office (150m Radius Lock)</option>
-      <option value="WFH">Working from Home (Bypass Boundary)</option>
-      <option value="Site">Working from Site (Bypass Boundary)</option>
-    </select>
-
-    <div class="button-group">
-      <button type="button" class="btn btn-in" id="btnIn" onclick="initiatePunch('Clock In')">Confirm Clock In 📥</button>
-      <button type="button" class="btn btn-out" id="btnOut" onclick="initiatePunch('Clock Out')">Confirm Clock Out 🚪</button>
+    <!-- First Time Phone Registration (Hidden once authenticated) -->
+    <div id="deviceAuthBox" style="display:none;">
+      <div style="background:#fef2f2;border:1px solid #fca5a5;padding:12px;border-radius:8px;margin-bottom:15px;">
+        <p style="color:#991b1b;font-weight:bold;margin:0;">🔒 Device Authentication Required</p>
+        <p style="color:#7f1d1d;font-size:12px;margin:5px 0 0 0;">Enter your 10-digit registered mobile number to lock this phone to your account.</p>
+      </div>
+      <label for="regPhone">Registered Mobile Number</label>
+      <input type="tel" id="regPhone" placeholder="Enter 10-digit number" maxlength="10">
+      <button type="button" class="btn btn-secondary" onclick="registerThisDevice()">Register This Device</button>
     </div>
-    
-    <div id="status"></div>
+
+    <!-- Active Attendance Form (Shown after automatic phone authentication) -->
+    <div id="punchForm" style="display:none;">
+      <div class="user-card">
+        <p>Verified Employee:</p>
+        <strong id="displayEmpName">Loading...</strong>
+        <p id="displayEmpPhone" style="font-size:12px;"></p>
+      </div>
+
+      <div id="punchControls">
+        <label for="workMode">Work Assignment Mode</label>
+        <select id="workMode" onchange="toggleMode(this.value)">
+          <option value="Office">Working from Office (150m Lock)</option>
+          <option value="WFH">Working from Home (Bypass Lock)</option>
+          <option value="Site">Working from Site (Bypass Lock)</option>
+        </select>
+
+        <div class="button-group">
+          <button type="button" class="btn btn-in" id="btnIn" style="display:none;" onclick="submitPunch('Clock In')">Confirm Clock In 📥</button>
+          <button type="button" class="btn btn-out" id="btnOut" style="display:none;" onclick="submitPunch('Clock Out')">Confirm Clock Out 🚪</button>
+        </div>
+      </div>
+
+      <div id="status"></div>
+
+      <!-- Action Navigation Buttons -->
+      <div class="button-group" style="margin-top:20px; border-top: 1px solid #e5e7eb; padding-top:15px;">
+        <button type="button" class="btn btn-leave" onclick="openLeaveModal()">📝 Apply Leave / Half Day</button>
+        <button type="button" class="btn btn-cal" onclick="openCalendarModal()">📅 My Attendance Calendar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEAVE MODAL -->
+  <div id="leaveModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Apply Leave / Half Day</h3>
+        <span class="close-btn" onclick="closeLeaveModal()">&times;</span>
+      </div>
+      <label for="leaveType">Leave Type</label>
+      <select id="leaveType">
+        <option value="Full Day Leave">Full Day Leave</option>
+        <option value="Half Day Leave">Half Day Leave</option>
+      </select>
+      <label for="leaveReason">Reason for Leave</label>
+      <textarea id="leaveReason" rows="3" placeholder="Enter specific reason..."></textarea>
+      <button type="button" class="btn btn-leave" id="btnSubmitLeave" onclick="submitLeave()">Submit Leave Request</button>
+    </div>
+  </div>
+
+  <!-- CALENDAR MODAL -->
+  <div id="calModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="calMonthTitle">Attendance History</h3>
+        <span class="close-btn" onclick="closeCalendarModal()">&times;</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+        <button class="btn btn-secondary" style="width:45%;padding:6px;" onclick="prevMonth()">◀ Prev</button>
+        <button class="btn btn-secondary" style="width:45%;padding:6px;" onclick="nextMonth()">Next ▶</button>
+      </div>
+      <div class="calendar-grid" id="calendarBody"></div>
+      <div style="font-size:11px;margin-top:12px;color:#4b5563;">
+        🟢 Present &nbsp;|&nbsp; 🟡 Leave &nbsp;|&nbsp; 🔴 Sunday
+      </div>
+    </div>
   </div>
 
   <script>
-    const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwquZGro0VtZ-I4jegMaMiigBASs1yJ8WY50i_JkC8tofCK6o4oHPhgG3t3lF0c-IH2/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwquZGro0VtZ-I4jegMaMiigBASs1yJ8WY50i_JkC8tofCK6o4oHPhgG3t3lF0c-IH2/exec";
 
-    let locationData = { lat: null, lon: null };
+    let currentEmp = { name: "", phone: "", deviceToken: "" };
+    let calDate = new Date();
 
-    function checkEmployeeStatus(name) {
-      let statusDiv = document.getElementById("status");
-      let btnIn = document.getElementById("btnIn");
-      let btnOut = document.getElementById("btnOut");
-      let workMode = document.getElementById("workMode");
-      let lblWorkMode = document.getElementById("lblWorkMode");
+    window.onload = function() {
+      checkDeviceLock();
+    };
 
-      if (!name) return;
+    function generateUUID() {
+      return 'dev-' + 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
 
-      btnIn.style.display = "none";
-      btnOut.style.display = "none";
-      workMode.style.display = "none";
-      lblWorkMode.style.display = "none";
+    function checkDeviceLock() {
+      let savedPhone = localStorage.getItem("aa_emp_phone");
+      let savedToken = localStorage.getItem("aa_device_token");
 
-      statusDiv.style.color = "#d97706";
-      statusDiv.innerHTML = "🔍 Verifying today's attendance status...";
+      if (!savedPhone || !savedToken) {
+        document.getElementById("deviceAuthBox").style.display = "block";
+        document.getElementById("punchForm").style.display = "none";
+      } else {
+        verifyDeviceWithServer(savedPhone, savedToken);
+      }
+    }
 
-      fetch(GOOGLE_WEB_APP_URL + "?name=" + encodeURIComponent(name))
+    function registerThisDevice() {
+      let phone = document.getElementById("regPhone").value.trim();
+      if (phone.length !== 10) return alert("Please enter a valid 10-digit mobile number.");
+
+      let newToken = localStorage.getItem("aa_device_token") || generateUUID();
+      localStorage.setItem("aa_device_token", newToken);
+
+      verifyDeviceWithServer(phone, newToken);
+    }
+
+    function verifyDeviceWithServer(phone, token) {
+      document.getElementById("status").innerHTML = "🔄 Verifying device security credentials...";
+      fetch(`${SCRIPT_URL}?action=authDevice&phone=${encodeURIComponent(phone)}&deviceToken=${encodeURIComponent(token)}`)
         .then(res => res.json())
         .then(data => {
-          if (data.status === "NEEDS_CLOCK_IN") {
-            btnIn.style.display = "block";
-            btnOut.style.display = "none";
-            workMode.style.display = "block";
-            lblWorkMode.style.display = "block";
-            statusDiv.innerHTML = "";
-          } else if (data.status === "NEEDS_CLOCK_OUT") {
-            btnIn.style.display = "none";
-            btnOut.style.display = "block";
-            workMode.style.display = "block";
-            lblWorkMode.style.display = "block";
-            statusDiv.style.color = "#2563eb";
-            statusDiv.innerHTML = "ℹ️ You are currently Clocked In. Click below when ready to Clock Out.";
-          } else if (data.status === "COMPLETED") {
-            btnIn.style.display = "none";
-            btnOut.style.display = "none";
-            workMode.style.display = "none";
-            lblWorkMode.style.display = "none";
-            statusDiv.style.color = "#059669";
-            statusDiv.innerHTML = "✅ You have completed both Clock In & Clock Out for today.";
+          if (data.success) {
+            localStorage.setItem("aa_emp_phone", phone);
+            localStorage.setItem("aa_emp_name", data.name);
+            currentEmp = { name: data.name, phone: phone, deviceToken: token };
+
+            document.getElementById("deviceAuthBox").style.display = "none";
+            document.getElementById("punchForm").style.display = "block";
+            document.getElementById("displayEmpName").innerText = data.name;
+            document.getElementById("displayEmpPhone").innerText = "📱 " + phone + " (Device Locked)";
+            
+            refreshTodayStatus();
+          } else {
+            localStorage.removeItem("aa_emp_phone");
+            document.getElementById("deviceAuthBox").style.display = "block";
+            document.getElementById("punchForm").style.display = "none";
+            alert("⚠️ " + data.message);
           }
         })
         .catch(err => {
-          // Fallback if network check fails
-          btnIn.style.display = "block";
-          workMode.style.display = "block";
-          lblWorkMode.style.display = "block";
-          statusDiv.innerHTML = "";
+          alert("Network error verifying device. Please check internet connection.");
         });
     }
 
-    function toggleMode(val) {
+    function refreshTodayStatus() {
+      let btnIn = document.getElementById("btnIn");
+      let btnOut = document.getElementById("btnOut");
       let statusDiv = document.getElementById("status");
-      if (val === "WFH") statusDiv.innerHTML = "ℹ️ WFH Selected. Office spatial geofences are bypassed.";
-      else if (val === "Site") statusDiv.innerHTML = "ℹ️ Site Assignment Selected. Office spatial geofences are bypassed.";
-      else statusDiv.innerHTML = "";
+
+      fetch(`${SCRIPT_URL}?action=checkStatus&name=${encodeURIComponent(currentEmp.name)}`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === "NEEDS_CLOCK_IN") {
+            btnIn.style.display = "block";
+            btnOut.style.display = "none";
+            statusDiv.innerHTML = "";
+          } else if (res.status === "NEEDS_CLOCK_OUT") {
+            btnIn.style.display = "none";
+            btnOut.style.display = "block";
+            statusDiv.style.color = "#2563eb";
+            statusDiv.innerHTML = "ℹ️ You are Clocked In. Click below to Clock Out.";
+          } else if (res.status === "COMPLETED") {
+            btnIn.style.display = "none";
+            btnOut.style.display = "none";
+            statusDiv.style.color = "#059669";
+            statusDiv.innerHTML = "✅ Today's Clock In & Clock Out completed.";
+          } else if (res.status === "ON_LEAVE") {
+            btnIn.style.display = "none";
+            btnOut.style.display = "none";
+            statusDiv.style.color = "#d97706";
+            statusDiv.innerHTML = "📋 Leave recorded for today.";
+          }
+        });
     }
 
-    function initiatePunch(type) {
-      let name = document.getElementById("empName").value;
+    function submitPunch(type) {
       let mode = document.getElementById("workMode").value;
       let statusDiv = document.getElementById("status");
       let btnIn = document.getElementById("btnIn");
       let btnOut = document.getElementById("btnOut");
-      
-      if (!name) return alert("Please select your name from the dropdown list.");
-      
+
       btnIn.disabled = true;
       btnOut.disabled = true;
       statusDiv.style.color = "#d97706";
-      statusDiv.innerHTML = "🔄 Processing secure location verification data...";
+      statusDiv.innerHTML = "🛰️ Capturing accurate GPS coordinates...";
 
       if (mode === "Office") {
         navigator.geolocation.getCurrentPosition(
-          pos => {
-            locationData.lat = pos.coords.latitude;
-            locationData.lon = pos.coords.longitude;
-            sendToBackend(name, mode, type);
-          },
+          pos => { sendPunch(pos.coords.latitude, pos.coords.longitude, mode, type); },
           err => {
             btnIn.disabled = false;
             btnOut.disabled = false;
             statusDiv.style.color = "#dc2626";
-            statusDiv.innerHTML = "❌ GPS Error: Location data unavailable. Ensure phone location services are on.";
+            statusDiv.innerHTML = "❌ GPS Error. Enable mobile location services.";
           },
           { enableHighAccuracy: true, timeout: 8000 }
         );
       } else {
-        sendToBackend(name, mode, type);
+        sendPunch(null, null, mode, type);
       }
     }
 
-    function sendToBackend(name, mode, type) {
-      document.getElementById("status").innerHTML = "🚀 Transmitting logs to master sheet database...";
-      let payload = { name: name, mode: mode, lat: locationData.lat, lon: locationData.lon, forceType: type };
-      
-      fetch(GOOGLE_WEB_APP_URL, {
+    function sendPunch(lat, lon, mode, type) {
+      let payload = {
+        name: currentEmp.name,
+        phone: currentEmp.phone,
+        deviceToken: currentEmp.deviceToken,
+        mode: mode,
+        lat: lat,
+        lon: lon,
+        forceType: type
+      };
+
+      fetch(SCRIPT_URL, {
         method: "POST",
-        mode: "no-cors", 
+        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
-      })
-      .then(() => {
+      }).then(() => {
         document.getElementById("btnIn").disabled = false;
         document.getElementById("btnOut").disabled = false;
-        document.getElementById('empName').selectedIndex = 0;
-        
-        // Hide form fields & show success state
-        document.getElementById("btnIn").style.display = "none";
-        document.getElementById("btnOut").style.display = "none";
-        document.getElementById("workMode").style.display = "none";
-        document.getElementById("lblWorkMode").style.display = "none";
-
         document.getElementById("status").style.color = "#059669";
-        document.getElementById('status').innerHTML = "✅ " + type + " Logged cleanly into Google Sheets.";
-      })
-      .catch(error => {
-        document.getElementById("btnIn").disabled = false;
-        document.getElementById("btnOut").disabled = false;
-        document.getElementById("status").style.color = "#dc2626";
-        document.getElementById("status").innerHTML = "❌ Connection exception occurred.";
+        document.getElementById("status").innerHTML = "✅ " + type + " Logged cleanly.";
+        setTimeout(refreshTodayStatus, 1500);
       });
+    }
+
+    function toggleMode(val) {
+      let statusDiv = document.getElementById("status");
+      if (val !== "Office") statusDiv.innerHTML = "ℹ️ " + val + " mode selected. Office 150m boundary bypassed.";
+      else statusDiv.innerHTML = "";
+    }
+
+    // Leave Modal Logic
+    function openLeaveModal() { document.getElementById("leaveModal").style.display = "flex"; }
+    function closeLeaveModal() { document.getElementById("leaveModal").style.display = "none"; }
+    
+    function submitLeave() {
+      let lType = document.getElementById("leaveType").value;
+      let lReason = document.getElementById("leaveReason").value.trim();
+      if (!lReason) return alert("Please specify the reason for taking leave.");
+
+      let btn = document.getElementById("btnSubmitLeave");
+      btn.disabled = true;
+      btn.innerText = "Submitting...";
+
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "Leave",
+          name: currentEmp.name,
+          phone: currentEmp.phone,
+          deviceToken: currentEmp.deviceToken,
+          leaveType: lType,
+          reason: lReason
+        })
+      }).then(() => {
+        btn.disabled = false;
+        btn.innerText = "Submit Leave Request";
+        closeLeaveModal();
+        alert("✅ " + lType + " successfully recorded.");
+        refreshTodayStatus();
+      });
+    }
+
+    // Calendar Modal Logic
+    function openCalendarModal() {
+      document.getElementById("calModal").style.display = "flex";
+      renderCalendar();
+    }
+    function closeCalendarModal() { document.getElementById("calModal").style.display = "none"; }
+    function prevMonth() { calDate.setMonth(calDate.getMonth() - 1); renderCalendar(); }
+    function nextMonth() { calDate.setMonth(calDate.getMonth() + 1); renderCalendar(); }
+
+    function renderCalendar() {
+      let year = calDate.getFullYear();
+      let month = calDate.getMonth();
+      const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+      document.getElementById("calMonthTitle").innerText = monthNames[month] + " " + year;
+
+      let body = document.getElementById("calendarBody");
+      body.innerHTML = "<div class='cal-header'>Su</div><div class='cal-header'>Mo</div><div class='cal-header'>Tu</div><div class='cal-header'>We</div><div class='cal-header'>Th</div><div class='cal-header'>Fr</div><div class='cal-header'>Sa</div>";
+
+      fetch(`${SCRIPT_URL}?action=getCalendar&name=${encodeURIComponent(currentEmp.name)}&month=${month + 1}&year=${year}`)
+        .then(res => res.json())
+        .then(data => {
+          let history = data.history || {};
+          let firstDayIndex = new Date(year, month, 1).getDay();
+          let daysInMonth = new Date(year, month + 1, 0).getDate();
+
+          for (let i = 0; i < firstDayIndex; i++) {
+            body.innerHTML += "<div></div>";
+          }
+
+          for (let d = 1; d <= daysInMonth; d++) {
+            let dayDate = new Date(year, month, d);
+            let dateKey = year + "-" + String(month + 1).padStart(2, '0') + "-" + String(d).padStart(2, '0');
+            let isSunday = dayDate.getDay() === 0;
+            let entry = history[dateKey];
+
+            let cellClass = "cal-cell";
+            let title = "";
+
+            if (isSunday) cellClass += " cal-sunday";
+            if (entry) {
+              let punchText = entry.punches.join(", ");
+              title = punchText;
+              if (punchText.indexOf("Leave") !== -1) cellClass += " cal-leave";
+              else cellClass += " cal-present";
+            }
+
+            body.innerHTML += `<div class="${cellClass}" title="${title}">${d}</div>`;
+          }
+        });
     }
   </script>
 </body>
