@@ -1,54 +1,226 @@
 <!DOCTYPE html>
-<html>
+<html lang="hi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Aryavarta Automation Portal</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; text-align: center; padding: 15px; background-color: #f3f4f6; margin: 0; }
-    .container { background: white; padding: 25px 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); max-width: 400px; margin: 15px auto; }
-    
-    .logo-container { width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 12px; }
-    .company-logo-img { width: 100%; max-width: 250px; height: auto; display: block; object-fit: contain; }
+    :root {
+      --primary: #1e3a8a;
+      --accent-in: #059669;
+      --accent-out: #dc2626;
+      --curtain-color: #831843;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      text-align: center;
+      background: #0f172a;
+      margin: 0;
+      padding: 15px;
+      overflow-x: hidden;
+    }
 
-    h2 { color: #1f2937; margin: 5px 0; font-size: 20px; }
-    p { color: #6b7280; font-size: 13px; margin: 0 0 15px 0; }
-    
-    .user-card { background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 10px; padding: 12px; margin-bottom: 15px; text-align: left; }
-    .user-card p { margin: 2px 0; font-size: 13px; color: #0369a1; }
-    .user-card strong { color: #0c4a6e; font-size: 15px; }
+    /* THEATRICAL CURTAIN ANIMATION */
+    .curtain-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 99999;
+      pointer-events: none;
+      display: flex;
+    }
+    .curtain {
+      width: 50vw;
+      height: 100vh;
+      background: radial-gradient(circle, #9d174d 20%, #4c0519 100%);
+      transition: transform 1.6s cubic-bezier(0.77, 0, 0.175, 1);
+      box-shadow: 0 0 30px rgba(0,0,0,0.8);
+    }
+    .curtain-left { transform: translateX(0); border-right: 2px solid #fbcfe8; }
+    .curtain-right { transform: translateX(0); border-left: 2px solid #fbcfe8; }
+    .curtain-open .curtain-left { transform: translateX(-100%); }
+    .curtain-open .curtain-right { transform: translateX(100%); }
 
-    label { display: block; text-align: left; font-weight: bold; margin: 12px 0 5px 0; color: #374151; font-size: 13px; }
-    select, input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 15px; box-sizing: border-box; background-color: #fff; }
-    
-    .button-group { width: 100%; margin: 10px auto; display: flex; flex-direction: column; gap: 10px; }
-    .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; color: white; cursor: pointer; transition: 0.2s; box-sizing: border-box; }
-    .btn:disabled { background-color: #9ca3af !important; cursor: not-allowed; }
-    .btn-in { background-color: #10b981; }  
-    .btn-out { background-color: #dc2626; } 
-    .btn-secondary { background-color: #2563eb; }
-    .btn-leave { background-color: #d97706; }
-    .btn-cal { background-color: #4b5563; }
+    /* MAIN CONTAINER */
+    .container {
+      background: #ffffff;
+      padding: 24px 18px;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+      max-width: 410px;
+      margin: 10px auto;
+      position: relative;
+    }
+    .logo-container {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .company-logo-img {
+      width: 100%;
+      max-width: 240px;
+      height: auto;
+      display: block;
+      object-fit: contain;
+    }
+    h2 { color: #0f172a; margin: 4px 0; font-size: 20px; font-weight: 800; }
+    p.sub { color: #64748b; font-size: 13px; margin: 0 0 15px 0; }
 
-    #status { margin-top: 15px; font-weight: 600; font-size: 14px; padding: 10px; border-radius: 6px; line-height: 1.4; }
+    .user-card {
+      background: linear-gradient(135deg, #e0f2fe 0%, #f0fdf4 100%);
+      border: 1px solid #bae6fd;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 15px;
+      text-align: left;
+    }
+    .user-card p { margin: 2px 0; font-size: 12px; color: #0369a1; }
+    .user-card strong { color: #0c4a6e; font-size: 16px; }
 
-    /* Modals */
-    .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
-    .modal-content { background: white; width: 90%; max-width: 380px; border-radius: 14px; padding: 20px; box-sizing: border-box; text-align: left; max-height: 85vh; overflow-y: auto; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .modal-header h3 { margin: 0; font-size: 17px; color: #111827; }
-    .close-btn { font-size: 22px; cursor: pointer; color: #6b7280; font-weight: bold; }
-    
-    /* Calendar */
+    label {
+      display: block;
+      text-align: left;
+      font-weight: 700;
+      margin: 10px 0 5px 0;
+      color: #334155;
+      font-size: 13px;
+    }
+    select, input, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 12px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 15px;
+      box-sizing: border-box;
+      background: #f8fafc;
+      transition: border 0.2s;
+    }
+    select:focus, input:focus, textarea:focus {
+      border-color: #2563eb;
+      outline: none;
+      background: #ffffff;
+    }
+
+    .button-group {
+      width: 100%;
+      margin: 10px auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .btn {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: transform 0.1s, opacity 0.2s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { background-color: #94a3b8 !important; cursor: not-allowed; box-shadow: none; }
+    .btn-in { background: linear-gradient(135deg, #10b981, #059669); }
+    .btn-out { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    .btn-primary { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+    .btn-leave { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .btn-cal { background: #475569; }
+
+    #status {
+      margin-top: 15px;
+      font-weight: 600;
+      font-size: 13px;
+      padding: 10px;
+      border-radius: 8px;
+      line-height: 1.4;
+    }
+
+    /* MODAL POPUPS */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 10000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: white;
+      width: 90%;
+      max-width: 380px;
+      border-radius: 18px;
+      padding: 22px;
+      box-sizing: border-box;
+      text-align: left;
+      max-height: 88vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes popIn {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .modal-header h3 { margin: 0; font-size: 17px; color: #0f172a; }
+    .close-btn { font-size: 24px; cursor: pointer; color: #94a3b8; font-weight: bold; }
+
+    /* CALENDAR */
     .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-top: 10px; }
-    .cal-header { font-weight: bold; font-size: 12px; color: #4b5563; padding: 4px 0; }
-    .cal-cell { font-size: 12px; padding: 8px 0; border-radius: 6px; background: #f3f4f6; color: #1f2937; }
-    .cal-present { background: #d1fae5; color: #065f46; font-weight: bold; }
-    .cal-leave { background: #fef3c7; color: #92400e; font-weight: bold; }
-    .cal-sunday { background: #fee2e2; color: #991b1b; }
+    .cal-header { font-weight: 800; font-size: 11px; color: #64748b; padding: 4px 0; }
+    .cal-cell { font-size: 12px; padding: 8px 0; border-radius: 6px; background: #f1f5f9; color: #1e293b; }
+    .cal-present { background: #dcfce7; color: #15803d; font-weight: 800; }
+    .cal-leave { background: #fef3c7; color: #b45309; font-weight: 800; }
+    .cal-sunday { background: #fee2e2; color: #b91c1c; }
+
+    /* WAVING CHARACTER ANIMATION */
+    .bye-modal-content {
+      text-align: center;
+      background: white;
+      padding: 30px 20px;
+      border-radius: 20px;
+      max-width: 340px;
+      width: 85%;
+    }
+    .waving-arm {
+      transform-origin: bottom center;
+      animation: wave 1s infinite alternate ease-in-out;
+    }
+    @keyframes wave {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(30deg); }
+    }
   </style>
 </head>
 <body>
+
+  <!-- THEATRICAL CURTAINS -->
+  <div class="curtain-container" id="curtainLayer">
+    <div class="curtain curtain-left"></div>
+    <div class="curtain curtain-right"></div>
+  </div>
 
   <div class="container">
     <div class="logo-container">
@@ -56,65 +228,90 @@
     </div>
 
     <h2>Aryavarta Automation</h2>
-    <p>Chikhali Head Office Portal</p>
+    <p class="sub">Chikhali Head Office Portal</p>
 
-    <!-- Mobile Number Prompt (Only shown if opened with no saved login or direct link) -->
+    <!-- Mobile Login Screen -->
     <div id="loginBox" style="display:none;">
-      <div style="background:#eff6ff;border:1px solid #bfdbfe;padding:12px;border-radius:8px;margin-bottom:15px;">
-        <p style="color:#1e40af;font-weight:bold;margin:0;">👤 Employee Identification</p>
-        <p style="color:#1e3a8a;font-size:12px;margin:5px 0 0 0;">Enter your 10-digit registered mobile number to open your attendance dashboard.</p>
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;padding:12px;border-radius:12px;margin-bottom:15px;">
+        <p style="color:#1e40af;font-weight:bold;margin:0;font-size:14px;">👤 कर्मचारी पहचान (Login)</p>
+        <p style="color:#1e3a8a;font-size:12px;margin:4px 0 0 0;">कृपया अपना 10 अंकों का रजिस्टर्ड मोबाइल नंबर दर्ज करें।</p>
       </div>
-      <label for="inputPhone">Registered Mobile Number</label>
-      <input type="tel" id="inputPhone" placeholder="Enter 10-digit number" maxlength="10">
-      <button type="button" class="btn btn-secondary" onclick="handleManualLogin()">Continue to Attendance Portal</button>
+      <label for="inputPhone">रजिस्टर्ड मोबाइल नंबर</label>
+      <input type="tel" id="inputPhone" placeholder="10-digit Mobile Number" maxlength="10">
+      <button type="button" class="btn btn-primary" onclick="handleManualLogin()">पोर्टल में प्रवेश करें 🚀</button>
     </div>
 
     <!-- Active Attendance Form -->
     <div id="punchForm" style="display:none;">
       <div class="user-card">
-        <p>Verified Employee:</p>
+        <p>प्रमाणित कर्मचारी (Verified):</p>
         <strong id="displayEmpName">Loading...</strong>
-        <p id="displayEmpPhone" style="font-size:12px;"></p>
+        <p id="displayEmpPhone" style="font-size:12px; margin-top:2px;"></p>
       </div>
 
       <div id="punchControls">
-        <label for="workMode">Work Assignment Mode</label>
+        <label for="workMode">कार्य मोड (Work Assignment Mode)</label>
         <select id="workMode" onchange="toggleMode(this.value)">
-          <option value="Office">Working from Office (150m Lock)</option>
+          <option value="Office">Office (Patil Nagar - 150m Lock)</option>
           <option value="WFH">Working from Home (Bypass Lock)</option>
           <option value="Site">Working from Site (Bypass Lock)</option>
         </select>
 
         <div class="button-group">
-          <button type="button" class="btn btn-in" id="btnIn" style="display:none;" onclick="submitPunch('Clock In')">Confirm Clock In 📥</button>
-          <button type="button" class="btn btn-out" id="btnOut" style="display:none;" onclick="submitPunch('Clock Out')">Confirm Clock Out 🚪</button>
+          <button type="button" class="btn btn-in" id="btnIn" style="display:none;" onclick="startAttendanceFlow('Clock In')">
+            Confirm Clock In 📥
+          </button>
+          <button type="button" class="btn btn-out" id="btnOut" style="display:none;" onclick="startAttendanceFlow('Clock Out')">
+            Confirm Clock Out 🚪
+          </button>
         </div>
       </div>
 
       <div id="status"></div>
 
-      <div class="button-group" style="margin-top:20px; border-top: 1px solid #e5e7eb; padding-top:15px;">
+      <div class="button-group" style="margin-top:20px; border-top: 1.5px solid #f1f5f9; padding-top:15px;">
         <button type="button" class="btn btn-leave" onclick="openLeaveModal()">📝 Apply Leave / Half Day</button>
         <button type="button" class="btn btn-cal" onclick="openCalendarModal()">📅 My Attendance Calendar</button>
       </div>
     </div>
   </div>
 
-  <!-- LEAVE MODAL -->
+  <!-- LEAVE MODAL (Single Day / Range of Dates) -->
   <div id="leaveModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Apply Leave / Half Day</h3>
+        <h3>छुट्टी आवेदन (Leave Application)</h3>
         <span class="close-btn" onclick="closeLeaveModal()">&times;</span>
       </div>
-      <label for="leaveType">Leave Type</label>
+      
+      <label for="leaveDuration">अवधि चुनें (Select Duration)</label>
+      <select id="leaveDuration" onchange="toggleDateRange(this.value)">
+        <option value="single">एक दिन की छुट्टी (Single Day)</option>
+        <option value="range">कई दिनों की छुट्टी (Date Range)</option>
+      </select>
+
+      <label for="leaveType">छुट्टी का प्रकार (Leave Type)</label>
       <select id="leaveType">
         <option value="Full Day Leave">Full Day Leave</option>
         <option value="Half Day Leave">Half Day Leave</option>
       </select>
-      <label for="leaveReason">Reason for Leave</label>
-      <textarea id="leaveReason" rows="3" placeholder="Enter specific reason..."></textarea>
-      <button type="button" class="btn btn-leave" id="btnSubmitLeave" onclick="submitLeave()">Submit Leave Request</button>
+
+      <div id="singleDateBox">
+        <label for="leaveSingleDate">दिनांक (Date)</label>
+        <input type="date" id="leaveSingleDate">
+      </div>
+
+      <div id="rangeDateBox" style="display:none;">
+        <label for="leaveStartDate">प्रारंभ दिनांक (Start Date)</label>
+        <input type="date" id="leaveStartDate">
+        <label for="leaveEndDate">अंतिम दिनांक (End Date)</label>
+        <input type="date" id="leaveEndDate">
+      </div>
+
+      <label for="leaveReason">छुट्टी का कारण (Specific Reason)</label>
+      <textarea id="leaveReason" rows="3" placeholder="यहाँ कारण लिखें..."></textarea>
+
+      <button type="button" class="btn btn-leave" id="btnSubmitLeave" onclick="submitLeave()">आवेदन जमा करें</button>
     </div>
   </div>
 
@@ -122,17 +319,44 @@
   <div id="calModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 id="calMonthTitle">Attendance History</h3>
+        <h3 id="calMonthTitle">उपस्थिति इतिहास</h3>
         <span class="close-btn" onclick="closeCalendarModal()">&times;</span>
       </div>
       <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
-        <button class="btn btn-cal" style="width:45%;padding:6px;" onclick="prevMonth()">◀ Prev</button>
-        <button class="btn btn-cal" style="width:45%;padding:6px;" onclick="nextMonth()">Next ▶</button>
+        <button class="btn btn-cal" style="width:45%;padding:8px;" onclick="prevMonth()">◀ पिछला</button>
+        <button class="btn btn-cal" style="width:45%;padding:8px;" onclick="nextMonth()">अगला ▶</button>
       </div>
       <div class="calendar-grid" id="calendarBody"></div>
-      <div style="font-size:11px;margin-top:12px;color:#4b5563;">
-        🟢 Present &nbsp;|&nbsp; 🟡 Leave &nbsp;|&nbsp; 🔴 Sunday
+      <div style="font-size:11px;margin-top:14px;color:#64748b;">
+        🟢 उपस्थित (Present) | 🟡 छुट्टी (Leave) | 🔴 रविवार (Sunday)
       </div>
+    </div>
+  </div>
+
+  <!-- BYE BYE CHARACTER MODAL -->
+  <div id="byeModal" class="modal">
+    <div class="bye-modal-content">
+      <!-- Animated Friendly Mascot SVG -->
+      <svg width="120" height="120" viewBox="0 0 100 100">
+        <!-- Body -->
+        <circle cx="50" cy="55" r="28" fill="#3b82f6"/>
+        <!-- Face -->
+        <circle cx="50" cy="32" r="20" fill="#fed7aa"/>
+        <!-- Smile & Eyes -->
+        <circle cx="43" cy="30" r="2.5" fill="#1e293b"/>
+        <circle cx="57" cy="30" r="2.5" fill="#1e293b"/>
+        <path d="M 44 38 Q 50 44 56 38" stroke="#1e293b" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- Left Arm (Stationary) -->
+        <rect x="20" y="50" width="8" height="24" rx="4" fill="#2563eb"/>
+        <!-- Right Arm (Waving) -->
+        <g class="waving-arm" style="transform-origin: 75px 65px;">
+          <rect x="72" y="42" width="8" height="26" rx="4" fill="#2563eb" transform="rotate(-35 72 42)"/>
+          <circle cx="85" cy="40" r="6" fill="#fed7aa"/>
+        </g>
+      </svg>
+      <h3 style="margin:12px 0 6px 0; color:#0f172a;" id="byeTitle">धन्यवाद!</h3>
+      <p style="color:#64748b; font-size:14px; margin:0;" id="byeMessage">उपस्थिति सफलतापूर्वक दर्ज कर ली गई है। आपका दिन शुभ हो!</p>
+      <button class="btn btn-primary" style="margin-top:15px;" onclick="closeByeModal()">ठीक है (Close)</button>
     </div>
   </div>
 
@@ -141,30 +365,48 @@
 
     let currentEmp = { name: "", phone: "" };
     let calDate = new Date();
+    let currentVoice = null;
 
-    function setCookie(name, value) {
-      document.cookie = name + "=" + encodeURIComponent(value) + "; max-age=31536000; path=/; SameSite=Lax";
+    // SPEECH SYNTHESIS ENGINE
+    function initVoice() {
+      if ('speechSynthesis' in window) {
+        let voices = window.speechSynthesis.getVoices();
+        currentVoice = voices.find(v => v.lang.includes('hi')) || voices.find(v => v.lang.includes('en-IN')) || null;
+      }
     }
-    function getCookie(name) {
-      let matches = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"));
-      return matches ? decodeURIComponent(matches[1]) : null;
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = initVoice;
     }
 
+    function speakHindi(text) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel(); // Stop active audio
+      let utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'hi-IN';
+      utterance.rate = 0.95;
+      utterance.pitch = 1.0;
+      if (currentVoice) utterance.voice = currentVoice;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // THEATRICAL CURTAIN SEQUENCE
     window.onload = function() {
-      // 1. Check if employee clicked a personalized link with ?p=XXXXXXXXXX
+      initVoice();
+      setTimeout(() => {
+        document.getElementById("curtainLayer").classList.add("curtain-open");
+      }, 400);
+
+      // Default date inputs to today
+      let todayStr = new Date().toISOString().split('T')[0];
+      document.getElementById("leaveSingleDate").value = todayStr;
+      document.getElementById("leaveStartDate").value = todayStr;
+      document.getElementById("leaveEndDate").value = todayStr;
+
+      // Auto-Login Detection
       const urlParams = new URLSearchParams(window.location.search);
       let directPhone = urlParams.get('p') || urlParams.get('phone');
+      let savedPhone = directPhone ? directPhone.replace(/\D/g, '').slice(-10) : localStorage.getItem("aa_emp_phone");
 
-      if (directPhone) {
-        let clean = directPhone.replace(/\D/g, '').slice(-10);
-        if (clean.length === 10) {
-          authenticatePhone(clean);
-          return;
-        }
-      }
-
-      // 2. Check local browser storage or cookie
-      let savedPhone = localStorage.getItem("aa_emp_phone") || getCookie("aa_emp_phone");
       if (savedPhone && savedPhone.length === 10) {
         authenticatePhone(savedPhone);
       } else {
@@ -174,43 +416,50 @@
     };
 
     function handleManualLogin() {
-      let inputVal = document.getElementById("inputPhone").value.trim().replace(/\D/g, '').slice(-10);
-      if (inputVal.length !== 10) return alert("Please enter a valid 10-digit mobile number.");
-      authenticatePhone(inputVal);
+      let phone = document.getElementById("inputPhone").value.trim().replace(/\D/g, '').slice(-10);
+      if (phone.length !== 10) return alert("कृपया सही 10 अंकों का मोबाइल नंबर दर्ज करें।");
+      authenticatePhone(phone);
     }
 
     function authenticatePhone(phone) {
-      document.getElementById("status").innerHTML = "🔄 Verifying employee records...";
+      document.getElementById("status").innerHTML = "🔄 कर्मचारी सत्यापन किया जा रहा है...";
       fetch(`${SCRIPT_URL}?action=authDevice&phone=${encodeURIComponent(phone)}`)
         .then(res => res.json())
         .then(data => {
           if (data.success) {
-            // Save to both localStorage & Cookie for persistence in this browser
             localStorage.setItem("aa_emp_phone", phone);
             localStorage.setItem("aa_emp_name", data.name);
-            setCookie("aa_emp_phone", phone);
-            setCookie("aa_emp_name", data.name);
-
             currentEmp = { name: data.name, phone: phone };
 
             document.getElementById("loginBox").style.display = "none";
             document.getElementById("punchForm").style.display = "block";
             document.getElementById("displayEmpName").innerText = data.name;
-            document.getElementById("displayEmpPhone").innerText = "📱 " + phone;
+            document.getElementById("displayEmpPhone").innerText = "📱 +91 " + phone;
             
-            refreshTodayStatus();
+            refreshTodayStatus(true);
           } else {
             document.getElementById("loginBox").style.display = "block";
             document.getElementById("punchForm").style.display = "none";
             alert("⚠️ " + data.message);
           }
         })
-        .catch(err => {
-          alert("Network error connecting to attendance server. Please try again.");
+        .catch(() => {
+          // Low Network fallback from local storage
+          let cachedName = localStorage.getItem("aa_emp_name");
+          if (cachedName) {
+            currentEmp = { name: cachedName, phone: phone };
+            document.getElementById("loginBox").style.display = "none";
+            document.getElementById("punchForm").style.display = "block";
+            document.getElementById("displayEmpName").innerText = cachedName;
+            document.getElementById("displayEmpPhone").innerText = "📱 +91 " + phone;
+            refreshTodayStatus(true);
+          } else {
+            alert("नेटवर्क त्रुटि। कृपया इंटरनेट कनेक्शन जांचें।");
+          }
         });
     }
 
-    function refreshTodayStatus() {
+    function refreshTodayStatus(shouldSpeakGreeting) {
       let btnIn = document.getElementById("btnIn");
       let btnOut = document.getElementById("btnOut");
       let statusDiv = document.getElementById("status");
@@ -219,29 +468,41 @@
         .then(res => res.json())
         .then(res => {
           if (res.status === "NEEDS_CLOCK_IN") {
-            btnIn.style.display = "block";
+            btnIn.style.display = "flex";
             btnOut.style.display = "none";
             statusDiv.innerHTML = "";
+            if (shouldSpeakGreeting) {
+              speakHindi(`सुप्रभात और नमस्कार ${currentEmp.name} जी, कैसे हैं आप? आपका आर्यावर्त अटेंडेंस फॉर्म में स्वागत है।`);
+            }
           } else if (res.status === "NEEDS_CLOCK_OUT") {
             btnIn.style.display = "none";
-            btnOut.style.display = "block";
+            btnOut.style.display = "flex";
             statusDiv.style.color = "#2563eb";
-            statusDiv.innerHTML = "ℹ️ You are Clocked In. Click below to Clock Out.";
+            statusDiv.innerHTML = "ℹ️ आप क्लॉक-इन हैं। प्रस्थान के समय क्लॉक-आउट करें।";
+            if (shouldSpeakGreeting) {
+              speakHindi(`नमस्ते ${currentEmp.name} जी, कैसा रहा आपका दिन? कृपया प्रस्थान के लिए क्लॉक आउट बटन दबाएं।`);
+            }
           } else if (res.status === "COMPLETED") {
             btnIn.style.display = "none";
             btnOut.style.display = "none";
             statusDiv.style.color = "#059669";
-            statusDiv.innerHTML = "✅ Today's Clock In & Clock Out completed.";
+            statusDiv.innerHTML = "✅ आज की दोनों उपस्थिति दर्ज हो चुकी हैं।";
           } else if (res.status === "ON_LEAVE") {
             btnIn.style.display = "none";
             btnOut.style.display = "none";
             statusDiv.style.color = "#d97706";
-            statusDiv.innerHTML = "📋 Leave recorded for today.";
+            statusDiv.innerHTML = "📋 आपकी आज की छुट्टी स्वीकृत है।";
           }
+        })
+        .catch(() => {
+          // Low Network default view
+          btnIn.style.display = "flex";
+          btnOut.style.display = "none";
         });
     }
 
-    function submitPunch(type) {
+    // MULTI-STAGE RESILIENT GPS & SUBMISSION
+    function startAttendanceFlow(type) {
       let mode = document.getElementById("workMode").value;
       let statusDiv = document.getElementById("status");
       let btnIn = document.getElementById("btnIn");
@@ -250,25 +511,41 @@
       btnIn.disabled = true;
       btnOut.disabled = true;
       statusDiv.style.color = "#d97706";
-      statusDiv.innerHTML = "🛰️ Capturing accurate GPS coordinates...";
+      statusDiv.innerHTML = "🛰️ सुरक्षित जीपीएस स्थान सत्यापित किया जा रहा है...";
+
+      speakHindi(`${type === 'Clock In' ? 'क्लॉक इन' : 'क्लॉक आउट'} प्रक्रिया जारी है। कृपया प्रतीक्षा करें।`);
 
       if (mode === "Office") {
+        // Stage 1: High Accuracy GPS (Timeout 6s)
         navigator.geolocation.getCurrentPosition(
-          pos => { sendPunch(pos.coords.latitude, pos.coords.longitude, mode, type); },
-          err => {
-            btnIn.disabled = false;
-            btnOut.disabled = false;
-            statusDiv.style.color = "#dc2626";
-            statusDiv.innerHTML = "❌ GPS Error. Please enable mobile location services.";
+          pos => executePunch(pos.coords.latitude, pos.coords.longitude, mode, type),
+          () => {
+            // Stage 2: Standard Accuracy Fallback for Weak Mobile Antennas
+            statusDiv.innerHTML = "🔄 कमजोर सिग्नल, वैकल्पिक जीपीएस द्वारा पुनः प्रयास...";
+            navigator.geolocation.getCurrentPosition(
+              pos => executePunch(pos.coords.latitude, pos.coords.longitude, mode, type),
+              () => {
+                btnIn.disabled = false;
+                btnOut.disabled = false;
+                statusDiv.style.color = "#dc2626";
+                statusDiv.innerHTML = "❌ जीपीएस उपलब्ध नहीं है। कृपया मोबाइल लोकेशन ऑन करें।";
+                speakHindi("जीपीएस सिग्नल नहीं मिला। कृपया अपने फोन की लोकेशन ऑन करें।");
+              },
+              { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+            );
           },
-          { enableHighAccuracy: true, timeout: 8000 }
+          { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
         );
       } else {
-        sendPunch(null, null, mode, type);
+        executePunch(null, null, mode, type);
       }
     }
 
-    function sendPunch(lat, lon, mode, type) {
+    // RESILIENT NETWORK RETRY DISPATCH
+    function executePunch(lat, lon, mode, type, attempt = 1) {
+      let statusDiv = document.getElementById("status");
+      statusDiv.innerHTML = `🚀 डेटा प्रेषित किया जा रहा है... ${attempt > 1 ? `(प्रयास ${attempt})` : ''}`;
+
       let payload = {
         name: currentEmp.name,
         phone: currentEmp.phone,
@@ -283,33 +560,58 @@
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
-      }).then(() => {
+      })
+      .then(() => {
         document.getElementById("btnIn").disabled = false;
         document.getElementById("btnOut").disabled = false;
-        document.getElementById("status").style.color = "#059669";
-        document.getElementById("status").innerHTML = "✅ " + type + " Logged cleanly.";
-        setTimeout(refreshTodayStatus, 1500);
+        showByeAnimation(`${type} दर्ज हो चुका है!`, "आर्यावर्त में आपकी उपस्थिति दर्ज हो चुकी है। आपका बहुत-बहुत धन्यवाद!");
+        speakHindi(`धन्यवाद ${currentEmp.name} जी, आपका ${type === 'Clock In' ? 'क्लॉक इन' : 'क्लॉक आउट'} सफलतापूर्वक दर्ज हो चुका है। आपका दिन शुभ हो!`);
+        setTimeout(() => refreshTodayStatus(false), 2000);
+      })
+      .catch(err => {
+        if (attempt < 3) {
+          setTimeout(() => executePunch(lat, lon, mode, type, attempt + 1), 1500);
+        } else {
+          document.getElementById("btnIn").disabled = false;
+          document.getElementById("btnOut").disabled = false;
+          statusDiv.style.color = "#dc2626";
+          statusDiv.innerHTML = "❌ नेटवर्क त्रुटि। कृपया पुनः प्रयास करें।";
+          speakHindi("इंटरनेट कनेक्शन धीमा है। कृपया दोबारा प्रयास करें।");
+        }
       });
     }
 
-    function toggleMode(val) {
-      let statusDiv = document.getElementById("status");
-      if (val !== "Office") statusDiv.innerHTML = "ℹ️ " + val + " mode selected. Office 150m boundary bypassed.";
-      else statusDiv.innerHTML = "";
+    // LEAVE MODAL LOGIC
+    function openLeaveModal() {
+      document.getElementById("leaveModal").style.display = "flex";
+      speakHindi("कृपया अपनी छुट्टी का प्रकार, तारीख और कारण चुनें।");
     }
-
-    // Leave Modal
-    function openLeaveModal() { document.getElementById("leaveModal").style.display = "flex"; }
     function closeLeaveModal() { document.getElementById("leaveModal").style.display = "none"; }
     
+    function toggleDateRange(val) {
+      if (val === "range") {
+        document.getElementById("singleDateBox").style.display = "none";
+        document.getElementById("rangeDateBox").style.display = "block";
+      } else {
+        document.getElementById("singleDateBox").style.display = "block";
+        document.getElementById("rangeDateBox").style.display = "none";
+      }
+    }
+
     function submitLeave() {
+      let duration = document.getElementById("leaveDuration").value;
       let lType = document.getElementById("leaveType").value;
-      let lReason = document.getElementById("leaveReason").value.trim();
-      if (!lReason) return alert("Please specify the reason for taking leave.");
+      let sDate = duration === "single" ? document.getElementById("leaveSingleDate").value : document.getElementById("leaveStartDate").value;
+      let eDate = duration === "single" ? sDate : document.getElementById("leaveEndDate").value;
+      let reason = document.getElementById("leaveReason").value.trim();
+
+      if (!sDate || !eDate) return alert("कृपया छुट्टी की तारीख चुनें।");
+      if (!reason) return alert("कृपया छुट्टी का कारण लिखें।");
 
       let btn = document.getElementById("btnSubmitLeave");
       btn.disabled = true;
-      btn.innerText = "Submitting...";
+      btn.innerText = "जमा किया जा रहा है...";
+      speakHindi("आपका छुट्टी आवेदन जमा किया जा रहा है।");
 
       fetch(SCRIPT_URL, {
         method: "POST",
@@ -320,20 +622,24 @@
           name: currentEmp.name,
           phone: currentEmp.phone,
           leaveType: lType,
-          reason: lReason
+          startDate: sDate,
+          endDate: eDate,
+          reason: reason
         })
       }).then(() => {
         btn.disabled = false;
-        btn.innerText = "Submit Leave Request";
+        btn.innerText = "आवेदन जमा करें";
         closeLeaveModal();
-        alert("✅ " + lType + " successfully recorded.");
-        refreshTodayStatus();
+        showByeAnimation("छुट्टी दर्ज हुई!", "आपका अवकाश आवेदन सफलतापूर्वक दर्ज कर लिया गया है।");
+        speakHindi("आपका अवकाश आवेदन सफलतापूर्वक दर्ज कर लिया गया है। धन्यवाद!");
+        setTimeout(() => refreshTodayStatus(false), 2000);
       });
     }
 
-    // Calendar Modal
+    // CALENDAR MODAL LOGIC
     function openCalendarModal() {
       document.getElementById("calModal").style.display = "flex";
+      speakHindi("यहाँ आप अपनी उपस्थिति और छुट्टियों का इतिहास देख सकते हैं।");
       renderCalendar();
     }
     function closeCalendarModal() { document.getElementById("calModal").style.display = "none"; }
@@ -343,11 +649,11 @@
     function renderCalendar() {
       let year = calDate.getFullYear();
       let month = calDate.getMonth();
-      const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-      document.getElementById("calMonthTitle").innerText = monthNames[month] + " " + year;
+      const monthNamesHindi = ["जनवरी","फरवरी","मार्च","अप्रैल","मई","जून","जुलाई","अगस्त","सितंबर","अक्टूबर","नवंबर","दिसंबर"];
+      document.getElementById("calMonthTitle").innerText = monthNamesHindi[month] + " " + year;
 
       let body = document.getElementById("calendarBody");
-      body.innerHTML = "<div class='cal-header'>Su</div><div class='cal-header'>Mo</div><div class='cal-header'>Tu</div><div class='cal-header'>We</div><div class='cal-header'>Th</div><div class='cal-header'>Fr</div><div class='cal-header'>Sa</div>";
+      body.innerHTML = "<div class='cal-header'>रवि</div><div class='cal-header'>सोम</div><div class='cal-header'>मंगल</div><div class='cal-header'>बुध</div><div class='cal-header'>गुरु</div><div class='cal-header'>शुक्र</div><div class='cal-header'>शनि</div>";
 
       fetch(`${SCRIPT_URL}?action=getCalendar&name=${encodeURIComponent(currentEmp.name)}&month=${month + 1}&year=${year}`)
         .then(res => res.json())
@@ -376,10 +682,25 @@
               if (punchText.indexOf("Leave") !== -1) cellClass += " cal-leave";
               else cellClass += " cal-present";
             }
-
             body.innerHTML += `<div class="${cellClass}" title="${title}">${d}</div>`;
           }
         });
+    }
+
+    // BYE-BYE CHARACTER MODAL
+    function showByeAnimation(title, message) {
+      document.getElementById("byeTitle").innerText = title;
+      document.getElementById("byeMessage").innerText = message;
+      document.getElementById("byeModal").style.display = "flex";
+    }
+    function closeByeModal() {
+      document.getElementById("byeModal").style.display = "none";
+    }
+
+    function toggleMode(val) {
+      let statusDiv = document.getElementById("status");
+      if (val !== "Office") statusDiv.innerHTML = "ℹ️ " + val + " मोड चयनित। 150 मीटर ऑफिस परिधि प्रतिबंध बाईपास रहेगा।";
+      else statusDiv.innerHTML = "";
     }
   </script>
 </body>
