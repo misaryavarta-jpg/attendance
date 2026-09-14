@@ -14,7 +14,6 @@
     h2 { color: #1f2937; margin: 5px 0; font-size: 20px; }
     p { color: #6b7280; font-size: 13px; margin: 0 0 15px 0; }
     
-    /* Auto Detected User Badge */
     .user-card { background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 10px; padding: 12px; margin-bottom: 15px; text-align: left; }
     .user-card p { margin: 2px 0; font-size: 13px; color: #0369a1; }
     .user-card strong { color: #0c4a6e; font-size: 15px; }
@@ -33,14 +32,14 @@
 
     #status { margin-top: 15px; font-weight: 600; font-size: 14px; padding: 10px; border-radius: 6px; line-height: 1.4; }
 
-    /* Modal Styling */
+    /* Modals */
     .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
     .modal-content { background: white; width: 90%; max-width: 380px; border-radius: 14px; padding: 20px; box-sizing: border-box; text-align: left; max-height: 85vh; overflow-y: auto; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .modal-header h3 { margin: 0; font-size: 17px; color: #111827; }
     .close-btn { font-size: 22px; cursor: pointer; color: #6b7280; font-weight: bold; }
     
-    /* Calendar UI */
+    /* Calendar */
     .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-top: 10px; }
     .cal-header { font-weight: bold; font-size: 12px; color: #4b5563; padding: 4px 0; }
     .cal-cell { font-size: 12px; padding: 8px 0; border-radius: 6px; background: #f3f4f6; color: #1f2937; }
@@ -59,18 +58,25 @@
     <h2>Aryavarta Automation</h2>
     <p>Chikhali Head Office Portal</p>
 
-    <!-- First Time Phone Registration (Hidden once authenticated) -->
+    <!-- First Time Phone Registration Box -->
     <div id="deviceAuthBox" style="display:none;">
       <div style="background:#fef2f2;border:1px solid #fca5a5;padding:12px;border-radius:8px;margin-bottom:15px;">
-        <p style="color:#991b1b;font-weight:bold;margin:0;">🔒 Device Authentication Required</p>
+        <p style="color:#991b1b;font-weight:bold;margin:0;">🔒 Device Authentication</p>
         <p style="color:#7f1d1d;font-size:12px;margin:5px 0 0 0;">Enter your 10-digit registered mobile number to lock this phone to your account.</p>
       </div>
       <label for="regPhone">Registered Mobile Number</label>
       <input type="tel" id="regPhone" placeholder="Enter 10-digit number" maxlength="10">
       <button type="button" class="btn btn-secondary" onclick="registerThisDevice()">Register This Device</button>
+      
+      <div style="margin-top:15px; border-top: 1px dashed #d1d5db; padding-top: 10px;">
+        <p style="font-size:11px;color:#6b7280;margin-bottom:6px;">Changed browser or phone?</p>
+        <button type="button" style="background:none;border:none;color:#2563eb;font-size:12px;font-weight:bold;cursor:pointer;text-decoration:underline;" onclick="openAdminResetPrompt()">
+          🛠️ Unlock / Reset Device with Admin PIN
+        </button>
+      </div>
     </div>
 
-    <!-- Active Attendance Form (Shown after automatic phone authentication) -->
+    <!-- Active Attendance Form -->
     <div id="punchForm" style="display:none;">
       <div class="user-card">
         <p>Verified Employee:</p>
@@ -94,7 +100,6 @@
 
       <div id="status"></div>
 
-      <!-- Action Navigation Buttons -->
       <div class="button-group" style="margin-top:20px; border-top: 1px solid #e5e7eb; padding-top:15px;">
         <button type="button" class="btn btn-leave" onclick="openLeaveModal()">📝 Apply Leave / Half Day</button>
         <button type="button" class="btn btn-cal" onclick="openCalendarModal()">📅 My Attendance Calendar</button>
@@ -144,9 +149,14 @@
     let currentEmp = { name: "", phone: "", deviceToken: "" };
     let calDate = new Date();
 
-    window.onload = function() {
-      checkDeviceLock();
-    };
+    // Cookie Utilities
+    function setCookie(name, value) {
+      document.cookie = name + "=" + encodeURIComponent(value) + "; max-age=31536000; path=/; SameSite=Lax";
+    }
+    function getCookie(name) {
+      let matches = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"));
+      return matches ? decodeURIComponent(matches[1]) : null;
+    }
 
     function generateUUID() {
       return 'dev-' + 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -155,26 +165,37 @@
       });
     }
 
+    window.onload = function() {
+      checkDeviceLock();
+    };
+
     function checkDeviceLock() {
-      let savedPhone = localStorage.getItem("aa_emp_phone");
-      let savedToken = localStorage.getItem("aa_device_token");
+      // Read from localStorage OR fallback to 1-Year Cookie
+      let savedPhone = localStorage.getItem("aa_emp_phone") || getCookie("aa_emp_phone");
+      let savedToken = localStorage.getItem("aa_device_token") || getCookie("aa_device_token");
 
       if (!savedPhone || !savedToken) {
         document.getElementById("deviceAuthBox").style.display = "block";
         document.getElementById("punchForm").style.display = "none";
       } else {
+        // Sync both storages
+        localStorage.setItem("aa_emp_phone", savedPhone);
+        localStorage.setItem("aa_device_token", savedToken);
+        setCookie("aa_emp_phone", savedPhone);
+        setCookie("aa_device_token", savedToken);
         verifyDeviceWithServer(savedPhone, savedToken);
       }
     }
 
     function registerThisDevice() {
-      let phone = document.getElementById("regPhone").value.trim();
+      let phone = document.getElementById("regPhone").value.trim().replace(/\D/g, '').slice(-10);
       if (phone.length !== 10) return alert("Please enter a valid 10-digit mobile number.");
 
-      let newToken = localStorage.getItem("aa_device_token") || generateUUID();
-      localStorage.setItem("aa_device_token", newToken);
+      let currentToken = localStorage.getItem("aa_device_token") || getCookie("aa_device_token") || generateUUID();
+      localStorage.setItem("aa_device_token", currentToken);
+      setCookie("aa_device_token", currentToken);
 
-      verifyDeviceWithServer(phone, newToken);
+      verifyDeviceWithServer(phone, currentToken);
     }
 
     function verifyDeviceWithServer(phone, token) {
@@ -185,6 +206,9 @@
           if (data.success) {
             localStorage.setItem("aa_emp_phone", phone);
             localStorage.setItem("aa_emp_name", data.name);
+            setCookie("aa_emp_phone", phone);
+            setCookie("aa_emp_name", data.name);
+
             currentEmp = { name: data.name, phone: phone, deviceToken: token };
 
             document.getElementById("deviceAuthBox").style.display = "none";
@@ -194,14 +218,35 @@
             
             refreshTodayStatus();
           } else {
-            localStorage.removeItem("aa_emp_phone");
             document.getElementById("deviceAuthBox").style.display = "block";
             document.getElementById("punchForm").style.display = "none";
             alert("⚠️ " + data.message);
           }
         })
         .catch(err => {
-          alert("Network error verifying device. Please check internet connection.");
+          alert("Network connection error. Please check your internet connection.");
+        });
+    }
+
+    function openAdminResetPrompt() {
+      let phone = prompt("Enter your 10-digit mobile number to reset:");
+      if (!phone || phone.trim().length !== 10) return alert("Valid 10-digit phone number is required.");
+      phone = phone.trim().replace(/\D/g, '').slice(-10);
+
+      let pin = prompt("Enter the Admin Master PIN:");
+      if (!pin) return;
+
+      fetch(`${SCRIPT_URL}?action=adminResetDevice&phone=${encodeURIComponent(phone)}&pin=${encodeURIComponent(pin)}`)
+        .then(res => res.json())
+        .then(res => {
+          alert(res.message);
+          if (res.success) {
+            localStorage.removeItem("aa_emp_phone");
+            localStorage.removeItem("aa_device_token");
+            document.cookie = "aa_emp_phone=; max-age=0; path=/;";
+            document.cookie = "aa_device_token=; max-age=0; path=/;";
+            document.getElementById("regPhone").value = phone;
+          }
         });
     }
 
@@ -254,7 +299,7 @@
             btnIn.disabled = false;
             btnOut.disabled = false;
             statusDiv.style.color = "#dc2626";
-            statusDiv.innerHTML = "❌ GPS Error. Enable mobile location services.";
+            statusDiv.innerHTML = "❌ GPS Error. Please enable phone location services.";
           },
           { enableHighAccuracy: true, timeout: 8000 }
         );
@@ -294,7 +339,6 @@
       else statusDiv.innerHTML = "";
     }
 
-    // Leave Modal Logic
     function openLeaveModal() { document.getElementById("leaveModal").style.display = "flex"; }
     function closeLeaveModal() { document.getElementById("leaveModal").style.display = "none"; }
     
@@ -328,7 +372,6 @@
       });
     }
 
-    // Calendar Modal Logic
     function openCalendarModal() {
       document.getElementById("calModal").style.display = "flex";
       renderCalendar();
