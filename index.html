@@ -9,50 +9,123 @@
       --primary: #1e3a8a;
       --accent-in: #059669;
       --accent-out: #dc2626;
-      --curtain-color: #831843;
+      --gold: #f59e0b;
     }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       text-align: center;
-      background: #0f172a;
-      margin: 0;
-      padding: 15px;
+      background: radial-gradient(circle at top, #1e1b4b, #0f172a 70%, #020617);
+      min-height: 100vh;
+      color: #1e293b;
       overflow-x: hidden;
+      position: relative;
     }
 
-    /* THEATRICAL CURTAIN ANIMATION */
-    .curtain-container {
+    /* FLOATING PETALS & SPARKLES CANVAS */
+    #magicalCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* THEATRICAL CURTAIN OVERLAY */
+    .curtain-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
       z-index: 99999;
-      pointer-events: none;
       display: flex;
+      justify-content: center;
+      align-items: center;
+      pointer-events: all;
+      transition: visibility 1.8s;
     }
     .curtain {
+      position: absolute;
+      top: 0;
       width: 50vw;
       height: 100vh;
-      background: radial-gradient(circle, #9d174d 20%, #4c0519 100%);
+      background: radial-gradient(circle at center, #831843 10%, #4c0519 90%);
       transition: transform 1.6s cubic-bezier(0.77, 0, 0.175, 1);
-      box-shadow: 0 0 30px rgba(0,0,0,0.8);
+      box-shadow: 0 0 50px rgba(0,0,0,0.9);
     }
-    .curtain-left { transform: translateX(0); border-right: 2px solid #fbcfe8; }
-    .curtain-right { transform: translateX(0); border-left: 2px solid #fbcfe8; }
+    .curtain-left { left: 0; border-right: 3px solid #fbcfe8; }
+    .curtain-right { right: 0; border-left: 3px solid #fbcfe8; }
+    
     .curtain-open .curtain-left { transform: translateX(-100%); }
     .curtain-open .curtain-right { transform: translateX(100%); }
+    .curtain-open { pointer-events: none; visibility: hidden; }
 
-    /* MAIN CONTAINER */
-    .container {
-      background: #ffffff;
-      padding: 24px 18px;
-      border-radius: 20px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
-      max-width: 410px;
-      margin: 10px auto;
+    /* ROYAL ENTRANCE SEAL BUTTON */
+    .royal-seal-btn {
       position: relative;
+      z-index: 100000;
+      background: radial-gradient(circle, #fbbf24, #d97706);
+      color: #451a03;
+      border: 3px solid #fef3c7;
+      border-radius: 50px;
+      padding: 16px 32px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 0 35px rgba(251, 191, 36, 0.8), 0 10px 25px rgba(0,0,0,0.5);
+      animation: pulseGlow 1.8s infinite alternate ease-in-out;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
+    @keyframes pulseGlow {
+      0% { transform: scale(0.96); box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
+      100% { transform: scale(1.05); box-shadow: 0 0 45px rgba(251, 191, 36, 0.95); }
+    }
+
+    /* MAIN CONTAINER CARD */
+    .container {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 26px 20px;
+      border-radius: 24px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.4), 0 0 40px rgba(244, 114, 182, 0.2);
+      max-width: 410px;
+      margin: 25px auto 40px auto;
+      position: relative;
+      z-index: 20;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      animation: cardAppear 1s ease-out;
+    }
+    @keyframes cardAppear {
+      0% { transform: translateY(40px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+
+    /* FLORAL CORNER ACCENTS */
+    .container::before {
+      content: '🌸';
+      position: absolute;
+      top: -12px;
+      left: -10px;
+      font-size: 26px;
+      filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2));
+    }
+    .container::after {
+      content: '🌺';
+      position: absolute;
+      bottom: -12px;
+      right: -10px;
+      font-size: 26px;
+      filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2));
+    }
+
     .logo-container {
       width: 100%;
       display: flex;
@@ -62,92 +135,98 @@
     }
     .company-logo-img {
       width: 100%;
-      max-width: 240px;
+      max-width: 250px;
       height: auto;
       display: block;
       object-fit: contain;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.06));
     }
-    h2 { color: #0f172a; margin: 4px 0; font-size: 20px; font-weight: 800; }
-    p.sub { color: #64748b; font-size: 13px; margin: 0 0 15px 0; }
 
+    h2 { color: #0f172a; margin: 6px 0 2px 0; font-size: 20px; font-weight: 800; }
+    p.sub { color: #64748b; font-size: 13px; margin: 0 0 16px 0; }
+
+    /* USER CARD */
     .user-card {
-      background: linear-gradient(135deg, #e0f2fe 0%, #f0fdf4 100%);
-      border: 1px solid #bae6fd;
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 15px;
+      background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 50%, #eff6ff 100%);
+      border: 1.5px solid #a7f3d0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
       text-align: left;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.08);
+      position: relative;
     }
-    .user-card p { margin: 2px 0; font-size: 12px; color: #0369a1; }
-    .user-card strong { color: #0c4a6e; font-size: 16px; }
+    .user-card p { margin: 2px 0; font-size: 12px; color: #047857; font-weight: 600; }
+    .user-card strong { color: #064e3b; font-size: 16px; }
 
     label {
       display: block;
       text-align: left;
       font-weight: 700;
-      margin: 10px 0 5px 0;
+      margin: 12px 0 5px 0;
       color: #334155;
       font-size: 13px;
     }
     select, input, textarea {
       width: 100%;
-      padding: 12px;
+      padding: 12px 14px;
       margin-bottom: 12px;
       border: 1.5px solid #cbd5e1;
       border-radius: 10px;
       font-size: 15px;
       box-sizing: border-box;
-      background: #f8fafc;
-      transition: border 0.2s;
+      background: #ffffff;
+      color: #1e293b;
+      transition: all 0.25s;
     }
     select:focus, input:focus, textarea:focus {
-      border-color: #2563eb;
+      border-color: #059669;
+      box-shadow: 0 0 10px rgba(5, 150, 105, 0.2);
       outline: none;
-      background: #ffffff;
     }
 
+    /* BUTTONS */
     .button-group {
       width: 100%;
       margin: 10px auto;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
     .btn {
       width: 100%;
       padding: 15px;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       font-size: 15px;
       font-weight: 700;
       color: white;
       cursor: pointer;
-      box-sizing: border-box;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      transition: transform 0.1s, opacity 0.2s;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+      transition: transform 0.15s, box-shadow 0.15s;
     }
-    .btn:active { transform: scale(0.98); }
-    .btn:disabled { background-color: #94a3b8 !important; cursor: not-allowed; box-shadow: none; }
-    .btn-in { background: linear-gradient(135deg, #10b981, #059669); }
-    .btn-out { background: linear-gradient(135deg, #ef4444, #dc2626); }
-    .btn-primary { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
-    .btn-leave { background: linear-gradient(135deg, #f59e0b, #d97706); }
-    .btn-cal { background: #475569; }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { background: #94a3b8 !important; cursor: not-allowed; box-shadow: none; }
+    .btn-in { background: linear-gradient(135deg, #10b981, #047857); }
+    .btn-out { background: linear-gradient(135deg, #f43f5e, #be123c); }
+    .btn-primary { background: linear-gradient(135deg, #2563eb, #1e40af); }
+    .btn-leave { background: linear-gradient(135deg, #f59e0b, #b45309); }
+    .btn-cal { background: linear-gradient(135deg, #475569, #1e293b); }
 
     #status {
       margin-top: 15px;
       font-weight: 600;
-      font-size: 13px;
+      font-size: 13.5px;
       padding: 10px;
       border-radius: 8px;
       line-height: 1.4;
     }
 
-    /* MODAL POPUPS */
+    /* MODALS */
     .modal {
       display: none;
       position: fixed;
@@ -156,22 +235,24 @@
       top: 0;
       width: 100%;
       height: 100%;
-      background: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(4px);
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
       align-items: center;
       justify-content: center;
     }
     .modal-content {
-      background: white;
+      background: rgba(255, 255, 255, 0.96);
       width: 90%;
       max-width: 380px;
-      border-radius: 18px;
-      padding: 22px;
+      border-radius: 20px;
+      padding: 24px;
       box-sizing: border-box;
       text-align: left;
-      max-height: 88vh;
+      max-height: 85vh;
       overflow-y: auto;
-      box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+      border: 2px solid #f1f5f9;
       animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     @keyframes popIn {
@@ -185,41 +266,50 @@
       margin-bottom: 12px;
     }
     .modal-header h3 { margin: 0; font-size: 17px; color: #0f172a; }
-    .close-btn { font-size: 24px; cursor: pointer; color: #94a3b8; font-weight: bold; }
+    .close-btn { font-size: 26px; cursor: pointer; color: #94a3b8; font-weight: bold; }
 
     /* CALENDAR */
     .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-top: 10px; }
     .cal-header { font-weight: 800; font-size: 11px; color: #64748b; padding: 4px 0; }
-    .cal-cell { font-size: 12px; padding: 8px 0; border-radius: 6px; background: #f1f5f9; color: #1e293b; }
+    .cal-cell { font-size: 12px; padding: 8px 0; border-radius: 8px; background: #f1f5f9; color: #1e293b; }
     .cal-present { background: #dcfce7; color: #15803d; font-weight: 800; }
     .cal-leave { background: #fef3c7; color: #b45309; font-weight: 800; }
     .cal-sunday { background: #fee2e2; color: #b91c1c; }
 
-    /* WAVING CHARACTER ANIMATION */
+    /* WAVING CHARACTER */
     .bye-modal-content {
       text-align: center;
       background: white;
       padding: 30px 20px;
-      border-radius: 20px;
-      max-width: 340px;
+      border-radius: 24px;
+      max-width: 330px;
       width: 85%;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.25);
     }
     .waving-arm {
       transform-origin: bottom center;
-      animation: wave 1s infinite alternate ease-in-out;
+      animation: wave 0.8s infinite alternate ease-in-out;
     }
     @keyframes wave {
       0% { transform: rotate(0deg); }
-      100% { transform: rotate(30deg); }
+      100% { transform: rotate(35deg); }
     }
   </style>
 </head>
 <body>
 
-  <!-- THEATRICAL CURTAINS -->
-  <div class="curtain-container" id="curtainLayer">
+  <!-- BACKGROUND FLOWER PETALS & MAGIC PARTICLES -->
+  <canvas id="magicalCanvas"></canvas>
+
+  <!-- THEATRICAL VELVET CURTAIN & UNLOCK SEAL -->
+  <div class="curtain-overlay" id="curtainOverlay">
     <div class="curtain curtain-left"></div>
     <div class="curtain curtain-right"></div>
+    
+    <!-- User Gesture Tap Seal (Unlocks Mobile Audio & Speech Engine) -->
+    <button type="button" class="royal-seal-btn" id="portalUnlockBtn" onclick="unlockPortalAndSpeak()">
+      <span>🌸</span> प्रवेश करें (Tap to Open) <span>✨</span>
+    </button>
   </div>
 
   <div class="container">
@@ -232,7 +322,7 @@
 
     <!-- Mobile Login Screen -->
     <div id="loginBox" style="display:none;">
-      <div style="background:#eff6ff;border:1px solid #bfdbfe;padding:12px;border-radius:12px;margin-bottom:15px;">
+      <div style="background:#eff6ff;border:1.5px solid #bfdbfe;padding:12px;border-radius:12px;margin-bottom:15px;">
         <p style="color:#1e40af;font-weight:bold;margin:0;font-size:14px;">👤 कर्मचारी पहचान (Login)</p>
         <p style="color:#1e3a8a;font-size:12px;margin:4px 0 0 0;">कृपया अपना 10 अंकों का रजिस्टर्ड मोबाइल नंबर दर्ज करें।</p>
       </div>
@@ -336,27 +426,21 @@
   <!-- BYE BYE CHARACTER MODAL -->
   <div id="byeModal" class="modal">
     <div class="bye-modal-content">
-      <!-- Animated Friendly Mascot SVG -->
-      <svg width="120" height="120" viewBox="0 0 100 100">
-        <!-- Body -->
-        <circle cx="50" cy="55" r="28" fill="#3b82f6"/>
-        <!-- Face -->
+      <svg width="130" height="130" viewBox="0 0 100 100">
+        <circle cx="50" cy="55" r="28" fill="#10b981"/>
         <circle cx="50" cy="32" r="20" fill="#fed7aa"/>
-        <!-- Smile & Eyes -->
-        <circle cx="43" cy="30" r="2.5" fill="#1e293b"/>
-        <circle cx="57" cy="30" r="2.5" fill="#1e293b"/>
-        <path d="M 44 38 Q 50 44 56 38" stroke="#1e293b" stroke-width="2" fill="none" stroke-linecap="round"/>
-        <!-- Left Arm (Stationary) -->
-        <rect x="20" y="50" width="8" height="24" rx="4" fill="#2563eb"/>
-        <!-- Right Arm (Waving) -->
+        <circle cx="43" cy="30" r="2.5" fill="#064e3b"/>
+        <circle cx="57" cy="30" r="2.5" fill="#064e3b"/>
+        <path d="M 44 38 Q 50 45 56 38" stroke="#064e3b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <rect x="20" y="50" width="8" height="24" rx="4" fill="#059669"/>
         <g class="waving-arm" style="transform-origin: 75px 65px;">
-          <rect x="72" y="42" width="8" height="26" rx="4" fill="#2563eb" transform="rotate(-35 72 42)"/>
+          <rect x="72" y="42" width="8" height="26" rx="4" fill="#059669" transform="rotate(-35 72 42)"/>
           <circle cx="85" cy="40" r="6" fill="#fed7aa"/>
         </g>
       </svg>
-      <h3 style="margin:12px 0 6px 0; color:#0f172a;" id="byeTitle">धन्यवाद!</h3>
-      <p style="color:#64748b; font-size:14px; margin:0;" id="byeMessage">उपस्थिति सफलतापूर्वक दर्ज कर ली गई है। आपका दिन शुभ हो!</p>
-      <button class="btn btn-primary" style="margin-top:15px;" onclick="closeByeModal()">ठीक है (Close)</button>
+      <h3 style="margin:14px 0 6px 0; color:#0f172a;" id="byeTitle">धन्यवाद!</h3>
+      <p style="color:#64748b; font-size:14px; margin:0;" id="byeMessage">उपस्थिति सफलतापूर्वक दर्ज कर ली गई है।</p>
+      <button class="btn btn-primary" style="margin-top:18px;" onclick="closeByeModal()">ठीक है (Close)</button>
     </div>
   </div>
 
@@ -366,12 +450,90 @@
     let currentEmp = { name: "", phone: "" };
     let calDate = new Date();
     let currentVoice = null;
+    let audioUnlocked = false;
 
-    // SPEECH SYNTHESIS ENGINE
+    // 🌸 1. MAGICAL FLOATING PETALS & SPARKLES ANIMATION
+    const canvas = document.getElementById("magicalCanvas");
+    const ctx = canvas.getContext("2d");
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    class Petal {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = -20;
+        this.size = Math.random() * 8 + 6;
+        this.speedY = Math.random() * 1.5 + 0.8;
+        this.speedX = Math.random() * 1 - 0.5;
+        this.angle = Math.random() * 360;
+        this.spin = Math.random() * 2 - 1;
+        this.opacity = Math.random() * 0.7 + 0.3;
+        this.color = Math.random() > 0.4 ? "rgba(244, 114, 182, " : "rgba(251, 191, 36, ";
+      }
+      update() {
+        this.y += this.speedY;
+        this.x += Math.sin(this.angle * Math.PI / 180) * 0.8 + this.speedX;
+        this.angle += this.spin;
+        if (this.y > canvas.height + 20) this.reset();
+      }
+      draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle * Math.PI / 180);
+        ctx.fillStyle = this.color + this.opacity + ")";
+        ctx.beginPath();
+        ctx.ellipse(0, 0, this.size, this.size / 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    for (let i = 0; i < 28; i++) particles.push(new Petal());
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => { p.update(); p.draw(); });
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    // 🔔 2. MAGICAL HARP CHIME (Web Audio API)
+    function playMagicalChime() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctxAudio = new AudioContext();
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+          const osc = ctxAudio.createOscillator();
+          const gain = ctxAudio.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(freq, ctxAudio.currentTime + idx * 0.08);
+          gain.gain.setValueAtTime(0.2, ctxAudio.currentTime + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctxAudio.currentTime + idx * 0.08 + 0.8);
+          osc.connect(gain);
+          gain.connect(ctxAudio.destination);
+          osc.start(ctxAudio.currentTime + idx * 0.08);
+          osc.stop(ctxAudio.currentTime + idx * 0.08 + 0.85);
+        });
+      } catch(e) {}
+    }
+
+    // 🗣️ 3. HIGH-RESILIENCE HINDI SPEECH ENGINE
     function initVoice() {
       if ('speechSynthesis' in window) {
         let voices = window.speechSynthesis.getVoices();
-        currentVoice = voices.find(v => v.lang.includes('hi')) || voices.find(v => v.lang.includes('en-IN')) || null;
+        currentVoice = voices.find(v => v.lang === 'hi-IN' || v.lang.startsWith('hi')) ||
+                       voices.find(v => v.lang.includes('IN')) || null;
       }
     }
     if ('speechSynthesis' in window) {
@@ -380,35 +542,70 @@
 
     function speakHindi(text) {
       if (!('speechSynthesis' in window)) return;
-      window.speechSynthesis.cancel(); // Stop active audio
+      window.speechSynthesis.cancel();
       let utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'hi-IN';
-      utterance.rate = 0.95;
-      utterance.pitch = 1.0;
+      utterance.rate = 0.92;
+      utterance.pitch = 1.05;
       if (currentVoice) utterance.voice = currentVoice;
       window.speechSynthesis.speak(utterance);
     }
 
-    // THEATRICAL CURTAIN SEQUENCE
+    // 🚪 4. ROYAL CURTAIN OPENING & INSTANT SPEECH TRIGGER
+    function unlockPortalAndSpeak() {
+      audioUnlocked = true;
+      initVoice();
+      playMagicalChime();
+
+      // Open Curtains
+      document.getElementById("curtainOverlay").classList.add("curtain-open");
+
+      // Speak Greeting based on identity
+      setTimeout(() => {
+        if (currentEmp.name) {
+          greetUserBasedOnTime(currentEmp.name);
+        } else {
+          speakHindi("आर्यावर्त ऑटोमेशन में आपका स्वागत है। कृपया अपना मोबाइल नंबर दर्ज करें।");
+        }
+      }, 500);
+    }
+
+    function greetUserBasedOnTime(name) {
+      let hour = new Date().getHours();
+      let isEvening = hour >= 15; // 3 PM or later
+
+      fetch(`${SCRIPT_URL}?action=checkStatus&name=${encodeURIComponent(name)}`)
+        .then(res => res.json())
+        .then(res => {
+          updateButtonVisibility(res.status);
+          if (res.status === "NEEDS_CLOCK_IN") {
+            speakHindi(`सुप्रभात और नमस्कार ${name} जी, कैसे हैं आप? आपका आर्यावर्त अटेंडेंस फॉर्म में स्वागत है।`);
+          } else if (res.status === "NEEDS_CLOCK_OUT") {
+            speakHindi(`नमस्ते ${name} जी, कैसा रहा आपका दिन? कृपया प्रस्थान के लिए क्लॉक आउट बटन दबाएं।`);
+          } else if (res.status === "COMPLETED") {
+            speakHindi(`नमस्ते ${name} जी, आपकी आज की उपस्थिति पहले ही पूरी हो चुकी है।`);
+          }
+        })
+        .catch(() => {
+          speakHindi(`नमस्ते ${name} जी, आपका आर्यावर्त पोर्टल में स्वागत है।`);
+        });
+    }
+
+    // 🚀 5. INITIAL PAGE LOAD
     window.onload = function() {
       initVoice();
-      setTimeout(() => {
-        document.getElementById("curtainLayer").classList.add("curtain-open");
-      }, 400);
 
-      // Default date inputs to today
       let todayStr = new Date().toISOString().split('T')[0];
       document.getElementById("leaveSingleDate").value = todayStr;
       document.getElementById("leaveStartDate").value = todayStr;
       document.getElementById("leaveEndDate").value = todayStr;
 
-      // Auto-Login Detection
       const urlParams = new URLSearchParams(window.location.search);
       let directPhone = urlParams.get('p') || urlParams.get('phone');
       let savedPhone = directPhone ? directPhone.replace(/\D/g, '').slice(-10) : localStorage.getItem("aa_emp_phone");
 
       if (savedPhone && savedPhone.length === 10) {
-        authenticatePhone(savedPhone);
+        authenticatePhone(savedPhone, false);
       } else {
         document.getElementById("loginBox").style.display = "block";
         document.getElementById("punchForm").style.display = "none";
@@ -417,12 +614,12 @@
 
     function handleManualLogin() {
       let phone = document.getElementById("inputPhone").value.trim().replace(/\D/g, '').slice(-10);
-      if (phone.length !== 10) return alert("कृपया सही 10 अंकों का मोबाइल नंबर दर्ज करें।");
-      authenticatePhone(phone);
+      if (phone.length !== 10) return alert("कृपया 10 अंकों का मोबाइल नंबर दर्ज करें।");
+      authenticatePhone(phone, true);
     }
 
-    function authenticatePhone(phone) {
-      document.getElementById("status").innerHTML = "🔄 कर्मचारी सत्यापन किया जा रहा है...";
+    function authenticatePhone(phone, shouldSpeak) {
+      document.getElementById("status").innerHTML = "🔄 कर्मचारी रिकॉर्ड सत्यापित किया जा रहा है...";
       fetch(`${SCRIPT_URL}?action=authDevice&phone=${encodeURIComponent(phone)}`)
         .then(res => res.json())
         .then(data => {
@@ -435,8 +632,12 @@
             document.getElementById("punchForm").style.display = "block";
             document.getElementById("displayEmpName").innerText = data.name;
             document.getElementById("displayEmpPhone").innerText = "📱 +91 " + phone;
-            
-            refreshTodayStatus(true);
+
+            if (shouldSpeak && audioUnlocked) {
+              greetUserBasedOnTime(data.name);
+            } else {
+              refreshTodayStatus(false);
+            }
           } else {
             document.getElementById("loginBox").style.display = "block";
             document.getElementById("punchForm").style.display = "none";
@@ -444,7 +645,6 @@
           }
         })
         .catch(() => {
-          // Low Network fallback from local storage
           let cachedName = localStorage.getItem("aa_emp_name");
           if (cachedName) {
             currentEmp = { name: cachedName, phone: phone };
@@ -452,56 +652,51 @@
             document.getElementById("punchForm").style.display = "block";
             document.getElementById("displayEmpName").innerText = cachedName;
             document.getElementById("displayEmpPhone").innerText = "📱 +91 " + phone;
-            refreshTodayStatus(true);
-          } else {
-            alert("नेटवर्क त्रुटि। कृपया इंटरनेट कनेक्शन जांचें।");
+            refreshTodayStatus(false);
           }
         });
     }
 
-    function refreshTodayStatus(shouldSpeakGreeting) {
+    function updateButtonVisibility(status) {
       let btnIn = document.getElementById("btnIn");
       let btnOut = document.getElementById("btnOut");
       let statusDiv = document.getElementById("status");
 
+      if (status === "NEEDS_CLOCK_IN") {
+        btnIn.style.display = "flex";
+        btnOut.style.display = "none";
+        statusDiv.innerHTML = "";
+      } else if (status === "NEEDS_CLOCK_OUT") {
+        btnIn.style.display = "none";
+        btnOut.style.display = "flex";
+        statusDiv.style.color = "#2563eb";
+        statusDiv.innerHTML = "ℹ️ आप क्लॉक-इन हैं। प्रस्थान के समय क्लॉक-आउट करें।";
+      } else if (status === "COMPLETED") {
+        btnIn.style.display = "none";
+        btnOut.style.display = "none";
+        statusDiv.style.color = "#059669";
+        statusDiv.innerHTML = "✅ आज की दोनों उपस्थिति दर्ज हो चुकी हैं।";
+      } else if (status === "ON_LEAVE") {
+        btnIn.style.display = "none";
+        btnOut.style.display = "none";
+        statusDiv.style.color = "#d97706";
+        statusDiv.innerHTML = "📋 आपकी आज की छुट्टी स्वीकृत है।";
+      }
+    }
+
+    function refreshTodayStatus(speak) {
       fetch(`${SCRIPT_URL}?action=checkStatus&name=${encodeURIComponent(currentEmp.name)}`)
         .then(res => res.json())
         .then(res => {
-          if (res.status === "NEEDS_CLOCK_IN") {
-            btnIn.style.display = "flex";
-            btnOut.style.display = "none";
-            statusDiv.innerHTML = "";
-            if (shouldSpeakGreeting) {
-              speakHindi(`सुप्रभात और नमस्कार ${currentEmp.name} जी, कैसे हैं आप? आपका आर्यावर्त अटेंडेंस फॉर्म में स्वागत है।`);
-            }
-          } else if (res.status === "NEEDS_CLOCK_OUT") {
-            btnIn.style.display = "none";
-            btnOut.style.display = "flex";
-            statusDiv.style.color = "#2563eb";
-            statusDiv.innerHTML = "ℹ️ आप क्लॉक-इन हैं। प्रस्थान के समय क्लॉक-आउट करें।";
-            if (shouldSpeakGreeting) {
-              speakHindi(`नमस्ते ${currentEmp.name} जी, कैसा रहा आपका दिन? कृपया प्रस्थान के लिए क्लॉक आउट बटन दबाएं।`);
-            }
-          } else if (res.status === "COMPLETED") {
-            btnIn.style.display = "none";
-            btnOut.style.display = "none";
-            statusDiv.style.color = "#059669";
-            statusDiv.innerHTML = "✅ आज की दोनों उपस्थिति दर्ज हो चुकी हैं।";
-          } else if (res.status === "ON_LEAVE") {
-            btnIn.style.display = "none";
-            btnOut.style.display = "none";
-            statusDiv.style.color = "#d97706";
-            statusDiv.innerHTML = "📋 आपकी आज की छुट्टी स्वीकृत है।";
-          }
+          updateButtonVisibility(res.status);
+          if (speak && audioUnlocked) greetUserBasedOnTime(currentEmp.name);
         })
         .catch(() => {
-          // Low Network default view
-          btnIn.style.display = "flex";
-          btnOut.style.display = "none";
+          document.getElementById("btnIn").style.display = "flex";
         });
     }
 
-    // MULTI-STAGE RESILIENT GPS & SUBMISSION
+    // 🛰️ 6. GEOLOCATION & SUBMISSION
     function startAttendanceFlow(type) {
       let mode = document.getElementById("workMode").value;
       let statusDiv = document.getElementById("status");
@@ -513,15 +708,12 @@
       statusDiv.style.color = "#d97706";
       statusDiv.innerHTML = "🛰️ सुरक्षित जीपीएस स्थान सत्यापित किया जा रहा है...";
 
-      speakHindi(`${type === 'Clock In' ? 'क्लॉक इन' : 'क्लॉक आउट'} प्रक्रिया जारी है। कृपया प्रतीक्षा करें।`);
+      speakHindi(`${type === 'Clock In' ? 'क्लॉक इन' : 'क्लॉक आउट'} प्रक्रिया जारी है।`);
 
       if (mode === "Office") {
-        // Stage 1: High Accuracy GPS (Timeout 6s)
         navigator.geolocation.getCurrentPosition(
           pos => executePunch(pos.coords.latitude, pos.coords.longitude, mode, type),
           () => {
-            // Stage 2: Standard Accuracy Fallback for Weak Mobile Antennas
-            statusDiv.innerHTML = "🔄 कमजोर सिग्नल, वैकल्पिक जीपीएस द्वारा पुनः प्रयास...";
             navigator.geolocation.getCurrentPosition(
               pos => executePunch(pos.coords.latitude, pos.coords.longitude, mode, type),
               () => {
@@ -541,7 +733,6 @@
       }
     }
 
-    // RESILIENT NETWORK RETRY DISPATCH
     function executePunch(lat, lon, mode, type, attempt = 1) {
       let statusDiv = document.getElementById("status");
       statusDiv.innerHTML = `🚀 डेटा प्रेषित किया जा रहा है... ${attempt > 1 ? `(प्रयास ${attempt})` : ''}`;
@@ -568,7 +759,7 @@
         speakHindi(`धन्यवाद ${currentEmp.name} जी, आपका ${type === 'Clock In' ? 'क्लॉक इन' : 'क्लॉक आउट'} सफलतापूर्वक दर्ज हो चुका है। आपका दिन शुभ हो!`);
         setTimeout(() => refreshTodayStatus(false), 2000);
       })
-      .catch(err => {
+      .catch(() => {
         if (attempt < 3) {
           setTimeout(() => executePunch(lat, lon, mode, type, attempt + 1), 1500);
         } else {
@@ -581,7 +772,7 @@
       });
     }
 
-    // LEAVE MODAL LOGIC
+    // 📝 7. LEAVE & CALENDAR HANDLERS
     function openLeaveModal() {
       document.getElementById("leaveModal").style.display = "flex";
       speakHindi("कृपया अपनी छुट्टी का प्रकार, तारीख और कारण चुनें।");
@@ -636,10 +827,9 @@
       });
     }
 
-    // CALENDAR MODAL LOGIC
     function openCalendarModal() {
       document.getElementById("calModal").style.display = "flex";
-      speakHindi("यहाँ आप अपनी उपस्थिति और छुट्टियों का इतिहास देख सकते हैं।");
+      speakHindi("यहाँ आप अपनी पूरे महीने की उपस्थिति और छुट्टियों का विवरण देख सकते हैं।");
       renderCalendar();
     }
     function closeCalendarModal() { document.getElementById("calModal").style.display = "none"; }
@@ -662,9 +852,7 @@
           let firstDayIndex = new Date(year, month, 1).getDay();
           let daysInMonth = new Date(year, month + 1, 0).getDate();
 
-          for (let i = 0; i < firstDayIndex; i++) {
-            body.innerHTML += "<div></div>";
-          }
+          for (let i = 0; i < firstDayIndex; i++) body.innerHTML += "<div></div>";
 
           for (let d = 1; d <= daysInMonth; d++) {
             let dayDate = new Date(year, month, d);
@@ -687,7 +875,6 @@
         });
     }
 
-    // BYE-BYE CHARACTER MODAL
     function showByeAnimation(title, message) {
       document.getElementById("byeTitle").innerText = title;
       document.getElementById("byeMessage").innerText = message;
