@@ -26,9 +26,9 @@
     .btn:disabled { background-color: #9ca3af !important; cursor: not-allowed; }
     .btn-in { background-color: #10b981; }  
     .btn-out { background-color: #dc2626; } 
-    .btn-secondary { background-color: #4b5563; }
+    .btn-secondary { background-color: #2563eb; }
     .btn-leave { background-color: #d97706; }
-    .btn-cal { background-color: #2563eb; }
+    .btn-cal { background-color: #4b5563; }
 
     #status { margin-top: 15px; font-weight: 600; font-size: 14px; padding: 10px; border-radius: 6px; line-height: 1.4; }
 
@@ -58,22 +58,15 @@
     <h2>Aryavarta Automation</h2>
     <p>Chikhali Head Office Portal</p>
 
-    <!-- First Time Phone Registration Box -->
-    <div id="deviceAuthBox" style="display:none;">
-      <div style="background:#fef2f2;border:1px solid #fca5a5;padding:12px;border-radius:8px;margin-bottom:15px;">
-        <p style="color:#991b1b;font-weight:bold;margin:0;">🔒 Device Authentication</p>
-        <p style="color:#7f1d1d;font-size:12px;margin:5px 0 0 0;">Enter your 10-digit registered mobile number to lock this phone to your account.</p>
+    <!-- Mobile Number Prompt (Only shown if opened with no saved login or direct link) -->
+    <div id="loginBox" style="display:none;">
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;padding:12px;border-radius:8px;margin-bottom:15px;">
+        <p style="color:#1e40af;font-weight:bold;margin:0;">👤 Employee Identification</p>
+        <p style="color:#1e3a8a;font-size:12px;margin:5px 0 0 0;">Enter your 10-digit registered mobile number to open your attendance dashboard.</p>
       </div>
-      <label for="regPhone">Registered Mobile Number</label>
-      <input type="tel" id="regPhone" placeholder="Enter 10-digit number" maxlength="10">
-      <button type="button" class="btn btn-secondary" onclick="registerThisDevice()">Register This Device</button>
-      
-      <div style="margin-top:15px; border-top: 1px dashed #d1d5db; padding-top: 10px;">
-        <p style="font-size:11px;color:#6b7280;margin-bottom:6px;">Changed browser or phone?</p>
-        <button type="button" style="background:none;border:none;color:#2563eb;font-size:12px;font-weight:bold;cursor:pointer;text-decoration:underline;" onclick="openAdminResetPrompt()">
-          🛠️ Unlock / Reset Device with Admin PIN
-        </button>
-      </div>
+      <label for="inputPhone">Registered Mobile Number</label>
+      <input type="tel" id="inputPhone" placeholder="Enter 10-digit number" maxlength="10">
+      <button type="button" class="btn btn-secondary" onclick="handleManualLogin()">Continue to Attendance Portal</button>
     </div>
 
     <!-- Active Attendance Form -->
@@ -133,8 +126,8 @@
         <span class="close-btn" onclick="closeCalendarModal()">&times;</span>
       </div>
       <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
-        <button class="btn btn-secondary" style="width:45%;padding:6px;" onclick="prevMonth()">◀ Prev</button>
-        <button class="btn btn-secondary" style="width:45%;padding:6px;" onclick="nextMonth()">Next ▶</button>
+        <button class="btn btn-cal" style="width:45%;padding:6px;" onclick="prevMonth()">◀ Prev</button>
+        <button class="btn btn-cal" style="width:45%;padding:6px;" onclick="nextMonth()">Next ▶</button>
       </div>
       <div class="calendar-grid" id="calendarBody"></div>
       <div style="font-size:11px;margin-top:12px;color:#4b5563;">
@@ -146,10 +139,9 @@
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwquZGro0VtZ-I4jegMaMiigBASs1yJ8WY50i_JkC8tofCK6o4oHPhgG3t3lF0c-IH2/exec";
 
-    let currentEmp = { name: "", phone: "", deviceToken: "" };
+    let currentEmp = { name: "", phone: "" };
     let calDate = new Date();
 
-    // Cookie Utilities
     function setCookie(name, value) {
       document.cookie = name + "=" + encodeURIComponent(value) + "; max-age=31536000; path=/; SameSite=Lax";
     }
@@ -158,95 +150,63 @@
       return matches ? decodeURIComponent(matches[1]) : null;
     }
 
-    function generateUUID() {
-      return 'dev-' + 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-      });
-    }
-
     window.onload = function() {
-      checkDeviceLock();
+      // 1. Check if employee clicked a personalized link with ?p=XXXXXXXXXX
+      const urlParams = new URLSearchParams(window.location.search);
+      let directPhone = urlParams.get('p') || urlParams.get('phone');
+
+      if (directPhone) {
+        let clean = directPhone.replace(/\D/g, '').slice(-10);
+        if (clean.length === 10) {
+          authenticatePhone(clean);
+          return;
+        }
+      }
+
+      // 2. Check local browser storage or cookie
+      let savedPhone = localStorage.getItem("aa_emp_phone") || getCookie("aa_emp_phone");
+      if (savedPhone && savedPhone.length === 10) {
+        authenticatePhone(savedPhone);
+      } else {
+        document.getElementById("loginBox").style.display = "block";
+        document.getElementById("punchForm").style.display = "none";
+      }
     };
 
-    function checkDeviceLock() {
-      // Read from localStorage OR fallback to 1-Year Cookie
-      let savedPhone = localStorage.getItem("aa_emp_phone") || getCookie("aa_emp_phone");
-      let savedToken = localStorage.getItem("aa_device_token") || getCookie("aa_device_token");
-
-      if (!savedPhone || !savedToken) {
-        document.getElementById("deviceAuthBox").style.display = "block";
-        document.getElementById("punchForm").style.display = "none";
-      } else {
-        // Sync both storages
-        localStorage.setItem("aa_emp_phone", savedPhone);
-        localStorage.setItem("aa_device_token", savedToken);
-        setCookie("aa_emp_phone", savedPhone);
-        setCookie("aa_device_token", savedToken);
-        verifyDeviceWithServer(savedPhone, savedToken);
-      }
+    function handleManualLogin() {
+      let inputVal = document.getElementById("inputPhone").value.trim().replace(/\D/g, '').slice(-10);
+      if (inputVal.length !== 10) return alert("Please enter a valid 10-digit mobile number.");
+      authenticatePhone(inputVal);
     }
 
-    function registerThisDevice() {
-      let phone = document.getElementById("regPhone").value.trim().replace(/\D/g, '').slice(-10);
-      if (phone.length !== 10) return alert("Please enter a valid 10-digit mobile number.");
-
-      let currentToken = localStorage.getItem("aa_device_token") || getCookie("aa_device_token") || generateUUID();
-      localStorage.setItem("aa_device_token", currentToken);
-      setCookie("aa_device_token", currentToken);
-
-      verifyDeviceWithServer(phone, currentToken);
-    }
-
-    function verifyDeviceWithServer(phone, token) {
-      document.getElementById("status").innerHTML = "🔄 Verifying device security credentials...";
-      fetch(`${SCRIPT_URL}?action=authDevice&phone=${encodeURIComponent(phone)}&deviceToken=${encodeURIComponent(token)}`)
+    function authenticatePhone(phone) {
+      document.getElementById("status").innerHTML = "🔄 Verifying employee records...";
+      fetch(`${SCRIPT_URL}?action=authDevice&phone=${encodeURIComponent(phone)}`)
         .then(res => res.json())
         .then(data => {
           if (data.success) {
+            // Save to both localStorage & Cookie for persistence in this browser
             localStorage.setItem("aa_emp_phone", phone);
             localStorage.setItem("aa_emp_name", data.name);
             setCookie("aa_emp_phone", phone);
             setCookie("aa_emp_name", data.name);
 
-            currentEmp = { name: data.name, phone: phone, deviceToken: token };
+            currentEmp = { name: data.name, phone: phone };
 
-            document.getElementById("deviceAuthBox").style.display = "none";
+            document.getElementById("loginBox").style.display = "none";
             document.getElementById("punchForm").style.display = "block";
             document.getElementById("displayEmpName").innerText = data.name;
-            document.getElementById("displayEmpPhone").innerText = "📱 " + phone + " (Device Locked)";
+            document.getElementById("displayEmpPhone").innerText = "📱 " + phone;
             
             refreshTodayStatus();
           } else {
-            document.getElementById("deviceAuthBox").style.display = "block";
+            document.getElementById("loginBox").style.display = "block";
             document.getElementById("punchForm").style.display = "none";
             alert("⚠️ " + data.message);
           }
         })
         .catch(err => {
-          alert("Network connection error. Please check your internet connection.");
-        });
-    }
-
-    function openAdminResetPrompt() {
-      let phone = prompt("Enter your 10-digit mobile number to reset:");
-      if (!phone || phone.trim().length !== 10) return alert("Valid 10-digit phone number is required.");
-      phone = phone.trim().replace(/\D/g, '').slice(-10);
-
-      let pin = prompt("Enter the Admin Master PIN:");
-      if (!pin) return;
-
-      fetch(`${SCRIPT_URL}?action=adminResetDevice&phone=${encodeURIComponent(phone)}&pin=${encodeURIComponent(pin)}`)
-        .then(res => res.json())
-        .then(res => {
-          alert(res.message);
-          if (res.success) {
-            localStorage.removeItem("aa_emp_phone");
-            localStorage.removeItem("aa_device_token");
-            document.cookie = "aa_emp_phone=; max-age=0; path=/;";
-            document.cookie = "aa_device_token=; max-age=0; path=/;";
-            document.getElementById("regPhone").value = phone;
-          }
+          alert("Network error connecting to attendance server. Please try again.");
         });
     }
 
@@ -299,7 +259,7 @@
             btnIn.disabled = false;
             btnOut.disabled = false;
             statusDiv.style.color = "#dc2626";
-            statusDiv.innerHTML = "❌ GPS Error. Please enable phone location services.";
+            statusDiv.innerHTML = "❌ GPS Error. Please enable mobile location services.";
           },
           { enableHighAccuracy: true, timeout: 8000 }
         );
@@ -312,7 +272,6 @@
       let payload = {
         name: currentEmp.name,
         phone: currentEmp.phone,
-        deviceToken: currentEmp.deviceToken,
         mode: mode,
         lat: lat,
         lon: lon,
@@ -339,6 +298,7 @@
       else statusDiv.innerHTML = "";
     }
 
+    // Leave Modal
     function openLeaveModal() { document.getElementById("leaveModal").style.display = "flex"; }
     function closeLeaveModal() { document.getElementById("leaveModal").style.display = "none"; }
     
@@ -359,7 +319,6 @@
           type: "Leave",
           name: currentEmp.name,
           phone: currentEmp.phone,
-          deviceToken: currentEmp.deviceToken,
           leaveType: lType,
           reason: lReason
         })
@@ -372,6 +331,7 @@
       });
     }
 
+    // Calendar Modal
     function openCalendarModal() {
       document.getElementById("calModal").style.display = "flex";
       renderCalendar();
