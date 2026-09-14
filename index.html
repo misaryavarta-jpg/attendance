@@ -24,7 +24,6 @@
       position: relative;
     }
 
-    /* FLOATING PETALS & SPARKLES CANVAS */
     #magicalCanvas {
       position: fixed;
       top: 0;
@@ -60,12 +59,10 @@
     }
     .curtain-left { left: 0; border-right: 3px solid #fbcfe8; }
     .curtain-right { right: 0; border-left: 3px solid #fbcfe8; }
-    
     .curtain-open .curtain-left { transform: translateX(-100%); }
     .curtain-open .curtain-right { transform: translateX(100%); }
     .curtain-open { pointer-events: none; visibility: hidden; }
 
-    /* ROYAL ENTRANCE SEAL BUTTON */
     .royal-seal-btn {
       position: relative;
       z-index: 100000;
@@ -88,85 +85,88 @@
       100% { transform: scale(1.05); box-shadow: 0 0 45px rgba(251, 191, 36, 0.95); }
     }
 
-    /* MAIN CONTAINER CARD */
+    /* MAIN CONTAINER */
     .container {
-      background: rgba(255, 255, 255, 0.94);
+      background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       padding: 26px 20px;
       border-radius: 24px;
       box-shadow: 0 25px 60px rgba(0,0,0,0.4), 0 0 40px rgba(244, 114, 182, 0.2);
       max-width: 410px;
-      margin: 25px auto 40px auto;
+      margin: 20px auto 35px auto;
       position: relative;
       z-index: 20;
       border: 2px solid rgba(255, 255, 255, 0.8);
-      animation: cardAppear 1s ease-out;
     }
-    @keyframes cardAppear {
-      0% { transform: translateY(40px); opacity: 0; }
-      100% { transform: translateY(0); opacity: 1; }
-    }
+    .container::before { content: '🌸'; position: absolute; top: -12px; left: -10px; font-size: 26px; }
+    .container::after { content: '🌺'; position: absolute; bottom: -12px; right: -10px; font-size: 26px; }
 
-    /* FLORAL CORNER ACCENTS */
-    .container::before {
-      content: '🌸';
-      position: absolute;
-      top: -12px;
-      left: -10px;
-      font-size: 26px;
-      filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2));
+    /* TOP CANCEL (✕) DISMISS BUTTON */
+    .top-cancel-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 12px;
+      padding: 8px 12px;
+      margin-bottom: 12px;
     }
-    .container::after {
-      content: '🌺';
-      position: absolute;
-      bottom: -12px;
-      right: -10px;
-      font-size: 26px;
-      filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2));
+    .top-cancel-text {
+      font-size: 12px;
+      color: #991b1b;
+      font-weight: 700;
+      text-align: left;
     }
+    .top-close-btn {
+      background: #dc2626;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(220, 38, 38, 0.4);
+      transition: transform 0.15s;
+    }
+    .top-close-btn:active { transform: scale(0.85); }
 
     .logo-container {
       width: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
     .company-logo-img {
       width: 100%;
-      max-width: 250px;
+      max-width: 240px;
       height: auto;
       display: block;
       object-fit: contain;
-      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.06));
     }
 
-    h2 { color: #0f172a; margin: 6px 0 2px 0; font-size: 20px; font-weight: 800; }
-    p.sub { color: #64748b; font-size: 13px; margin: 0 0 16px 0; }
+    h2 { color: #0f172a; margin: 4px 0 2px 0; font-size: 20px; font-weight: 800; }
+    p.sub { color: #64748b; font-size: 13px; margin: 0 0 14px 0; }
 
-    /* USER CARD */
     .user-card {
       background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 50%, #eff6ff 100%);
       border: 1.5px solid #a7f3d0;
       border-radius: 14px;
       padding: 12px 14px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       text-align: left;
-      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.08);
-      position: relative;
     }
     .user-card p { margin: 2px 0; font-size: 12px; color: #047857; font-weight: 600; }
     .user-card strong { color: #064e3b; font-size: 16px; }
 
-    label {
-      display: block;
-      text-align: left;
-      font-weight: 700;
-      margin: 12px 0 5px 0;
-      color: #334155;
-      font-size: 13px;
-    }
+    label { display: block; text-align: left; font-weight: 700; margin: 12px 0 5px 0; color: #334155; font-size: 13px; }
     select, input, textarea {
       width: 100%;
       padding: 12px 14px;
@@ -177,22 +177,9 @@
       box-sizing: border-box;
       background: #ffffff;
       color: #1e293b;
-      transition: all 0.25s;
-    }
-    select:focus, input:focus, textarea:focus {
-      border-color: #059669;
-      box-shadow: 0 0 10px rgba(5, 150, 105, 0.2);
-      outline: none;
     }
 
-    /* BUTTONS */
-    .button-group {
-      width: 100%;
-      margin: 10px auto;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+    .button-group { width: 100%; margin: 10px auto; display: flex; flex-direction: column; gap: 12px; }
     .btn {
       width: 100%;
       padding: 15px;
@@ -207,7 +194,7 @@
       justify-content: center;
       gap: 8px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-      transition: transform 0.15s, box-shadow 0.15s;
+      transition: transform 0.15s;
     }
     .btn:active { transform: scale(0.97); }
     .btn:disabled { background: #94a3b8 !important; cursor: not-allowed; box-shadow: none; }
@@ -217,14 +204,7 @@
     .btn-leave { background: linear-gradient(135deg, #f59e0b, #b45309); }
     .btn-cal { background: linear-gradient(135deg, #475569, #1e293b); }
 
-    #status {
-      margin-top: 15px;
-      font-weight: 600;
-      font-size: 13.5px;
-      padding: 10px;
-      border-radius: 8px;
-      line-height: 1.4;
-    }
+    #status { margin-top: 15px; font-weight: 600; font-size: 13.5px; padding: 10px; border-radius: 8px; line-height: 1.4; }
 
     /* MODALS */
     .modal {
@@ -237,12 +217,11 @@
       height: 100%;
       background: rgba(15, 23, 42, 0.75);
       backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
       align-items: center;
       justify-content: center;
     }
     .modal-content {
-      background: rgba(255, 255, 255, 0.96);
+      background: rgba(255, 255, 255, 0.98);
       width: 90%;
       max-width: 380px;
       border-radius: 20px;
@@ -252,23 +231,11 @@
       max-height: 85vh;
       overflow-y: auto;
       box-shadow: 0 30px 60px rgba(0,0,0,0.3);
-      border: 2px solid #f1f5f9;
-      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    @keyframes popIn {
-      from { transform: scale(0.85); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .modal-header h3 { margin: 0; font-size: 17px; color: #0f172a; }
     .close-btn { font-size: 26px; cursor: pointer; color: #94a3b8; font-weight: bold; }
 
-    /* CALENDAR */
     .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-top: 10px; }
     .cal-header { font-weight: 800; font-size: 11px; color: #64748b; padding: 4px 0; }
     .cal-cell { font-size: 12px; padding: 8px 0; border-radius: 8px; background: #f1f5f9; color: #1e293b; }
@@ -276,43 +243,32 @@
     .cal-leave { background: #fef3c7; color: #b45309; font-weight: 800; }
     .cal-sunday { background: #fee2e2; color: #b91c1c; }
 
-    /* WAVING CHARACTER */
-    .bye-modal-content {
-      text-align: center;
-      background: white;
-      padding: 30px 20px;
-      border-radius: 24px;
-      max-width: 330px;
-      width: 85%;
-      box-shadow: 0 25px 50px rgba(0,0,0,0.25);
-    }
-    .waving-arm {
-      transform-origin: bottom center;
-      animation: wave 0.8s infinite alternate ease-in-out;
-    }
-    @keyframes wave {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(35deg); }
-    }
+    .bye-modal-content { text-align: center; background: white; padding: 30px 20px; border-radius: 24px; max-width: 330px; width: 85%; }
+    .waving-arm { transform-origin: bottom center; animation: wave 0.8s infinite alternate ease-in-out; }
+    @keyframes wave { 0% { transform: rotate(0deg); } 100% { transform: rotate(35deg); } }
   </style>
 </head>
 <body>
 
-  <!-- BACKGROUND FLOWER PETALS & MAGIC PARTICLES -->
   <canvas id="magicalCanvas"></canvas>
 
   <!-- THEATRICAL VELVET CURTAIN & UNLOCK SEAL -->
   <div class="curtain-overlay" id="curtainOverlay">
     <div class="curtain curtain-left"></div>
     <div class="curtain curtain-right"></div>
-    
-    <!-- User Gesture Tap Seal (Unlocks Mobile Audio & Speech Engine) -->
     <button type="button" class="royal-seal-btn" id="portalUnlockBtn" onclick="unlockPortalAndSpeak()">
       <span>🌸</span> प्रवेश करें (Tap to Open) <span>✨</span>
     </button>
   </div>
 
-  <div class="container">
+  <div class="container" id="mainContainer">
+    
+    <!-- TOP ✕ CANCEL BAR (ALLOWS EMPLOYEES TO DISMISS IF BUSY) -->
+    <div class="top-cancel-bar" id="topCancelBar" style="display:none;">
+      <span class="top-cancel-text" id="topCancelNotice">⚠️ उपस्थिति शेष है</span>
+      <button type="button" class="top-close-btn" title="Cancel for now" onclick="dismissFormForNow()">✕</button>
+    </div>
+
     <div class="logo-container">
       <img src="logo.png" alt="Aryavarta Automation Logo" class="company-logo-img">
     </div>
@@ -366,7 +322,7 @@
     </div>
   </div>
 
-  <!-- LEAVE MODAL (Single Day / Range of Dates) -->
+  <!-- LEAVE MODAL -->
   <div id="leaveModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -452,22 +408,16 @@
     let currentVoice = null;
     let audioUnlocked = false;
 
-    // 🌸 1. MAGICAL FLOATING PETALS & SPARKLES ANIMATION
+    // 🌸 CANVAS PARTICLES
     const canvas = document.getElementById("magicalCanvas");
     const ctx = canvas.getContext("2d");
     let particles = [];
-
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
 
     class Petal {
-      constructor() {
-        this.reset();
-      }
+      constructor() { this.reset(); }
       reset() {
         this.x = Math.random() * canvas.width;
         this.y = -20;
@@ -496,9 +446,7 @@
         ctx.restore();
       }
     }
-
     for (let i = 0; i < 28; i++) particles.push(new Petal());
-
     function animateParticles() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       particles.forEach(p => { p.update(); p.draw(); });
@@ -506,13 +454,12 @@
     }
     animateParticles();
 
-    // 🔔 2. MAGICAL HARP CHIME (Web Audio API)
     function playMagicalChime() {
       try {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         if (!AudioContext) return;
         const ctxAudio = new AudioContext();
-        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        const notes = [523.25, 659.25, 783.99, 1046.50];
         notes.forEach((freq, idx) => {
           const osc = ctxAudio.createOscillator();
           const gain = ctxAudio.createGain();
@@ -528,7 +475,6 @@
       } catch(e) {}
     }
 
-    // 🗣️ 3. HIGH-RESILIENCE HINDI SPEECH ENGINE
     function initVoice() {
       if ('speechSynthesis' in window) {
         let voices = window.speechSynthesis.getVoices();
@@ -551,16 +497,73 @@
       window.speechSynthesis.speak(utterance);
     }
 
-    // 🚪 4. ROYAL CURTAIN OPENING & INSTANT SPEECH TRIGGER
+    // ⏰ AUTO TIME-CHECKER FOR 10:01 AM & 6:01 PM ALERTS (MON-SAT)
+    function setupMonSatReminders() {
+      // Request notification permission once
+      if ("Notification" in window && Notification.permission !== "granted") {
+        Notification.requestPermission();
+      }
+
+      setInterval(() => {
+        let now = new Date();
+        let day = now.getDay(); // 0 is Sunday
+        if (day === 0) return; // Completely disabled on Sunday
+
+        let hours = now.getHours();
+        let minutes = now.getMinutes();
+
+        // 10:01 AM Check (Clock In)
+        if (hours === 10 && minutes === 1 && now.getSeconds() < 10) {
+          triggerTimeDrivenPrompt("Clock In");
+        }
+        // 6:01 PM (18:01) Check (Clock Out)
+        if (hours === 18 && minutes === 1 && now.getSeconds() < 10) {
+          triggerTimeDrivenPrompt("Clock Out");
+        }
+      }, 9000);
+    }
+
+    function triggerTimeDrivenPrompt(targetType) {
+      if (!currentEmp.name) return;
+
+      fetch(`${SCRIPT_URL}?action=checkStatus&name=${encodeURIComponent(currentEmp.name)}`)
+        .then(res => res.json())
+        .then(res => {
+          if ((targetType === "Clock In" && res.status === "NEEDS_CLOCK_IN") ||
+              (targetType === "Clock Out" && res.status === "NEEDS_CLOCK_OUT")) {
+            
+            // Show Top Dismiss Bar
+            document.getElementById("topCancelBar").style.display = "flex";
+            document.getElementById("topCancelNotice").innerText = `⚠️ आवश्यक: ${targetType === 'Clock In' ? '10:01 AM क्लॉक इन' : '6:01 PM क्लॉक आउट'} शेष है`;
+            
+            // Send Native Notification if app in background
+            if ("Notification" in window && Notification.permission === "granted") {
+              new Notification("आर्यावर्त अटेंडेंस सूचना", {
+                body: `नमस्ते ${currentEmp.name} जी! कृपया अपना ${targetType} पूरा करें।`,
+                icon: "logo.png"
+              });
+            }
+
+            speakHindi(`ध्यान दें ${currentEmp.name} जी! समय हो चुका है, कृपया अपना ${targetType === 'Clock In' ? 'क्लॉक इन' : 'क्लॉक आउट'} करें।`);
+          }
+        });
+    }
+
+    // DISMISS / CANCEL BUTTON (✕) HANDLER
+    function dismissFormForNow() {
+      document.getElementById("topCancelBar").style.display = "none";
+      speakHindi("ठीक है, फॉर्म अभी के लिए बंद कर दिया गया है। अपना महत्वपूर्ण काम पूरा होने पर उपस्थिति दर्ज करें।");
+      let statusDiv = document.getElementById("status");
+      statusDiv.style.color = "#d97706";
+      statusDiv.innerHTML = "ℹ️ उपस्थिति अभी के लिए स्थगित की गई है। काम समाप्त होने पर बटन दबाएं।";
+    }
+
     function unlockPortalAndSpeak() {
       audioUnlocked = true;
       initVoice();
       playMagicalChime();
-
-      // Open Curtains
       document.getElementById("curtainOverlay").classList.add("curtain-open");
 
-      // Speak Greeting based on identity
       setTimeout(() => {
         if (currentEmp.name) {
           greetUserBasedOnTime(currentEmp.name);
@@ -571,13 +574,26 @@
     }
 
     function greetUserBasedOnTime(name) {
-      let hour = new Date().getHours();
-      let isEvening = hour >= 15; // 3 PM or later
-
       fetch(`${SCRIPT_URL}?action=checkStatus&name=${encodeURIComponent(name)}`)
         .then(res => res.json())
         .then(res => {
           updateButtonVisibility(res.status);
+
+          let now = new Date();
+          let hours = now.getHours();
+          let day = now.getDay();
+
+          // Check if urgent banner should be visible
+          if (day !== 0) {
+            if (hours >= 10 && res.status === "NEEDS_CLOCK_IN") {
+              document.getElementById("topCancelBar").style.display = "flex";
+              document.getElementById("topCancelNotice").innerText = "⚠️ 10:00 AM के बाद क्लॉक इन शेष है";
+            } else if (hours >= 18 && res.status === "NEEDS_CLOCK_OUT") {
+              document.getElementById("topCancelBar").style.display = "flex";
+              document.getElementById("topCancelNotice").innerText = "⚠️ 6:00 PM के बाद क्लॉक आउट शेष है";
+            }
+          }
+
           if (res.status === "NEEDS_CLOCK_IN") {
             speakHindi(`सुप्रभात और नमस्कार ${name} जी, कैसे हैं आप? आपका आर्यावर्त अटेंडेंस फॉर्म में स्वागत है।`);
           } else if (res.status === "NEEDS_CLOCK_OUT") {
@@ -591,9 +607,9 @@
         });
     }
 
-    // 🚀 5. INITIAL PAGE LOAD
     window.onload = function() {
       initVoice();
+      setupMonSatReminders();
 
       let todayStr = new Date().toISOString().split('T')[0];
       document.getElementById("leaveSingleDate").value = todayStr;
@@ -674,11 +690,13 @@
       } else if (status === "COMPLETED") {
         btnIn.style.display = "none";
         btnOut.style.display = "none";
+        document.getElementById("topCancelBar").style.display = "none";
         statusDiv.style.color = "#059669";
         statusDiv.innerHTML = "✅ आज की दोनों उपस्थिति दर्ज हो चुकी हैं।";
       } else if (status === "ON_LEAVE") {
         btnIn.style.display = "none";
         btnOut.style.display = "none";
+        document.getElementById("topCancelBar").style.display = "none";
         statusDiv.style.color = "#d97706";
         statusDiv.innerHTML = "📋 आपकी आज की छुट्टी स्वीकृत है।";
       }
@@ -696,7 +714,6 @@
         });
     }
 
-    // 🛰️ 6. GEOLOCATION & SUBMISSION
     function startAttendanceFlow(type) {
       let mode = document.getElementById("workMode").value;
       let statusDiv = document.getElementById("status");
@@ -755,6 +772,7 @@
       .then(() => {
         document.getElementById("btnIn").disabled = false;
         document.getElementById("btnOut").disabled = false;
+        document.getElementById("topCancelBar").style.display = "none";
         showByeAnimation(`${type} दर्ज हो चुका है!`, "आर्यावर्त में आपकी उपस्थिति दर्ज हो चुकी है। आपका बहुत-बहुत धन्यवाद!");
         speakHindi(`धन्यवाद ${currentEmp.name} जी, आपका ${type === 'Clock In' ? 'क्लॉक इन' : 'क्लॉक आउट'} सफलतापूर्वक दर्ज हो चुका है। आपका दिन शुभ हो!`);
         setTimeout(() => refreshTodayStatus(false), 2000);
@@ -772,7 +790,6 @@
       });
     }
 
-    // 📝 7. LEAVE & CALENDAR HANDLERS
     function openLeaveModal() {
       document.getElementById("leaveModal").style.display = "flex";
       speakHindi("कृपया अपनी छुट्टी का प्रकार, तारीख और कारण चुनें।");
@@ -880,9 +897,7 @@
       document.getElementById("byeMessage").innerText = message;
       document.getElementById("byeModal").style.display = "flex";
     }
-    function closeByeModal() {
-      document.getElementById("byeModal").style.display = "none";
-    }
+    function closeByeModal() { document.getElementById("byeModal").style.display = "none"; }
 
     function toggleMode(val) {
       let statusDiv = document.getElementById("status");
