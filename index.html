@@ -3,13 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e3a8a">
   <title>Aryavarta Automation Portal</title>
   <style>
     :root {
-      --primary: #1e3a8a;
-      --accent-in: #059669;
-      --accent-out: #dc2626;
-      --gold: #f59e0b;
+      --fairy-gold: #fde047;
+      --fairy-glow: rgba(250, 204, 21, 0.6);
+      --fairy-pink: #f472b6;
+      --fairy-emerald: #10b981;
+      --fairy-ruby: #f43f5e;
+      --fairy-sapphire: #38bdf8;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -17,14 +21,14 @@
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       text-align: center;
-      background: radial-gradient(circle at top, #1e1b4b, #0f172a 70%, #020617);
+      background: radial-gradient(ellipse at 50% 10%, #1e1b4b 0%, #0c0a2a 50%, #030712 100%);
       min-height: 100vh;
       color: #1e293b;
       overflow-x: hidden;
       position: relative;
     }
 
-    #magicalCanvas {
+    #fairyCanvas {
       position: fixed;
       top: 0;
       left: 0;
@@ -34,7 +38,52 @@
       z-index: 10;
     }
 
-    /* THEATRICAL CURTAIN OVERLAY */
+    .aurora-layer {
+      position: fixed;
+      top: -20%;
+      left: -20%;
+      width: 140vw;
+      height: 140vh;
+      background: radial-gradient(circle at 30% 30%, rgba(236, 72, 153, 0.15), transparent 45%),
+                  radial-gradient(circle at 70% 40%, rgba(56, 189, 248, 0.18), transparent 45%),
+                  radial-gradient(circle at 50% 70%, rgba(16, 185, 129, 0.12), transparent 50%);
+      filter: blur(50px);
+      pointer-events: none;
+      z-index: 1;
+      animation: auroraShift 14s infinite alternate ease-in-out;
+    }
+    @keyframes auroraShift {
+      0% { transform: rotate(0deg) scale(1); }
+      100% { transform: rotate(8deg) scale(1.08); }
+    }
+
+    /* TOP UTILITY HEADER (MUTE & PUSH TOGGLE) */
+    .top-action-header {
+      position: relative;
+      z-index: 30;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 415px;
+      margin: 10px auto 0 auto;
+      padding: 0 10px;
+    }
+    .icon-btn-pill {
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #ffffff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* CURTAIN OVERLAY */
     .curtain-overlay {
       position: fixed;
       top: 0;
@@ -46,81 +95,82 @@
       justify-content: center;
       align-items: center;
       pointer-events: all;
-      transition: visibility 1.8s;
+      transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), visibility 1.2s;
+      background: rgba(3, 7, 18, 0.85);
+      backdrop-filter: blur(12px);
     }
     .curtain {
       position: absolute;
       top: 0;
       width: 50vw;
       height: 100vh;
-      background: radial-gradient(circle at center, #831843 10%, #4c0519 90%);
+      background: radial-gradient(circle at center, #581c87 15%, #2e1065 60%, #0f051d 100%);
       transition: transform 1.6s cubic-bezier(0.77, 0, 0.175, 1);
-      box-shadow: 0 0 50px rgba(0,0,0,0.9);
+      box-shadow: 0 0 60px rgba(0,0,0,0.9);
     }
-    .curtain-left { left: 0; border-right: 3px solid #fbcfe8; }
-    .curtain-right { right: 0; border-left: 3px solid #fbcfe8; }
+    .curtain-left { left: 0; border-right: 2px solid rgba(253, 224, 71, 0.6); }
+    .curtain-right { right: 0; border-left: 2px solid rgba(253, 224, 71, 0.6); }
     .curtain-open .curtain-left { transform: translateX(-100%); }
     .curtain-open .curtain-right { transform: translateX(100%); }
-    .curtain-open { pointer-events: none; visibility: hidden; }
+    .curtain-open { opacity: 0; visibility: hidden; pointer-events: none; }
 
     .royal-seal-btn {
       position: relative;
       z-index: 100000;
-      background: radial-gradient(circle, #fbbf24, #d97706);
-      color: #451a03;
-      border: 3px solid #fef3c7;
-      border-radius: 50px;
-      padding: 16px 32px;
+      background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #b45309 100%);
+      color: #3b1704;
+      border: 3px solid #fef9c3;
+      border-radius: 60px;
+      padding: 18px 36px;
       font-size: 16px;
-      font-weight: 800;
+      font-weight: 900;
       cursor: pointer;
-      box-shadow: 0 0 35px rgba(251, 191, 36, 0.8), 0 10px 25px rgba(0,0,0,0.5);
-      animation: pulseGlow 1.8s infinite alternate ease-in-out;
+      box-shadow: 0 0 35px var(--fairy-glow), 0 15px 30px rgba(0,0,0,0.6);
+      animation: sealPulse 2s infinite alternate ease-in-out;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
-    @keyframes pulseGlow {
-      0% { transform: scale(0.96); box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
-      100% { transform: scale(1.05); box-shadow: 0 0 45px rgba(251, 191, 36, 0.95); }
+    @keyframes sealPulse {
+      0% { transform: scale(0.96); box-shadow: 0 0 25px rgba(250, 204, 21, 0.4); }
+      100% { transform: scale(1.04); box-shadow: 0 0 55px rgba(250, 204, 21, 0.95); }
     }
 
-    /* MAIN CONTAINER */
+    /* MAIN CARD */
     .container {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      padding: 26px 20px;
-      border-radius: 24px;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.4), 0 0 40px rgba(244, 114, 182, 0.2);
-      max-width: 410px;
-      margin: 20px auto 35px auto;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.92));
+      backdrop-filter: blur(24px);
+      padding: 24px 20px;
+      border-radius: 28px;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5), 0 0 40px rgba(168, 85, 247, 0.25);
+      max-width: 415px;
+      margin: 15px auto 40px auto;
       position: relative;
       z-index: 20;
-      border: 2px solid rgba(255, 255, 255, 0.8);
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      animation: crystalBloom 1s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .container::before { content: '🌸'; position: absolute; top: -12px; left: -10px; font-size: 26px; }
-    .container::after { content: '🌺'; position: absolute; bottom: -12px; right: -10px; font-size: 26px; }
+    @keyframes crystalBloom {
+      0% { transform: scale(0.92) translateY(30px); opacity: 0; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .container::before { content: '🌿 🌸'; position: absolute; top: -15px; left: -8px; font-size: 24px; }
+    .container::after { content: '🌺 ✨'; position: absolute; bottom: -15px; right: -8px; font-size: 24px; }
 
-    /* TOP CANCEL (✕) DISMISS BUTTON */
+    /* TOP CANCEL DISMISS BAR (✕) */
     .top-cancel-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      border-radius: 12px;
-      padding: 8px 12px;
-      margin-bottom: 12px;
+      background: linear-gradient(135deg, #fef2f2 0%, #ffe4e6 100%);
+      border: 1.5px solid #fca5a5;
+      border-radius: 14px;
+      padding: 8px 14px;
+      margin-bottom: 14px;
     }
-    .top-cancel-text {
-      font-size: 12px;
-      color: #991b1b;
-      font-weight: 700;
-      text-align: left;
-    }
+    .top-cancel-text { font-size: 12.5px; color: #991b1b; font-weight: 800; text-align: left; }
     .top-close-btn {
-      background: #dc2626;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
       color: white;
       border: none;
       border-radius: 50%;
@@ -132,79 +182,78 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 6px rgba(220, 38, 38, 0.4);
-      transition: transform 0.15s;
+      box-shadow: 0 4px 10px rgba(220, 38, 38, 0.4);
     }
-    .top-close-btn:active { transform: scale(0.85); }
 
-    .logo-container {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    .company-logo-img {
-      width: 100%;
-      max-width: 240px;
-      height: auto;
-      display: block;
-      object-fit: contain;
-    }
+    .logo-container { width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; }
+    .company-logo-img { width: 100%; max-width: 245px; height: auto; display: block; object-fit: contain; }
 
     h2 { color: #0f172a; margin: 4px 0 2px 0; font-size: 20px; font-weight: 800; }
     p.sub { color: #64748b; font-size: 13px; margin: 0 0 14px 0; }
 
     .user-card {
-      background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 50%, #eff6ff 100%);
+      background: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 50%, #eff6ff 100%);
       border: 1.5px solid #a7f3d0;
-      border-radius: 14px;
-      padding: 12px 14px;
+      border-radius: 16px;
+      padding: 12px 16px;
       margin-bottom: 14px;
       text-align: left;
     }
-    .user-card p { margin: 2px 0; font-size: 12px; color: #047857; font-weight: 600; }
-    .user-card strong { color: #064e3b; font-size: 16px; }
+    .user-card p { margin: 2px 0; font-size: 12px; color: #047857; font-weight: 700; }
+    .user-card strong { color: #064e3b; font-size: 16.5px; }
 
-    label { display: block; text-align: left; font-weight: 700; margin: 12px 0 5px 0; color: #334155; font-size: 13px; }
+    /* AUDIT INPUT BOXES FOR SITE / WFH */
+    .audit-box {
+      display: none;
+      background: #f8fafc;
+      border: 1.5px dashed #38bdf8;
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 14px;
+      text-align: left;
+    }
+    .audit-box label { font-size: 12px; margin: 0 0 4px 0; color: #0369a1; }
+
+    label { display: block; text-align: left; font-weight: 800; margin: 10px 0 6px 0; color: #334155; font-size: 13px; }
     select, input, textarea {
       width: 100%;
-      padding: 12px 14px;
+      padding: 13px 15px;
       margin-bottom: 12px;
-      border: 1.5px solid #cbd5e1;
-      border-radius: 10px;
+      border: 1.8px solid #cbd5e1;
+      border-radius: 12px;
       font-size: 15px;
       box-sizing: border-box;
       background: #ffffff;
       color: #1e293b;
     }
 
-    .button-group { width: 100%; margin: 10px auto; display: flex; flex-direction: column; gap: 12px; }
+    .button-group { width: 100%; margin: 8px auto; display: flex; flex-direction: column; gap: 12px; }
     .btn {
       width: 100%;
-      padding: 15px;
+      padding: 16px;
       border: none;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 700;
+      border-radius: 14px;
+      font-size: 15.5px;
+      font-weight: 800;
       color: white;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+      gap: 10px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.16);
       transition: transform 0.15s;
     }
     .btn:active { transform: scale(0.97); }
     .btn:disabled { background: #94a3b8 !important; cursor: not-allowed; box-shadow: none; }
-    .btn-in { background: linear-gradient(135deg, #10b981, #047857); }
-    .btn-out { background: linear-gradient(135deg, #f43f5e, #be123c); }
-    .btn-primary { background: linear-gradient(135deg, #2563eb, #1e40af); }
-    .btn-leave { background: linear-gradient(135deg, #f59e0b, #b45309); }
-    .btn-cal { background: linear-gradient(135deg, #475569, #1e293b); }
+    
+    .btn-in { background: linear-gradient(135deg, #10b981 0%, #059669 60%, #047857 100%); }
+    .btn-out { background: linear-gradient(135deg, #fb7185 0%, #f43f5e 50%, #be123c 100%); }
+    .btn-primary { background: linear-gradient(135deg, #38bdf8 0%, #2563eb 60%, #1d4ed8 100%); }
+    .btn-leave { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 60%, #d97706 100%); color: #451a03; }
+    .btn-cal { background: linear-gradient(135deg, #64748b 0%, #475569 60%, #334155 100%); }
 
-    #status { margin-top: 15px; font-weight: 600; font-size: 13.5px; padding: 10px; border-radius: 8px; line-height: 1.4; }
+    #status { margin-top: 14px; font-weight: 700; font-size: 13.5px; padding: 12px; border-radius: 12px; line-height: 1.4; }
 
     /* MODALS */
     .modal {
@@ -215,58 +264,69 @@
       top: 0;
       width: 100%;
       height: 100%;
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(6px);
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(10px);
       align-items: center;
       justify-content: center;
     }
     .modal-content {
       background: rgba(255, 255, 255, 0.98);
       width: 90%;
-      max-width: 380px;
-      border-radius: 20px;
+      max-width: 390px;
+      border-radius: 24px;
       padding: 24px;
       box-sizing: border-box;
       text-align: left;
       max-height: 85vh;
       overflow-y: auto;
-      box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+      box-shadow: 0 35px 80px rgba(0,0,0,0.4);
     }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .modal-header h3 { margin: 0; font-size: 17px; color: #0f172a; }
-    .close-btn { font-size: 26px; cursor: pointer; color: #94a3b8; font-weight: bold; }
+    .modal-header h3 { margin: 0; font-size: 18px; color: #0f172a; font-weight: 800; }
+    .close-btn { font-size: 28px; cursor: pointer; color: #94a3b8; font-weight: 800; }
 
-    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-top: 10px; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; margin-top: 12px; }
     .cal-header { font-weight: 800; font-size: 11px; color: #64748b; padding: 4px 0; }
-    .cal-cell { font-size: 12px; padding: 8px 0; border-radius: 8px; background: #f1f5f9; color: #1e293b; }
+    .cal-cell { font-size: 12.5px; padding: 9px 0; border-radius: 10px; background: #f1f5f9; color: #1e293b; font-weight: 600; }
     .cal-present { background: #dcfce7; color: #15803d; font-weight: 800; }
     .cal-leave { background: #fef3c7; color: #b45309; font-weight: 800; }
     .cal-sunday { background: #fee2e2; color: #b91c1c; }
 
-    .bye-modal-content { text-align: center; background: white; padding: 30px 20px; border-radius: 24px; max-width: 330px; width: 85%; }
-    .waving-arm { transform-origin: bottom center; animation: wave 0.8s infinite alternate ease-in-out; }
-    @keyframes wave { 0% { transform: rotate(0deg); } 100% { transform: rotate(35deg); } }
+    .bye-modal-content { text-align: center; background: white; padding: 32px 24px; border-radius: 28px; max-width: 330px; width: 85%; }
+    .waving-arm { transform-origin: bottom center; animation: fairyWave 0.8s infinite alternate ease-in-out; }
+    @keyframes fairyWave { 0% { transform: rotate(0deg); } 100% { transform: rotate(38deg); } }
   </style>
 </head>
 <body>
 
-  <canvas id="magicalCanvas"></canvas>
+  <div class="aurora-layer"></div>
+  <canvas id="fairyCanvas"></canvas>
 
-  <!-- THEATRICAL VELVET CURTAIN & UNLOCK SEAL -->
+  <!-- TOP UTILITY BAR (MUTE TOGGLE & ALERTS) -->
+  <div class="top-action-header">
+    <button type="button" class="icon-btn-pill" id="muteToggleBtn" onclick="toggleAudioMute()">
+      <span id="muteIcon">🔊</span> <span id="muteLabel">Voice On</span>
+    </button>
+    <button type="button" class="icon-btn-pill" onclick="subscribeBackgroundAlerts()">
+      <span>🔔</span> Phone Alerts
+    </button>
+  </div>
+
+  <!-- THEATRICAL PORTAL CURTAINS -->
   <div class="curtain-overlay" id="curtainOverlay">
     <div class="curtain curtain-left"></div>
     <div class="curtain curtain-right"></div>
     <button type="button" class="royal-seal-btn" id="portalUnlockBtn" onclick="unlockPortalAndSpeak()">
-      <span>🌸</span> प्रवेश करें (Tap to Open) <span>✨</span>
+      <span>✨ 🌸</span> प्रवेश करें (Enter Portal) <span>🌸 ✨</span>
     </button>
   </div>
 
   <div class="container" id="mainContainer">
     
-    <!-- TOP ✕ CANCEL BAR (ALLOWS EMPLOYEES TO DISMISS IF BUSY) -->
+    <!-- TOP CANCEL DISMISS BAR (✕) -->
     <div class="top-cancel-bar" id="topCancelBar" style="display:none;">
       <span class="top-cancel-text" id="topCancelNotice">⚠️ उपस्थिति शेष है</span>
-      <button type="button" class="top-close-btn" title="Cancel for now" onclick="dismissFormForNow()">✕</button>
+      <button type="button" class="top-close-btn" title="Dismiss for now" onclick="dismissFormForNow()">✕</button>
     </div>
 
     <div class="logo-container">
@@ -278,7 +338,7 @@
 
     <!-- Mobile Login Screen -->
     <div id="loginBox" style="display:none;">
-      <div style="background:#eff6ff;border:1.5px solid #bfdbfe;padding:12px;border-radius:12px;margin-bottom:15px;">
+      <div style="background:#eff6ff;border:1.5px solid #bfdbfe;padding:14px;border-radius:14px;margin-bottom:15px;">
         <p style="color:#1e40af;font-weight:bold;margin:0;font-size:14px;">👤 कर्मचारी पहचान (Login)</p>
         <p style="color:#1e3a8a;font-size:12px;margin:4px 0 0 0;">कृपया अपना 10 अंकों का रजिस्टर्ड मोबाइल नंबर दर्ज करें।</p>
       </div>
@@ -290,32 +350,43 @@
     <!-- Active Attendance Form -->
     <div id="punchForm" style="display:none;">
       <div class="user-card">
-        <p>प्रमाणित कर्मचारी (Verified):</p>
+        <p>प्रमाणित कर्मचारी (Verified Profile):</p>
         <strong id="displayEmpName">Loading...</strong>
         <p id="displayEmpPhone" style="font-size:12px; margin-top:2px;"></p>
       </div>
 
       <div id="punchControls">
-        <label for="workMode">कार्य मोड (Work Assignment Mode)</label>
+        <label for="workMode">कार्य असाइनमेंट मोड (Work Mode)</label>
         <select id="workMode" onchange="toggleMode(this.value)">
           <option value="Office">Office (Patil Nagar - 150m Lock)</option>
-          <option value="WFH">Working from Home (Bypass Lock)</option>
-          <option value="Site">Working from Site (Bypass Lock)</option>
+          <option value="Site">Working from Site (Requires Project Name)</option>
+          <option value="WFH">Working from Home (Requires Reason)</option>
         </select>
+
+        <!-- ANTI-EXPLOIT AUDIT INPUTS -->
+        <div class="audit-box" id="siteAuditBox">
+          <label for="siteNameInput">प्रोजेक्ट / साइट का नाम (Mandatory Site Details):</label>
+          <input type="text" id="siteNameInput" placeholder="उदा: Tata Motors Bhosari / Kirloskar Site">
+        </div>
+
+        <div class="audit-box" id="wfhAuditBox">
+          <label for="wfhReasonInput">WFH का कारण (Reason for Home Working):</label>
+          <input type="text" id="wfhReasonInput" placeholder="उदा: Approved by Manager / Remote Testing">
+        </div>
 
         <div class="button-group">
           <button type="button" class="btn btn-in" id="btnIn" style="display:none;" onclick="startAttendanceFlow('Clock In')">
-            Confirm Clock In 📥
+            <span>📥</span> Confirm Clock In
           </button>
           <button type="button" class="btn btn-out" id="btnOut" style="display:none;" onclick="startAttendanceFlow('Clock Out')">
-            Confirm Clock Out 🚪
+            <span>🚪</span> Confirm Clock Out
           </button>
         </div>
       </div>
 
       <div id="status"></div>
 
-      <div class="button-group" style="margin-top:20px; border-top: 1.5px solid #f1f5f9; padding-top:15px;">
+      <div class="button-group" style="margin-top:20px; border-top: 1.5px solid #f1f5f9; padding-top:16px;">
         <button type="button" class="btn btn-leave" onclick="openLeaveModal()">📝 Apply Leave / Half Day</button>
         <button type="button" class="btn btn-cal" onclick="openCalendarModal()">📅 My Attendance Calendar</button>
       </div>
@@ -326,11 +397,11 @@
   <div id="leaveModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>छुट्टी आवेदन (Leave Application)</h3>
+        <h3>छुट्टी आवेदन (Leave Request)</h3>
         <span class="close-btn" onclick="closeLeaveModal()">&times;</span>
       </div>
       
-      <label for="leaveDuration">अवधि चुनें (Select Duration)</label>
+      <label for="leaveDuration">अवधि चुनें (Duration)</label>
       <select id="leaveDuration" onchange="toggleDateRange(this.value)">
         <option value="single">एक दिन की छुट्टी (Single Day)</option>
         <option value="range">कई दिनों की छुट्टी (Date Range)</option>
@@ -357,7 +428,7 @@
       <label for="leaveReason">छुट्टी का कारण (Specific Reason)</label>
       <textarea id="leaveReason" rows="3" placeholder="यहाँ कारण लिखें..."></textarea>
 
-      <button type="button" class="btn btn-leave" id="btnSubmitLeave" onclick="submitLeave()">आवेदन जमा करें</button>
+      <button type="button" class="btn btn-leave" id="btnSubmitLeave" onclick="submitLeave()">आवेदन जमा करें ✨</button>
     </div>
   </div>
 
@@ -373,17 +444,17 @@
         <button class="btn btn-cal" style="width:45%;padding:8px;" onclick="nextMonth()">अगला ▶</button>
       </div>
       <div class="calendar-grid" id="calendarBody"></div>
-      <div style="font-size:11px;margin-top:14px;color:#64748b;">
+      <div style="font-size:11px;margin-top:14px;color:#64748b;font-weight:600;">
         🟢 उपस्थित (Present) | 🟡 छुट्टी (Leave) | 🔴 रविवार (Sunday)
       </div>
     </div>
   </div>
 
-  <!-- BYE BYE CHARACTER MODAL -->
+  <!-- BYE BYE MODAL -->
   <div id="byeModal" class="modal">
     <div class="bye-modal-content">
-      <svg width="130" height="130" viewBox="0 0 100 100">
-        <circle cx="50" cy="55" r="28" fill="#10b981"/>
+      <svg width="135" height="135" viewBox="0 0 100 100">
+        <circle cx="50" cy="56" r="28" fill="#10b981"/>
         <circle cx="50" cy="32" r="20" fill="#fed7aa"/>
         <circle cx="43" cy="30" r="2.5" fill="#064e3b"/>
         <circle cx="57" cy="30" r="2.5" fill="#064e3b"/>
@@ -394,7 +465,7 @@
           <circle cx="85" cy="40" r="6" fill="#fed7aa"/>
         </g>
       </svg>
-      <h3 style="margin:14px 0 6px 0; color:#0f172a;" id="byeTitle">धन्यवाद!</h3>
+      <h3 style="margin:14px 0 6px 0; color:#0f172a; font-size:20px; font-weight:800;" id="byeTitle">धन्यवाद!</h3>
       <p style="color:#64748b; font-size:14px; margin:0;" id="byeMessage">उपस्थिति सफलतापूर्वक दर्ज कर ली गई है।</p>
       <button class="btn btn-primary" style="margin-top:18px;" onclick="closeByeModal()">ठीक है (Close)</button>
     </div>
@@ -407,70 +478,174 @@
     let calDate = new Date();
     let currentVoice = null;
     let audioUnlocked = false;
+    let isMuted = localStorage.getItem("aa_is_muted") === "true";
 
-    // 🌸 CANVAS PARTICLES
-    const canvas = document.getElementById("magicalCanvas");
+    // PWA Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW reg error:', err));
+    }
+
+    // 🌸 1. ULTRA-REALISTIC FAIRY CANVAS
+    const canvas = document.getElementById("fairyCanvas");
     const ctx = canvas.getContext("2d");
-    let particles = [];
+    let petals = [], fireflies = [], touchSparks = [];
+
     function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
 
-    class Petal {
+    class FairyPetal {
       constructor() { this.reset(); }
       reset() {
         this.x = Math.random() * canvas.width;
-        this.y = -20;
-        this.size = Math.random() * 8 + 6;
-        this.speedY = Math.random() * 1.5 + 0.8;
-        this.speedX = Math.random() * 1 - 0.5;
-        this.angle = Math.random() * 360;
-        this.spin = Math.random() * 2 - 1;
-        this.opacity = Math.random() * 0.7 + 0.3;
-        this.color = Math.random() > 0.4 ? "rgba(244, 114, 182, " : "rgba(251, 191, 36, ";
+        this.y = -30;
+        this.size = Math.random() * 9 + 8;
+        this.speedY = Math.random() * 1.4 + 0.8;
+        this.speedX = Math.random() * 1.2 - 0.6;
+        this.angleX = Math.random() * 360;
+        this.angleY = Math.random() * 360;
+        this.spinX = Math.random() * 2 + 1;
+        this.spinY = Math.random() * 1.5 + 0.5;
+        this.hue = Math.random() > 0.4 ? 335 : 45;
       }
       update() {
         this.y += this.speedY;
-        this.x += Math.sin(this.angle * Math.PI / 180) * 0.8 + this.speedX;
-        this.angle += this.spin;
-        if (this.y > canvas.height + 20) this.reset();
+        this.x += Math.sin(this.angleY * Math.PI / 180) * 1.2 + this.speedX;
+        this.angleX += this.spinX;
+        this.angleY += this.spinY;
+        if (this.y > canvas.height + 40) this.reset();
       }
       draw() {
         ctx.save();
         ctx.translate(this.x, this.y);
-        ctx.rotate(this.angle * Math.PI / 180);
-        ctx.fillStyle = this.color + this.opacity + ")";
+        ctx.rotate(this.angleY * Math.PI / 180);
+        let scaleY = Math.cos(this.angleX * Math.PI / 180);
+        ctx.scale(1, scaleY);
+        let grad = ctx.createRadialGradient(0, 0, 1, 0, 0, this.size);
+        grad.addColorStop(0, `hsla(${this.hue}, 95%, 75%, 0.85)`);
+        grad.addColorStop(0.8, `hsla(${this.hue}, 90%, 55%, 0.5)`);
+        grad.addColorStop(1, `hsla(${this.hue}, 90%, 40%, 0)`);
+        ctx.fillStyle = grad;
         ctx.beginPath();
-        ctx.ellipse(0, 0, this.size, this.size / 2, 0, 0, Math.PI * 2);
+        ctx.moveTo(0, -this.size);
+        ctx.bezierCurveTo(this.size, -this.size/2, this.size, this.size, 0, this.size);
+        ctx.bezierCurveTo(-this.size, this.size, -this.size, -this.size/2, 0, -this.size);
         ctx.fill();
         ctx.restore();
       }
     }
-    for (let i = 0; i < 28; i++) particles.push(new Petal());
-    function animateParticles() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach(p => { p.update(); p.draw(); });
-      requestAnimationFrame(animateParticles);
+
+    class Firefly {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.radius = Math.random() * 2.2 + 1.2;
+        this.angle = Math.random() * Math.PI * 2;
+        this.speed = Math.random() * 0.8 + 0.3;
+        this.pulse = Math.random() * 10;
+      }
+      update() {
+        this.angle += (Math.random() - 0.5) * 0.2;
+        this.x += Math.cos(this.angle) * this.speed;
+        this.y += Math.sin(this.angle) * this.speed;
+        this.pulse += 0.05;
+        if (this.x < 0) this.x = canvas.width;
+        if (this.x > canvas.width) this.x = 0;
+        if (this.y < 0) this.y = canvas.height;
+        if (this.y > canvas.height) this.y = 0;
+      }
+      draw() {
+        let intensity = (Math.sin(this.pulse) + 1) / 2;
+        ctx.save();
+        let grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius * 7);
+        grad.addColorStop(0, `rgba(253, 224, 71, ${0.9 * intensity})`);
+        grad.addColorStop(0.3, `rgba(163, 230, 53, ${0.4 * intensity})`);
+        grad.addColorStop(1, "rgba(163, 230, 53, 0)");
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius * 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
     }
-    animateParticles();
+
+    class Stardust {
+      constructor(x, y) {
+        this.x = x; this.y = y;
+        this.vx = (Math.random() - 0.5) * 5;
+        this.vy = (Math.random() - 0.5) * 5;
+        this.life = 1;
+        this.size = Math.random() * 3 + 2;
+        this.color = Math.random() > 0.5 ? '#fde047' : '#38bdf8';
+      }
+      update() { this.x += this.vx; this.y += this.vy; this.life -= 0.035; }
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.life);
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    for (let i = 0; i < 24; i++) petals.push(new FairyPetal());
+    for (let i = 0; i < 18; i++) fireflies.push(new Firefly());
+
+    window.addEventListener("pointerdown", e => addStardustBurst(e.clientX, e.clientY));
+    window.addEventListener("pointermove", e => {
+      if (Math.random() > 0.6) touchSparks.push(new Stardust(e.clientX, e.clientY));
+    });
+
+    function addStardustBurst(x, y) {
+      for (let i = 0; i < 14; i++) touchSparks.push(new Stardust(x, y));
+    }
+
+    function renderFairyCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      fireflies.forEach(f => { f.update(); f.draw(); });
+      petals.forEach(p => { p.update(); p.draw(); });
+      for (let i = touchSparks.length - 1; i >= 0; i--) {
+        touchSparks[i].update();
+        touchSparks[i].draw();
+        if (touchSparks[i].life <= 0) touchSparks.splice(i, 1);
+      }
+      requestAnimationFrame(renderFairyCanvas);
+    }
+    renderFairyCanvas();
+
+    // 🔊 2. AUDIO & SPEECH ENGINE WITH MUTE TOGGLE
+    function toggleAudioMute() {
+      isMuted = !isMuted;
+      localStorage.setItem("aa_is_muted", isMuted);
+      updateMuteButtonUI();
+      if (isMuted && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+    }
+
+    function updateMuteButtonUI() {
+      document.getElementById("muteIcon").innerText = isMuted ? "🔇" : "🔊";
+      document.getElementById("muteLabel").innerText = isMuted ? "Muted" : "Voice On";
+    }
 
     function playMagicalChime() {
+      if (isMuted) return;
       try {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         if (!AudioContext) return;
         const ctxAudio = new AudioContext();
-        const notes = [523.25, 659.25, 783.99, 1046.50];
+        const notes = [523.25, 587.33, 783.99, 880.00, 1046.50];
         notes.forEach((freq, idx) => {
           const osc = ctxAudio.createOscillator();
           const gain = ctxAudio.createGain();
           osc.type = "sine";
-          osc.frequency.setValueAtTime(freq, ctxAudio.currentTime + idx * 0.08);
-          gain.gain.setValueAtTime(0.2, ctxAudio.currentTime + idx * 0.08);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctxAudio.currentTime + idx * 0.08 + 0.8);
+          osc.frequency.setValueAtTime(freq, ctxAudio.currentTime + idx * 0.09);
+          gain.gain.setValueAtTime(0.25, ctxAudio.currentTime + idx * 0.09);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctxAudio.currentTime + idx * 0.09 + 0.9);
           osc.connect(gain);
           gain.connect(ctxAudio.destination);
-          osc.start(ctxAudio.currentTime + idx * 0.08);
-          osc.stop(ctxAudio.currentTime + idx * 0.08 + 0.85);
+          osc.start(ctxAudio.currentTime + idx * 0.09);
+          osc.stop(ctxAudio.currentTime + idx * 0.09 + 0.95);
         });
       } catch(e) {}
     }
@@ -482,94 +657,42 @@
                        voices.find(v => v.lang.includes('IN')) || null;
       }
     }
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.onvoiceschanged = initVoice;
-    }
+    if ('speechSynthesis' in window) window.speechSynthesis.onvoiceschanged = initVoice;
 
     function speakHindi(text) {
-      if (!('speechSynthesis' in window)) return;
+      if (isMuted || !('speechSynthesis' in window)) return;
       window.speechSynthesis.cancel();
       let utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'hi-IN';
       utterance.rate = 0.92;
-      utterance.pitch = 1.05;
+      utterance.pitch = 1.08;
       if (currentVoice) utterance.voice = currentVoice;
       window.speechSynthesis.speak(utterance);
     }
 
-    // ⏰ AUTO TIME-CHECKER FOR 10:01 AM & 6:01 PM ALERTS (MON-SAT)
-    function setupMonSatReminders() {
-      // Request notification permission once
-      if ("Notification" in window && Notification.permission !== "granted") {
-        Notification.requestPermission();
-      }
-
-      setInterval(() => {
-        let now = new Date();
-        let day = now.getDay(); // 0 is Sunday
-        if (day === 0) return; // Completely disabled on Sunday
-
-        let hours = now.getHours();
-        let minutes = now.getMinutes();
-
-        // 10:01 AM Check (Clock In)
-        if (hours === 10 && minutes === 1 && now.getSeconds() < 10) {
-          triggerTimeDrivenPrompt("Clock In");
-        }
-        // 6:01 PM (18:01) Check (Clock Out)
-        if (hours === 18 && minutes === 1 && now.getSeconds() < 10) {
-          triggerTimeDrivenPrompt("Clock Out");
-        }
-      }, 9000);
+    function subscribeBackgroundAlerts() {
+      if (!currentEmp.phone) return alert("कृपया पहले अपना मोबाइल नंबर दर्ज करें।");
+      window.open(`https://ntfy.sh/aryavarta_att_${currentEmp.phone}`, '_blank');
     }
 
-    function triggerTimeDrivenPrompt(targetType) {
-      if (!currentEmp.name) return;
-
-      fetch(`${SCRIPT_URL}?action=checkStatus&name=${encodeURIComponent(currentEmp.name)}`)
-        .then(res => res.json())
-        .then(res => {
-          if ((targetType === "Clock In" && res.status === "NEEDS_CLOCK_IN") ||
-              (targetType === "Clock Out" && res.status === "NEEDS_CLOCK_OUT")) {
-            
-            // Show Top Dismiss Bar
-            document.getElementById("topCancelBar").style.display = "flex";
-            document.getElementById("topCancelNotice").innerText = `⚠️ आवश्यक: ${targetType === 'Clock In' ? '10:01 AM क्लॉक इन' : '6:01 PM क्लॉक आउट'} शेष है`;
-            
-            // Send Native Notification if app in background
-            if ("Notification" in window && Notification.permission === "granted") {
-              new Notification("आर्यावर्त अटेंडेंस सूचना", {
-                body: `नमस्ते ${currentEmp.name} जी! कृपया अपना ${targetType} पूरा करें।`,
-                icon: "logo.png"
-              });
-            }
-
-            speakHindi(`ध्यान दें ${currentEmp.name} जी! समय हो चुका है, कृपया अपना ${targetType === 'Clock In' ? 'क्लॉक इन' : 'क्लॉक आउट'} करें।`);
-          }
-        });
-    }
-
-    // DISMISS / CANCEL BUTTON (✕) HANDLER
     function dismissFormForNow() {
       document.getElementById("topCancelBar").style.display = "none";
-      speakHindi("ठीक है, फॉर्म अभी के लिए बंद कर दिया गया है। अपना महत्वपूर्ण काम पूरा होने पर उपस्थिति दर्ज करें।");
+      speakHindi("ठीक है, फॉर्म अभी के लिए बंद कर दिया गया है। महत्वपूर्ण कार्य पूरा होने पर उपस्थिति दर्ज करें।");
       let statusDiv = document.getElementById("status");
       statusDiv.style.color = "#d97706";
-      statusDiv.innerHTML = "ℹ️ उपस्थिति अभी के लिए स्थगित की गई है। काम समाप्त होने पर बटन दबाएं।";
+      statusDiv.innerHTML = "ℹ️ उपस्थिति स्थगित की गई। काम समाप्त होने पर बटन दबाएं।";
     }
 
     function unlockPortalAndSpeak() {
       audioUnlocked = true;
       initVoice();
       playMagicalChime();
+      addStardustBurst(window.innerWidth / 2, window.innerHeight / 2);
       document.getElementById("curtainOverlay").classList.add("curtain-open");
 
       setTimeout(() => {
-        if (currentEmp.name) {
-          greetUserBasedOnTime(currentEmp.name);
-        } else {
-          speakHindi("आर्यावर्त ऑटोमेशन में आपका स्वागत है। कृपया अपना मोबाइल नंबर दर्ज करें।");
-        }
+        if (currentEmp.name) greetUserBasedOnTime(currentEmp.name);
+        else speakHindi("आर्यावर्त ऑटोमेशन में आपका स्वागत है। कृपया अपना मोबाइल नंबर दर्ज करें।");
       }, 500);
     }
 
@@ -578,12 +701,10 @@
         .then(res => res.json())
         .then(res => {
           updateButtonVisibility(res.status);
-
           let now = new Date();
           let hours = now.getHours();
           let day = now.getDay();
 
-          // Check if urgent banner should be visible
           if (day !== 0) {
             if (hours >= 10 && res.status === "NEEDS_CLOCK_IN") {
               document.getElementById("topCancelBar").style.display = "flex";
@@ -597,19 +718,17 @@
           if (res.status === "NEEDS_CLOCK_IN") {
             speakHindi(`सुप्रभात और नमस्कार ${name} जी, कैसे हैं आप? आपका आर्यावर्त अटेंडेंस फॉर्म में स्वागत है।`);
           } else if (res.status === "NEEDS_CLOCK_OUT") {
-            speakHindi(`नमस्ते ${name} जी, कैसा रहा आपका दिन? कृपया प्रस्थान के लिए क्लॉक आउट बटन दबाएं।`);
+            speakHindi(`नमस्ते ${name} जी, कैसा रहा आपका दिन? कृपया प्रस्थान के समय क्लॉक आउट करें।`);
           } else if (res.status === "COMPLETED") {
             speakHindi(`नमस्ते ${name} जी, आपकी आज की उपस्थिति पहले ही पूरी हो चुकी है।`);
           }
         })
-        .catch(() => {
-          speakHindi(`नमस्ते ${name} जी, आपका आर्यावर्त पोर्टल में स्वागत है।`);
-        });
+        .catch(() => speakHindi(`नमस्ते ${name} जी, आपका आर्यावर्त पोर्टल में स्वागत है।`));
     }
 
     window.onload = function() {
       initVoice();
-      setupMonSatReminders();
+      updateMuteButtonUI();
 
       let todayStr = new Date().toISOString().split('T')[0];
       document.getElementById("leaveSingleDate").value = todayStr;
@@ -620,12 +739,13 @@
       let directPhone = urlParams.get('p') || urlParams.get('phone');
       let savedPhone = directPhone ? directPhone.replace(/\D/g, '').slice(-10) : localStorage.getItem("aa_emp_phone");
 
-      if (savedPhone && savedPhone.length === 10) {
-        authenticatePhone(savedPhone, false);
-      } else {
+      if (savedPhone && savedPhone.length === 10) authenticatePhone(savedPhone, false);
+      else {
         document.getElementById("loginBox").style.display = "block";
         document.getElementById("punchForm").style.display = "none";
       }
+
+      window.addEventListener('online', flushOfflinePunchQueue);
     };
 
     function handleManualLogin() {
@@ -649,11 +769,8 @@
             document.getElementById("displayEmpName").innerText = data.name;
             document.getElementById("displayEmpPhone").innerText = "📱 +91 " + phone;
 
-            if (shouldSpeak && audioUnlocked) {
-              greetUserBasedOnTime(data.name);
-            } else {
-              refreshTodayStatus(false);
-            }
+            if (shouldSpeak && audioUnlocked) greetUserBasedOnTime(data.name);
+            else refreshTodayStatus(false);
           } else {
             document.getElementById("loginBox").style.display = "block";
             document.getElementById("punchForm").style.display = "none";
@@ -673,32 +790,29 @@
         });
     }
 
+    function toggleMode(val) {
+      document.getElementById("siteAuditBox").style.display = (val === "Site") ? "block" : "none";
+      document.getElementById("wfhAuditBox").style.display = (val === "WFH") ? "block" : "none";
+    }
+
     function updateButtonVisibility(status) {
       let btnIn = document.getElementById("btnIn");
       let btnOut = document.getElementById("btnOut");
       let statusDiv = document.getElementById("status");
 
       if (status === "NEEDS_CLOCK_IN") {
-        btnIn.style.display = "flex";
-        btnOut.style.display = "none";
-        statusDiv.innerHTML = "";
+        btnIn.style.display = "flex"; btnOut.style.display = "none"; statusDiv.innerHTML = "";
       } else if (status === "NEEDS_CLOCK_OUT") {
-        btnIn.style.display = "none";
-        btnOut.style.display = "flex";
-        statusDiv.style.color = "#2563eb";
-        statusDiv.innerHTML = "ℹ️ आप क्लॉक-इन हैं। प्रस्थान के समय क्लॉक-आउट करें।";
+        btnIn.style.display = "none"; btnOut.style.display = "flex";
+        statusDiv.style.color = "#2563eb"; statusDiv.innerHTML = "ℹ️ आप क्लॉक-इन हैं। प्रस्थान के समय क्लॉक-आउट करें।";
       } else if (status === "COMPLETED") {
-        btnIn.style.display = "none";
-        btnOut.style.display = "none";
+        btnIn.style.display = "none"; btnOut.style.display = "none";
         document.getElementById("topCancelBar").style.display = "none";
-        statusDiv.style.color = "#059669";
-        statusDiv.innerHTML = "✅ आज की दोनों उपस्थिति दर्ज हो चुकी हैं।";
+        statusDiv.style.color = "#059669"; statusDiv.innerHTML = "✅ आज की उपस्थिति पूर्ण हो चुकी है।";
       } else if (status === "ON_LEAVE") {
-        btnIn.style.display = "none";
-        btnOut.style.display = "none";
+        btnIn.style.display = "none"; btnOut.style.display = "none";
         document.getElementById("topCancelBar").style.display = "none";
-        statusDiv.style.color = "#d97706";
-        statusDiv.innerHTML = "📋 आपकी आज की छुट्टी स्वीकृत है।";
+        statusDiv.style.color = "#d97706"; statusDiv.innerHTML = "📋 आपकी आज की छुट्टी स्वीकृत है।";
       }
     }
 
@@ -709,59 +823,79 @@
           updateButtonVisibility(res.status);
           if (speak && audioUnlocked) greetUserBasedOnTime(currentEmp.name);
         })
-        .catch(() => {
-          document.getElementById("btnIn").style.display = "flex";
-        });
+        .catch(() => document.getElementById("btnIn").style.display = "flex");
     }
 
+    // 🛰️ 3. ANTI-SPOOF GPS & OFFLINE QUEUING
     function startAttendanceFlow(type) {
       let mode = document.getElementById("workMode").value;
+      let siteVal = document.getElementById("siteNameInput").value.trim();
+      let wfhVal = document.getElementById("wfhReasonInput").value.trim();
       let statusDiv = document.getElementById("status");
       let btnIn = document.getElementById("btnIn");
       let btnOut = document.getElementById("btnOut");
 
-      btnIn.disabled = true;
-      btnOut.disabled = true;
+      // Validate Exploits
+      if (mode === "Site" && !siteVal) {
+        alert("⚠️ कृपया प्रोजेक्ट / साइट का नाम दर्ज करें।");
+        return document.getElementById("siteNameInput").focus();
+      }
+      if (mode === "WFH" && !wfhVal) {
+        alert("⚠️ कृपया WFH कार्य का कारण दर्ज करें।");
+        return document.getElementById("wfhReasonInput").focus();
+      }
+
+      btnIn.disabled = true; btnOut.disabled = true;
       statusDiv.style.color = "#d97706";
       statusDiv.innerHTML = "🛰️ सुरक्षित जीपीएस स्थान सत्यापित किया जा रहा है...";
-
       speakHindi(`${type === 'Clock In' ? 'क्लॉक इन' : 'क्लॉक आउट'} प्रक्रिया जारी है।`);
 
       if (mode === "Office") {
         navigator.geolocation.getCurrentPosition(
-          pos => executePunch(pos.coords.latitude, pos.coords.longitude, mode, type),
-          () => {
-            navigator.geolocation.getCurrentPosition(
-              pos => executePunch(pos.coords.latitude, pos.coords.longitude, mode, type),
-              () => {
-                btnIn.disabled = false;
-                btnOut.disabled = false;
-                statusDiv.style.color = "#dc2626";
-                statusDiv.innerHTML = "❌ जीपीएस उपलब्ध नहीं है। कृपया मोबाइल लोकेशन ऑन करें।";
-                speakHindi("जीपीएस सिग्नल नहीं मिला। कृपया अपने फोन की लोकेशन ऑन करें।");
-              },
-              { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
-            );
+          pos => {
+            let acc = pos.coords.accuracy;
+            // Anti-Mock GPS detection
+            if (acc > 0 && acc < 1.0) {
+              statusDiv.style.color = "#dc2626";
+              statusDiv.innerHTML = "⚠️ त्रुटि: कृत्रिम/नकली GPS ऐप बंद करें।";
+              speakHindi("नकली जीपीएस लोकेशन बंद करें।");
+              btnIn.disabled = false; btnOut.disabled = false;
+              return;
+            }
+            executePunch(pos.coords.latitude, pos.coords.longitude, acc, mode, type, siteVal, wfhVal);
           },
-          { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
+          () => {
+            btnIn.disabled = false; btnOut.disabled = false;
+            statusDiv.style.color = "#dc2626";
+            statusDiv.innerHTML = "❌ जीपीएस सिग्नल नहीं मिला। लोकेशन ऑन करें।";
+            speakHindi("फोन की लोकेशन ऑन करें।");
+          },
+          { enableHighAccuracy: true, timeout: 8000 }
         );
       } else {
-        executePunch(null, null, mode, type);
+        executePunch(null, null, null, mode, type, siteVal, wfhVal);
       }
     }
 
-    function executePunch(lat, lon, mode, type, attempt = 1) {
+    function executePunch(lat, lon, accuracy, mode, type, siteVal, wfhVal) {
       let statusDiv = document.getElementById("status");
-      statusDiv.innerHTML = `🚀 डेटा प्रेषित किया जा रहा है... ${attempt > 1 ? `(प्रयास ${attempt})` : ''}`;
-
       let payload = {
         name: currentEmp.name,
         phone: currentEmp.phone,
         mode: mode,
+        siteDetails: siteVal,
+        wfhReason: wfhVal,
         lat: lat,
         lon: lon,
-        forceType: type
+        accuracy: accuracy,
+        forceType: type,
+        clientTimestamp: new Date().toISOString()
       };
+
+      if (!navigator.onLine) {
+        saveOfflinePunch(payload);
+        return;
+      }
 
       fetch(SCRIPT_URL, {
         method: "POST",
@@ -773,37 +907,54 @@
         document.getElementById("btnIn").disabled = false;
         document.getElementById("btnOut").disabled = false;
         document.getElementById("topCancelBar").style.display = "none";
-        showByeAnimation(`${type} दर्ज हो चुका है!`, "आर्यावर्त में आपकी उपस्थिति दर्ज हो चुकी है। आपका बहुत-बहुत धन्यवाद!");
-        speakHindi(`धन्यवाद ${currentEmp.name} जी, आपका ${type === 'Clock In' ? 'क्लॉक इन' : 'क्लॉक आउट'} सफलतापूर्वक दर्ज हो चुका है। आपका दिन शुभ हो!`);
+        showByeAnimation(`${type} दर्ज हुआ!`, "आपकी उपस्थिति दर्ज हो चुकी है। धन्यवाद!");
+        speakHindi(`धन्यवाद ${currentEmp.name} जी, आपका ${type === 'Clock In' ? 'क्लॉक इन' : 'क्लॉक आउट'} सफलतापूर्वक दर्ज हो चुका है।`);
         setTimeout(() => refreshTodayStatus(false), 2000);
       })
-      .catch(() => {
-        if (attempt < 3) {
-          setTimeout(() => executePunch(lat, lon, mode, type, attempt + 1), 1500);
-        } else {
-          document.getElementById("btnIn").disabled = false;
-          document.getElementById("btnOut").disabled = false;
-          statusDiv.style.color = "#dc2626";
-          statusDiv.innerHTML = "❌ नेटवर्क त्रुटि। कृपया पुनः प्रयास करें।";
-          speakHindi("इंटरनेट कनेक्शन धीमा है। कृपया दोबारा प्रयास करें।");
-        }
+      .catch(() => saveOfflinePunch(payload));
+    }
+
+    // 💾 OFFLINE LOCAL QUEUE (INDEXEDDB / STORAGE FALLBACK)
+    function saveOfflinePunch(payload) {
+      let queue = JSON.parse(localStorage.getItem("aa_offline_punches") || "[]");
+      queue.push(payload);
+      localStorage.setItem("aa_offline_punches", JSON.stringify(queue));
+
+      document.getElementById("btnIn").disabled = false;
+      document.getElementById("btnOut").disabled = false;
+      document.getElementById("status").style.color = "#d97706";
+      document.getElementById("status").innerHTML = "⚠️ ऑफलाइन मोड: उपस्थिति सुरक्षित रखी गई है। नेटवर्क आते ही स्वतः सिंक हो जाएगी।";
+      speakHindi("इंटरनेट नहीं है। उपस्थिति फोन में सुरक्षित है, नेटवर्क आते ही स्वतः सिंक होगी।");
+    }
+
+    function flushOfflinePunchQueue() {
+      let queue = JSON.parse(localStorage.getItem("aa_offline_punches") || "[]");
+      if (queue.length === 0) return;
+
+      document.getElementById("status").innerHTML = "🔄 नेटवर्क पुनः उपलब्ध: ऑफलाइन डेटा सिंक हो रहा है...";
+      let promises = queue.map(p => {
+        return fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(p)
+        });
+      });
+
+      Promise.all(promises).then(() => {
+        localStorage.removeItem("aa_offline_punches");
+        document.getElementById("status").style.color = "#059669";
+        document.getElementById("status").innerHTML = "✅ सभी ऑफलाइन रिकॉर्ड Google Sheets में सिंक हो चुके हैं!";
+        refreshTodayStatus(false);
       });
     }
 
-    function openLeaveModal() {
-      document.getElementById("leaveModal").style.display = "flex";
-      speakHindi("कृपया अपनी छुट्टी का प्रकार, तारीख और कारण चुनें।");
-    }
+    // 📝 4. LEAVE & CALENDAR HANDLERS
+    function openLeaveModal() { document.getElementById("leaveModal").style.display = "flex"; speakHindi("छुट्टी का प्रकार, तारीख और कारण चुनें।"); }
     function closeLeaveModal() { document.getElementById("leaveModal").style.display = "none"; }
-    
     function toggleDateRange(val) {
-      if (val === "range") {
-        document.getElementById("singleDateBox").style.display = "none";
-        document.getElementById("rangeDateBox").style.display = "block";
-      } else {
-        document.getElementById("singleDateBox").style.display = "block";
-        document.getElementById("rangeDateBox").style.display = "none";
-      }
+      document.getElementById("singleDateBox").style.display = (val === "range") ? "none" : "block";
+      document.getElementById("rangeDateBox").style.display = (val === "range") ? "block" : "none";
     }
 
     function submitLeave() {
@@ -813,13 +964,11 @@
       let eDate = duration === "single" ? sDate : document.getElementById("leaveEndDate").value;
       let reason = document.getElementById("leaveReason").value.trim();
 
-      if (!sDate || !eDate) return alert("कृपया छुट्टी की तारीख चुनें।");
-      if (!reason) return alert("कृपया छुट्टी का कारण लिखें।");
+      if (!sDate || !eDate) return alert("कृपया तारीख चुनें।");
+      if (!reason) return alert("कृपया कारण लिखें।");
 
       let btn = document.getElementById("btnSubmitLeave");
-      btn.disabled = true;
-      btn.innerText = "जमा किया जा रहा है...";
-      speakHindi("आपका छुट्टी आवेदन जमा किया जा रहा है।");
+      btn.disabled = true; btn.innerText = "जमा हो रहा है...";
 
       fetch(SCRIPT_URL, {
         method: "POST",
@@ -835,18 +984,17 @@
           reason: reason
         })
       }).then(() => {
-        btn.disabled = false;
-        btn.innerText = "आवेदन जमा करें";
+        btn.disabled = false; btn.innerText = "आवेदन जमा करें ✨";
         closeLeaveModal();
-        showByeAnimation("छुट्टी दर्ज हुई!", "आपका अवकाश आवेदन सफलतापूर्वक दर्ज कर लिया गया है।");
-        speakHindi("आपका अवकाश आवेदन सफलतापूर्वक दर्ज कर लिया गया है। धन्यवाद!");
+        showByeAnimation("छुट्टी दर्ज हुई!", "आपका अवकाश आवेदन सफलतापूर्वक जमा हो चुका है।");
+        speakHindi("आपका अवकाश आवेदन दर्ज हो चुका है।");
         setTimeout(() => refreshTodayStatus(false), 2000);
       });
     }
 
     function openCalendarModal() {
       document.getElementById("calModal").style.display = "flex";
-      speakHindi("यहाँ आप अपनी पूरे महीने की उपस्थिति और छुट्टियों का विवरण देख सकते हैं।");
+      speakHindi("यहाँ आप अपनी पूरे महीने की उपस्थिति देख सकते हैं।");
       renderCalendar();
     }
     function closeCalendarModal() { document.getElementById("calModal").style.display = "none"; }
@@ -876,7 +1024,6 @@
             let dateKey = year + "-" + String(month + 1).padStart(2, '0') + "-" + String(d).padStart(2, '0');
             let isSunday = dayDate.getDay() === 0;
             let entry = history[dateKey];
-
             let cellClass = "cal-cell";
             let title = "";
 
@@ -898,12 +1045,6 @@
       document.getElementById("byeModal").style.display = "flex";
     }
     function closeByeModal() { document.getElementById("byeModal").style.display = "none"; }
-
-    function toggleMode(val) {
-      let statusDiv = document.getElementById("status");
-      if (val !== "Office") statusDiv.innerHTML = "ℹ️ " + val + " मोड चयनित। 150 मीटर ऑफिस परिधि प्रतिबंध बाईपास रहेगा।";
-      else statusDiv.innerHTML = "";
-    }
   </script>
 </body>
 </html>
