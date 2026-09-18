@@ -1,17 +1,14 @@
-const CACHE_NAME = 'aa-portal-v2';
-const ASSETS = ['./', './index.html', './manifest.json', './logo.png'];
+const CACHE_NAME = 'aa-cache-v3';
 
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));
+self.addEventListener('install', (e) => {
   self.skipWaiting();
 });
 
-self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))));
-  self.clients.claim();
+self.addEventListener('activate', (e) => {
+  e.waitUntil(clients.claim());
 });
 
-self.addEventListener('fetch', e => {
+self.addEventListener('fetch', (e) => {
   e.respondWith(
     fetch(e.request).catch(() => caches.match(e.request))
   );
