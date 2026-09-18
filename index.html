@@ -8,12 +8,10 @@
   <title>Aryavarta Automation Portal</title>
   <style>
     :root {
-      --fairy-gold: #fde047;
-      --fairy-glow: rgba(250, 204, 21, 0.6);
-      --fairy-pink: #f472b6;
-      --fairy-emerald: #10b981;
-      --fairy-ruby: #f43f5e;
-      --fairy-sapphire: #38bdf8;
+      --primary: #1e3a8a;
+      --gold: #f59e0b;
+      --in: #059669;
+      --out: #dc2626;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -21,13 +19,14 @@
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       text-align: center;
-      background: radial-gradient(ellipse at 50% 10%, #1e1b4b 0%, #0c0a2a 50%, #030712 100%);
+      background: radial-gradient(circle at top, #1e1b4b, #0f172a 75%, #020617);
       min-height: 100vh;
       color: #1e293b;
       overflow-x: hidden;
       position: relative;
     }
 
+    /* LIGHTWEIGHT FLUID CANVAS */
     #fairyCanvas {
       position: fixed;
       top: 0;
@@ -35,29 +34,10 @@
       width: 100vw;
       height: 100vh;
       pointer-events: none;
-      z-index: 10;
+      z-index: 5;
     }
 
-    .aurora-layer {
-      position: fixed;
-      top: -20%;
-      left: -20%;
-      width: 140vw;
-      height: 140vh;
-      background: radial-gradient(circle at 30% 30%, rgba(236, 72, 153, 0.15), transparent 45%),
-                  radial-gradient(circle at 70% 40%, rgba(56, 189, 248, 0.18), transparent 45%),
-                  radial-gradient(circle at 50% 70%, rgba(16, 185, 129, 0.12), transparent 50%);
-      filter: blur(50px);
-      pointer-events: none;
-      z-index: 1;
-      animation: auroraShift 14s infinite alternate ease-in-out;
-    }
-    @keyframes auroraShift {
-      0% { transform: rotate(0deg) scale(1); }
-      100% { transform: rotate(8deg) scale(1.08); }
-    }
-
-    /* TOP UTILITY HEADER (MUTE & PUSH TOGGLE) */
+    /* TOP ACTION BAR */
     .top-action-header {
       position: relative;
       z-index: 30;
@@ -66,24 +46,32 @@
       align-items: center;
       max-width: 415px;
       margin: 10px auto 0 auto;
-      padding: 0 10px;
+      padding: 0 12px;
+      gap: 8px;
     }
     .icon-btn-pill {
       background: rgba(255, 255, 255, 0.18);
       backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.35);
       border-radius: 20px;
-      padding: 6px 14px;
+      padding: 7px 12px;
       font-size: 12px;
       font-weight: 700;
       color: #ffffff;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
+      transition: transform 0.15s;
+    }
+    .icon-btn-pill:active { transform: scale(0.95); }
+    #pwaInstallBtn {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      border: 1px solid #fef08a;
+      display: none;
     }
 
-    /* CURTAIN OVERLAY */
+    /* THEATRICAL CURTAIN OVERLAY */
     .curtain-overlay {
       position: fixed;
       top: 0;
@@ -94,22 +82,21 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      pointer-events: all;
-      transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), visibility 1.2s;
       background: rgba(3, 7, 18, 0.85);
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(10px);
+      transition: opacity 0.8s ease, visibility 0.8s;
     }
     .curtain {
       position: absolute;
       top: 0;
       width: 50vw;
       height: 100vh;
-      background: radial-gradient(circle at center, #581c87 15%, #2e1065 60%, #0f051d 100%);
-      transition: transform 1.6s cubic-bezier(0.77, 0, 0.175, 1);
-      box-shadow: 0 0 60px rgba(0,0,0,0.9);
+      background: radial-gradient(circle at center, #6b21a8 10%, #3b0764 60%, #0f051d 100%);
+      transition: transform 1.2s cubic-bezier(0.77, 0, 0.175, 1);
+      box-shadow: 0 0 50px rgba(0,0,0,0.8);
     }
-    .curtain-left { left: 0; border-right: 2px solid rgba(253, 224, 71, 0.6); }
-    .curtain-right { right: 0; border-left: 2px solid rgba(253, 224, 71, 0.6); }
+    .curtain-left { left: 0; border-right: 2px solid #fde047; }
+    .curtain-right { right: 0; border-left: 2px solid #fde047; }
     .curtain-open .curtain-left { transform: translateX(-100%); }
     .curtain-open .curtain-right { transform: translateX(100%); }
     .curtain-open { opacity: 0; visibility: hidden; pointer-events: none; }
@@ -120,57 +107,51 @@
       background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #b45309 100%);
       color: #3b1704;
       border: 3px solid #fef9c3;
-      border-radius: 60px;
-      padding: 18px 36px;
+      border-radius: 50px;
+      padding: 16px 32px;
       font-size: 16px;
       font-weight: 900;
       cursor: pointer;
-      box-shadow: 0 0 35px var(--fairy-glow), 0 15px 30px rgba(0,0,0,0.6);
-      animation: sealPulse 2s infinite alternate ease-in-out;
+      box-shadow: 0 0 30px rgba(245, 158, 11, 0.6), 0 10px 25px rgba(0,0,0,0.5);
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      animation: pulseGlow 1.8s infinite alternate ease-in-out;
     }
-    @keyframes sealPulse {
-      0% { transform: scale(0.96); box-shadow: 0 0 25px rgba(250, 204, 21, 0.4); }
-      100% { transform: scale(1.04); box-shadow: 0 0 55px rgba(250, 204, 21, 0.95); }
+    @keyframes pulseGlow {
+      0% { transform: scale(0.97); }
+      100% { transform: scale(1.04); }
     }
 
-    /* MAIN CARD */
+    /* MAIN CONTAINER */
     .container {
-      background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.92));
-      backdrop-filter: blur(24px);
-      padding: 24px 20px;
-      border-radius: 28px;
-      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5), 0 0 40px rgba(168, 85, 247, 0.25);
-      max-width: 415px;
-      margin: 15px auto 40px auto;
+      background: rgba(255, 255, 255, 0.96);
+      padding: 22px 18px;
+      border-radius: 26px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+      max-width: 410px;
+      margin: 15px auto 35px auto;
       position: relative;
       z-index: 20;
       border: 2px solid rgba(255, 255, 255, 0.9);
-      animation: crystalBloom 1s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    @keyframes crystalBloom {
-      0% { transform: scale(0.92) translateY(30px); opacity: 0; }
-      100% { transform: scale(1) translateY(0); opacity: 1; }
-    }
-    .container::before { content: '🌿 🌸'; position: absolute; top: -15px; left: -8px; font-size: 24px; }
-    .container::after { content: '🌺 ✨'; position: absolute; bottom: -15px; right: -8px; font-size: 24px; }
+    .container::before { content: '🌿 🌸'; position: absolute; top: -14px; left: -8px; font-size: 22px; }
+    .container::after { content: '🌺 ✨'; position: absolute; bottom: -14px; right: -8px; font-size: 22px; }
 
     /* TOP CANCEL DISMISS BAR (✕) */
     .top-cancel-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: linear-gradient(135deg, #fef2f2 0%, #ffe4e6 100%);
-      border: 1.5px solid #fca5a5;
-      border-radius: 14px;
-      padding: 8px 14px;
-      margin-bottom: 14px;
+      background: #fef2f2;
+      border: 1.5px solid #fecaca;
+      border-radius: 12px;
+      padding: 8px 12px;
+      margin-bottom: 12px;
     }
-    .top-cancel-text { font-size: 12.5px; color: #991b1b; font-weight: 800; text-align: left; }
+    .top-cancel-text { font-size: 12px; color: #991b1b; font-weight: 800; text-align: left; }
     .top-close-btn {
-      background: linear-gradient(135deg, #ef4444, #dc2626);
+      background: #ef4444;
       color: white;
       border: none;
       border-radius: 50%;
@@ -182,42 +163,41 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 10px rgba(220, 38, 38, 0.4);
     }
 
     .logo-container { width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; }
-    .company-logo-img { width: 100%; max-width: 245px; height: auto; display: block; object-fit: contain; }
+    .company-logo-img { width: 100%; max-width: 240px; height: auto; display: block; object-fit: contain; }
 
     h2 { color: #0f172a; margin: 4px 0 2px 0; font-size: 20px; font-weight: 800; }
     p.sub { color: #64748b; font-size: 13px; margin: 0 0 14px 0; }
 
     .user-card {
-      background: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 50%, #eff6ff 100%);
+      background: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 100%);
       border: 1.5px solid #a7f3d0;
-      border-radius: 16px;
-      padding: 12px 16px;
+      border-radius: 14px;
+      padding: 12px 14px;
       margin-bottom: 14px;
       text-align: left;
     }
     .user-card p { margin: 2px 0; font-size: 12px; color: #047857; font-weight: 700; }
-    .user-card strong { color: #064e3b; font-size: 16.5px; }
+    .user-card strong { color: #064e3b; font-size: 16px; }
 
-    /* AUDIT INPUT BOXES FOR SITE / WFH */
+    /* AUDIT BOXES */
     .audit-box {
       display: none;
       background: #f8fafc;
       border: 1.5px dashed #38bdf8;
       border-radius: 12px;
       padding: 10px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       text-align: left;
     }
-    .audit-box label { font-size: 12px; margin: 0 0 4px 0; color: #0369a1; }
+    .audit-box label { font-size: 12px; margin: 0 0 4px 0; color: #0369a1; font-weight: 700; }
 
-    label { display: block; text-align: left; font-weight: 800; margin: 10px 0 6px 0; color: #334155; font-size: 13px; }
+    label { display: block; text-align: left; font-weight: 800; margin: 10px 0 5px 0; color: #334155; font-size: 13px; }
     select, input, textarea {
       width: 100%;
-      padding: 13px 15px;
+      padding: 12px 14px;
       margin-bottom: 12px;
       border: 1.8px solid #cbd5e1;
       border-radius: 12px;
@@ -227,33 +207,33 @@
       color: #1e293b;
     }
 
-    .button-group { width: 100%; margin: 8px auto; display: flex; flex-direction: column; gap: 12px; }
+    .button-group { width: 100%; margin: 8px auto; display: flex; flex-direction: column; gap: 10px; }
     .btn {
       width: 100%;
-      padding: 16px;
+      padding: 15px;
       border: none;
       border-radius: 14px;
-      font-size: 15.5px;
+      font-size: 15px;
       font-weight: 800;
       color: white;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.16);
+      gap: 8px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
       transition: transform 0.15s;
     }
     .btn:active { transform: scale(0.97); }
     .btn:disabled { background: #94a3b8 !important; cursor: not-allowed; box-shadow: none; }
     
-    .btn-in { background: linear-gradient(135deg, #10b981 0%, #059669 60%, #047857 100%); }
-    .btn-out { background: linear-gradient(135deg, #fb7185 0%, #f43f5e 50%, #be123c 100%); }
-    .btn-primary { background: linear-gradient(135deg, #38bdf8 0%, #2563eb 60%, #1d4ed8 100%); }
-    .btn-leave { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 60%, #d97706 100%); color: #451a03; }
-    .btn-cal { background: linear-gradient(135deg, #64748b 0%, #475569 60%, #334155 100%); }
+    .btn-in { background: linear-gradient(135deg, #10b981 0%, #047857 100%); }
+    .btn-out { background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%); }
+    .btn-primary { background: linear-gradient(135deg, #38bdf8 0%, #1d4ed8 100%); }
+    .btn-leave { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); color: #451a03; }
+    .btn-cal { background: linear-gradient(135deg, #64748b 0%, #334155 100%); }
 
-    #status { margin-top: 14px; font-weight: 700; font-size: 13.5px; padding: 12px; border-radius: 12px; line-height: 1.4; }
+    #status { margin-top: 14px; font-weight: 700; font-size: 13.5px; padding: 10px; border-radius: 10px; line-height: 1.4; }
 
     /* MODALS */
     .modal {
@@ -265,49 +245,51 @@
       width: 100%;
       height: 100%;
       background: rgba(15, 23, 42, 0.8);
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(8px);
       align-items: center;
       justify-content: center;
     }
     .modal-content {
-      background: rgba(255, 255, 255, 0.98);
+      background: #ffffff;
       width: 90%;
-      max-width: 390px;
-      border-radius: 24px;
-      padding: 24px;
+      max-width: 380px;
+      border-radius: 22px;
+      padding: 22px;
       box-sizing: border-box;
       text-align: left;
       max-height: 85vh;
       overflow-y: auto;
-      box-shadow: 0 35px 80px rgba(0,0,0,0.4);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.4);
     }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .modal-header h3 { margin: 0; font-size: 18px; color: #0f172a; font-weight: 800; }
-    .close-btn { font-size: 28px; cursor: pointer; color: #94a3b8; font-weight: 800; }
+    .modal-header h3 { margin: 0; font-size: 17px; color: #0f172a; font-weight: 800; }
+    .close-btn { font-size: 26px; cursor: pointer; color: #94a3b8; font-weight: 800; }
 
-    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; margin-top: 12px; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-top: 10px; }
     .cal-header { font-weight: 800; font-size: 11px; color: #64748b; padding: 4px 0; }
-    .cal-cell { font-size: 12.5px; padding: 9px 0; border-radius: 10px; background: #f1f5f9; color: #1e293b; font-weight: 600; }
+    .cal-cell { font-size: 12px; padding: 8px 0; border-radius: 8px; background: #f1f5f9; color: #1e293b; font-weight: 600; }
     .cal-present { background: #dcfce7; color: #15803d; font-weight: 800; }
     .cal-leave { background: #fef3c7; color: #b45309; font-weight: 800; }
     .cal-sunday { background: #fee2e2; color: #b91c1c; }
 
-    .bye-modal-content { text-align: center; background: white; padding: 32px 24px; border-radius: 28px; max-width: 330px; width: 85%; }
+    .bye-modal-content { text-align: center; background: white; padding: 28px 20px; border-radius: 24px; max-width: 320px; width: 85%; }
     .waving-arm { transform-origin: bottom center; animation: fairyWave 0.8s infinite alternate ease-in-out; }
     @keyframes fairyWave { 0% { transform: rotate(0deg); } 100% { transform: rotate(38deg); } }
   </style>
 </head>
 <body>
 
-  <div class="aurora-layer"></div>
   <canvas id="fairyCanvas"></canvas>
 
-  <!-- TOP UTILITY BAR (MUTE TOGGLE & ALERTS) -->
+  <!-- TOP ACTION BAR -->
   <div class="top-action-header">
     <button type="button" class="icon-btn-pill" id="muteToggleBtn" onclick="toggleAudioMute()">
       <span id="muteIcon">🔊</span> <span id="muteLabel">Voice On</span>
     </button>
-    <button type="button" class="icon-btn-pill" onclick="subscribeBackgroundAlerts()">
+    <button type="button" class="icon-btn-pill" id="pwaInstallBtn" onclick="triggerPwaInstall()">
+      <span>📲</span> Install App
+    </button>
+    <button type="button" class="icon-btn-pill" onclick="enableDirectPhoneAlerts()">
       <span>🔔</span> Phone Alerts
     </button>
   </div>
@@ -317,11 +299,11 @@
     <div class="curtain curtain-left"></div>
     <div class="curtain curtain-right"></div>
     <button type="button" class="royal-seal-btn" id="portalUnlockBtn" onclick="unlockPortalAndSpeak()">
-      <span>✨ 🌸</span> प्रवेश करें (Enter Portal) <span>🌸 ✨</span>
+      <span>✨ 🌸</span> प्रवेश करें (Open) <span>🌸 ✨</span>
     </button>
   </div>
 
-  <div class="container" id="mainContainer">
+  <div class="container">
     
     <!-- TOP CANCEL DISMISS BAR (✕) -->
     <div class="top-cancel-bar" id="topCancelBar" style="display:none;">
@@ -338,9 +320,9 @@
 
     <!-- Mobile Login Screen -->
     <div id="loginBox" style="display:none;">
-      <div style="background:#eff6ff;border:1.5px solid #bfdbfe;padding:14px;border-radius:14px;margin-bottom:15px;">
-        <p style="color:#1e40af;font-weight:bold;margin:0;font-size:14px;">👤 कर्मचारी पहचान (Login)</p>
-        <p style="color:#1e3a8a;font-size:12px;margin:4px 0 0 0;">कृपया अपना 10 अंकों का रजिस्टर्ड मोबाइल नंबर दर्ज करें।</p>
+      <div style="background:#eff6ff;border:1.5px solid #bfdbfe;padding:12px;border-radius:12px;margin-bottom:14px;">
+        <p style="color:#1e40af;font-weight:bold;margin:0;font-size:13.5px;">👤 कर्मचारी पहचान (Login)</p>
+        <p style="color:#1e3a8a;font-size:12px;margin:3px 0 0 0;">कृपया अपना 10 अंकों का रजिस्टर्ड मोबाइल नंबर दर्ज करें।</p>
       </div>
       <label for="inputPhone">रजिस्टर्ड मोबाइल नंबर</label>
       <input type="tel" id="inputPhone" placeholder="10-digit Mobile Number" maxlength="10">
@@ -350,7 +332,7 @@
     <!-- Active Attendance Form -->
     <div id="punchForm" style="display:none;">
       <div class="user-card">
-        <p>प्रमाणित कर्मचारी (Verified Profile):</p>
+        <p>प्रमाणित कर्मचारी (Verified):</p>
         <strong id="displayEmpName">Loading...</strong>
         <p id="displayEmpPhone" style="font-size:12px; margin-top:2px;"></p>
       </div>
@@ -363,7 +345,7 @@
           <option value="WFH">Working from Home (Requires Reason)</option>
         </select>
 
-        <!-- ANTI-EXPLOIT AUDIT INPUTS -->
+        <!-- SITE & WFH AUDIT INPUTS -->
         <div class="audit-box" id="siteAuditBox">
           <label for="siteNameInput">प्रोजेक्ट / साइट का नाम (Mandatory Site Details):</label>
           <input type="text" id="siteNameInput" placeholder="उदा: Tata Motors Bhosari / Kirloskar Site">
@@ -386,7 +368,7 @@
 
       <div id="status"></div>
 
-      <div class="button-group" style="margin-top:20px; border-top: 1.5px solid #f1f5f9; padding-top:16px;">
+      <div class="button-group" style="margin-top:18px; border-top: 1.5px solid #f1f5f9; padding-top:14px;">
         <button type="button" class="btn btn-leave" onclick="openLeaveModal()">📝 Apply Leave / Half Day</button>
         <button type="button" class="btn btn-cal" onclick="openCalendarModal()">📅 My Attendance Calendar</button>
       </div>
@@ -444,7 +426,7 @@
         <button class="btn btn-cal" style="width:45%;padding:8px;" onclick="nextMonth()">अगला ▶</button>
       </div>
       <div class="calendar-grid" id="calendarBody"></div>
-      <div style="font-size:11px;margin-top:14px;color:#64748b;font-weight:600;">
+      <div style="font-size:11px;margin-top:12px;color:#64748b;font-weight:600;">
         🟢 उपस्थित (Present) | 🟡 छुट्टी (Leave) | 🔴 रविवार (Sunday)
       </div>
     </div>
@@ -453,7 +435,7 @@
   <!-- BYE BYE MODAL -->
   <div id="byeModal" class="modal">
     <div class="bye-modal-content">
-      <svg width="135" height="135" viewBox="0 0 100 100">
+      <svg width="120" height="120" viewBox="0 0 100 100">
         <circle cx="50" cy="56" r="28" fill="#10b981"/>
         <circle cx="50" cy="32" r="20" fill="#fed7aa"/>
         <circle cx="43" cy="30" r="2.5" fill="#064e3b"/>
@@ -465,9 +447,9 @@
           <circle cx="85" cy="40" r="6" fill="#fed7aa"/>
         </g>
       </svg>
-      <h3 style="margin:14px 0 6px 0; color:#0f172a; font-size:20px; font-weight:800;" id="byeTitle">धन्यवाद!</h3>
-      <p style="color:#64748b; font-size:14px; margin:0;" id="byeMessage">उपस्थिति सफलतापूर्वक दर्ज कर ली गई है।</p>
-      <button class="btn btn-primary" style="margin-top:18px;" onclick="closeByeModal()">ठीक है (Close)</button>
+      <h3 style="margin:12px 0 6px 0; color:#0f172a; font-size:19px; font-weight:800;" id="byeTitle">धन्यवाद!</h3>
+      <p style="color:#64748b; font-size:13.5px; margin:0;" id="byeMessage">उपस्थिति सफलतापूर्वक दर्ज कर ली गई है।</p>
+      <button class="btn btn-primary" style="margin-top:16px;" onclick="closeByeModal()">ठीक है (Close)</button>
     </div>
   </div>
 
@@ -477,179 +459,69 @@
     let currentEmp = { name: "", phone: "" };
     let calDate = new Date();
     let currentVoice = null;
-    let audioUnlocked = false;
     let isMuted = localStorage.getItem("aa_is_muted") === "true";
+    let deferredPrompt = null;
 
-    // PWA Service Worker Registration
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW reg error:', err));
+    // 📲 PWA INSTALLATION EVENT HANDLER
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('pwaInstallBtn').style.display = 'flex';
+    });
+
+    function triggerPwaInstall() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choice) => {
+          if (choice.outcome === 'accepted') {
+            document.getElementById('pwaInstallBtn').style.display = 'none';
+          }
+          deferredPrompt = null;
+        });
+      } else {
+        alert("📲 फोन में ऐप इंस्टॉल करने के लिए:\nChrome मेनू (तीन बिंदु ⋮) पर टैप करें और 'Add to Home Screen' चुनें।");
+      }
     }
 
-    // 🌸 1. ULTRA-REALISTIC FAIRY CANVAS
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+
+    // 🌸 LIGHTWEIGHT SMOOTH PARTICLES (No CPU Lag)
     const canvas = document.getElementById("fairyCanvas");
     const ctx = canvas.getContext("2d");
-    let petals = [], fireflies = [], touchSparks = [];
-
+    let particles = [];
     function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
 
-    class FairyPetal {
-      constructor() { this.reset(); }
-      reset() {
-        this.x = Math.random() * canvas.width;
-        this.y = -30;
-        this.size = Math.random() * 9 + 8;
-        this.speedY = Math.random() * 1.4 + 0.8;
-        this.speedX = Math.random() * 1.2 - 0.6;
-        this.angleX = Math.random() * 360;
-        this.angleY = Math.random() * 360;
-        this.spinX = Math.random() * 2 + 1;
-        this.spinY = Math.random() * 1.5 + 0.5;
-        this.hue = Math.random() > 0.4 ? 335 : 45;
-      }
-      update() {
-        this.y += this.speedY;
-        this.x += Math.sin(this.angleY * Math.PI / 180) * 1.2 + this.speedX;
-        this.angleX += this.spinX;
-        this.angleY += this.spinY;
-        if (this.y > canvas.height + 40) this.reset();
-      }
-      draw() {
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        ctx.rotate(this.angleY * Math.PI / 180);
-        let scaleY = Math.cos(this.angleX * Math.PI / 180);
-        ctx.scale(1, scaleY);
-        let grad = ctx.createRadialGradient(0, 0, 1, 0, 0, this.size);
-        grad.addColorStop(0, `hsla(${this.hue}, 95%, 75%, 0.85)`);
-        grad.addColorStop(0.8, `hsla(${this.hue}, 90%, 55%, 0.5)`);
-        grad.addColorStop(1, `hsla(${this.hue}, 90%, 40%, 0)`);
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.moveTo(0, -this.size);
-        ctx.bezierCurveTo(this.size, -this.size/2, this.size, this.size, 0, this.size);
-        ctx.bezierCurveTo(-this.size, this.size, -this.size, -this.size/2, 0, -this.size);
-        ctx.fill();
-        ctx.restore();
-      }
-    }
-
-    class Firefly {
-      constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.radius = Math.random() * 2.2 + 1.2;
-        this.angle = Math.random() * Math.PI * 2;
-        this.speed = Math.random() * 0.8 + 0.3;
-        this.pulse = Math.random() * 10;
-      }
-      update() {
-        this.angle += (Math.random() - 0.5) * 0.2;
-        this.x += Math.cos(this.angle) * this.speed;
-        this.y += Math.sin(this.angle) * this.speed;
-        this.pulse += 0.05;
-        if (this.x < 0) this.x = canvas.width;
-        if (this.x > canvas.width) this.x = 0;
-        if (this.y < 0) this.y = canvas.height;
-        if (this.y > canvas.height) this.y = 0;
-      }
-      draw() {
-        let intensity = (Math.sin(this.pulse) + 1) / 2;
-        ctx.save();
-        let grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius * 7);
-        grad.addColorStop(0, `rgba(253, 224, 71, ${0.9 * intensity})`);
-        grad.addColorStop(0.3, `rgba(163, 230, 53, ${0.4 * intensity})`);
-        grad.addColorStop(1, "rgba(163, 230, 53, 0)");
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius * 7, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-    }
-
-    class Stardust {
-      constructor(x, y) {
-        this.x = x; this.y = y;
-        this.vx = (Math.random() - 0.5) * 5;
-        this.vy = (Math.random() - 0.5) * 5;
-        this.life = 1;
-        this.size = Math.random() * 3 + 2;
-        this.color = Math.random() > 0.5 ? '#fde047' : '#38bdf8';
-      }
-      update() { this.x += this.vx; this.y += this.vy; this.life -= 0.035; }
-      draw() {
-        ctx.save();
-        ctx.globalAlpha = Math.max(0, this.life);
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-    }
-
-    for (let i = 0; i < 24; i++) petals.push(new FairyPetal());
-    for (let i = 0; i < 18; i++) fireflies.push(new Firefly());
-
-    window.addEventListener("pointerdown", e => addStardustBurst(e.clientX, e.clientY));
-    window.addEventListener("pointermove", e => {
-      if (Math.random() > 0.6) touchSparks.push(new Stardust(e.clientX, e.clientY));
-    });
-
-    function addStardustBurst(x, y) {
-      for (let i = 0; i < 14; i++) touchSparks.push(new Stardust(x, y));
+    for (let i = 0; i < 18; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 6 + 4,
+        speedY: Math.random() * 1.2 + 0.6,
+        speedX: Math.random() * 0.8 - 0.4,
+        hue: Math.random() > 0.4 ? 335 : 45
+      });
     }
 
     function renderFairyCanvas() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      fireflies.forEach(f => { f.update(); f.draw(); });
-      petals.forEach(p => { p.update(); p.draw(); });
-      for (let i = touchSparks.length - 1; i >= 0; i--) {
-        touchSparks[i].update();
-        touchSparks[i].draw();
-        if (touchSparks[i].life <= 0) touchSparks.splice(i, 1);
-      }
+      particles.forEach(p => {
+        p.y += p.speedY;
+        p.x += p.speedX;
+        if (p.y > canvas.height) { p.y = -10; p.x = Math.random() * canvas.width; }
+        ctx.fillStyle = `hsla(${p.hue}, 90%, 65%, 0.6)`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
       requestAnimationFrame(renderFairyCanvas);
     }
     renderFairyCanvas();
 
-    // 🔊 2. AUDIO & SPEECH ENGINE WITH MUTE TOGGLE
-    function toggleAudioMute() {
-      isMuted = !isMuted;
-      localStorage.setItem("aa_is_muted", isMuted);
-      updateMuteButtonUI();
-      if (isMuted && 'speechSynthesis' in window) window.speechSynthesis.cancel();
-    }
-
-    function updateMuteButtonUI() {
-      document.getElementById("muteIcon").innerText = isMuted ? "🔇" : "🔊";
-      document.getElementById("muteLabel").innerText = isMuted ? "Muted" : "Voice On";
-    }
-
-    function playMagicalChime() {
-      if (isMuted) return;
-      try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) return;
-        const ctxAudio = new AudioContext();
-        const notes = [523.25, 587.33, 783.99, 880.00, 1046.50];
-        notes.forEach((freq, idx) => {
-          const osc = ctxAudio.createOscillator();
-          const gain = ctxAudio.createGain();
-          osc.type = "sine";
-          osc.frequency.setValueAtTime(freq, ctxAudio.currentTime + idx * 0.09);
-          gain.gain.setValueAtTime(0.25, ctxAudio.currentTime + idx * 0.09);
-          gain.gain.exponentialRampToValueAtTime(0.0001, ctxAudio.currentTime + idx * 0.09 + 0.9);
-          osc.connect(gain);
-          gain.connect(ctxAudio.destination);
-          osc.start(ctxAudio.currentTime + idx * 0.09);
-          osc.stop(ctxAudio.currentTime + idx * 0.09 + 0.95);
-        });
-      } catch(e) {}
-    }
-
+    // 🔊 INSTANT SPEECH SYNTHESIS ENGINE
     function initVoice() {
       if ('speechSynthesis' in window) {
         let voices = window.speechSynthesis.getVoices();
@@ -664,71 +536,67 @@
       window.speechSynthesis.cancel();
       let utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'hi-IN';
-      utterance.rate = 0.92;
-      utterance.pitch = 1.08;
+      utterance.rate = 0.95;
+      utterance.pitch = 1.05;
       if (currentVoice) utterance.voice = currentVoice;
       window.speechSynthesis.speak(utterance);
     }
 
-    function subscribeBackgroundAlerts() {
-      if (!currentEmp.phone) return alert("कृपया पहले अपना मोबाइल नंबर दर्ज करें।");
-      window.open(`https://ntfy.sh/aryavarta_att_${currentEmp.phone}`, '_blank');
+    function toggleAudioMute() {
+      isMuted = !isMuted;
+      localStorage.setItem("aa_is_muted", isMuted);
+      document.getElementById("muteIcon").innerText = isMuted ? "🔇" : "🔊";
+      document.getElementById("muteLabel").innerText = isMuted ? "Muted" : "Voice On";
+      if (isMuted && 'speechSynthesis' in window) window.speechSynthesis.cancel();
     }
 
-    function dismissFormForNow() {
-      document.getElementById("topCancelBar").style.display = "none";
-      speakHindi("ठीक है, फॉर्म अभी के लिए बंद कर दिया गया है। महत्वपूर्ण कार्य पूरा होने पर उपस्थिति दर्ज करें।");
-      let statusDiv = document.getElementById("status");
-      statusDiv.style.color = "#d97706";
-      statusDiv.innerHTML = "ℹ️ उपस्थिति स्थगित की गई। काम समाप्त होने पर बटन दबाएं।";
+    // 🔔 IN-APP DIRECT PHONE ALERTS (NO EXTERNAL NTFY REDIRECT)
+    function enableDirectPhoneAlerts() {
+      if (!("Notification" in window)) {
+        return alert("यह फोन वेब नोटिफिकेशन का समर्थन नहीं करता है।");
+      }
+
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          new Notification("आर्यावर्त अटेंडेंस अलर्ट सक्रिय! 🔔", {
+            body: "आपको 10:01 AM और 6:01 PM पर उपस्थिति नोटिफिकेशन प्राप्त होंगे।",
+            icon: "logo.png"
+          });
+          alert("✅ फोन अलर्ट सक्रिय हो चुके हैं! अब आपको समय पर नोटिफिकेशन प्राप्त होंगे।");
+        } else {
+          alert("⚠️ कृपया नोटिफिकेशन अनुमति दें ताकि 10:01 AM पर अलर्ट प्राप्त हो सके।");
+        }
+      });
     }
 
+    // 🚪 0-SECOND INSTANT ENTRANCE & VOICE (NO WAITING FOR SERVER)
     function unlockPortalAndSpeak() {
-      audioUnlocked = true;
       initVoice();
-      playMagicalChime();
-      addStardustBurst(window.innerWidth / 2, window.innerHeight / 2);
       document.getElementById("curtainOverlay").classList.add("curtain-open");
 
-      setTimeout(() => {
-        if (currentEmp.name) greetUserBasedOnTime(currentEmp.name);
-        else speakHindi("आर्यावर्त ऑटोमेशन में आपका स्वागत है। कृपया अपना मोबाइल नंबर दर्ज करें।");
-      }, 500);
+      let hour = new Date().getHours();
+      let savedName = localStorage.getItem("aa_emp_name") || currentEmp.name;
+
+      if (savedName) {
+        // Speak INSTANTLY without waiting for network!
+        if (hour < 14) {
+          speakHindi(`सुप्रभात और नमस्कार ${savedName} जी, कैसे हैं आप? आपका आर्यावर्त अटेंडेंस फॉर्म में स्वागत है।`);
+        } else {
+          speakHindi(`नमस्ते ${savedName} जी, कैसा रहा आपका दिन? कृपया प्रस्थान के लिए क्लॉक आउट बटन दबाएं।`);
+        }
+      } else {
+        speakHindi("आर्यावर्त ऑटोमेशन में आपका स्वागत है। कृपया अपना मोबाइल नंबर दर्ज करें।");
+      }
+
+      // Quiet background server check
+      if (currentEmp.name) refreshTodayStatus();
     }
 
-    function greetUserBasedOnTime(name) {
-      fetch(`${SCRIPT_URL}?action=checkStatus&name=${encodeURIComponent(name)}`)
-        .then(res => res.json())
-        .then(res => {
-          updateButtonVisibility(res.status);
-          let now = new Date();
-          let hours = now.getHours();
-          let day = now.getDay();
-
-          if (day !== 0) {
-            if (hours >= 10 && res.status === "NEEDS_CLOCK_IN") {
-              document.getElementById("topCancelBar").style.display = "flex";
-              document.getElementById("topCancelNotice").innerText = "⚠️ 10:00 AM के बाद क्लॉक इन शेष है";
-            } else if (hours >= 18 && res.status === "NEEDS_CLOCK_OUT") {
-              document.getElementById("topCancelBar").style.display = "flex";
-              document.getElementById("topCancelNotice").innerText = "⚠️ 6:00 PM के बाद क्लॉक आउट शेष है";
-            }
-          }
-
-          if (res.status === "NEEDS_CLOCK_IN") {
-            speakHindi(`सुप्रभात और नमस्कार ${name} जी, कैसे हैं आप? आपका आर्यावर्त अटेंडेंस फॉर्म में स्वागत है।`);
-          } else if (res.status === "NEEDS_CLOCK_OUT") {
-            speakHindi(`नमस्ते ${name} जी, कैसा रहा आपका दिन? कृपया प्रस्थान के समय क्लॉक आउट करें।`);
-          } else if (res.status === "COMPLETED") {
-            speakHindi(`नमस्ते ${name} जी, आपकी आज की उपस्थिति पहले ही पूरी हो चुकी है।`);
-          }
-        })
-        .catch(() => speakHindi(`नमस्ते ${name} जी, आपका आर्यावर्त पोर्टल में स्वागत है।`));
-    }
-
+    // 🚀 ZERO-LAG INITIALIZATION (LOADS IN 0ms)
     window.onload = function() {
       initVoice();
-      updateMuteButtonUI();
+      document.getElementById("muteIcon").innerText = isMuted ? "🔇" : "🔊";
+      document.getElementById("muteLabel").innerText = isMuted ? "Muted" : "Voice On";
 
       let todayStr = new Date().toISOString().split('T')[0];
       document.getElementById("leaveSingleDate").value = todayStr;
@@ -738,25 +606,45 @@
       const urlParams = new URLSearchParams(window.location.search);
       let directPhone = urlParams.get('p') || urlParams.get('phone');
       let savedPhone = directPhone ? directPhone.replace(/\D/g, '').slice(-10) : localStorage.getItem("aa_emp_phone");
+      let savedName = localStorage.getItem("aa_emp_name");
 
-      if (savedPhone && savedPhone.length === 10) authenticatePhone(savedPhone, false);
-      else {
+      if (savedPhone && savedPhone.length === 10) {
+        currentEmp = { name: savedName || "Employee", phone: savedPhone };
+        
+        // Show UI IMMEDIATELY from local cache
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("punchForm").style.display = "block";
+        document.getElementById("displayEmpName").innerText = savedName || "Loading...";
+        document.getElementById("displayEmpPhone").innerText = "📱 +91 " + savedPhone;
+
+        let hour = new Date().getHours();
+        updateButtonVisibility(hour < 14 ? "NEEDS_CLOCK_IN" : "NEEDS_CLOCK_OUT");
+
+        // Quiet background verification
+        fetch(`${SCRIPT_URL}?action=authDevice&phone=${savedPhone}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              currentEmp.name = data.name;
+              localStorage.setItem("aa_emp_name", data.name);
+              document.getElementById("displayEmpName").innerText = data.name;
+              refreshTodayStatus();
+            }
+          });
+      } else {
         document.getElementById("loginBox").style.display = "block";
         document.getElementById("punchForm").style.display = "none";
       }
 
-      window.addEventListener('online', flushOfflinePunchQueue);
+      window.addEventListener('online', flushOfflineQueue);
     };
 
     function handleManualLogin() {
       let phone = document.getElementById("inputPhone").value.trim().replace(/\D/g, '').slice(-10);
       if (phone.length !== 10) return alert("कृपया 10 अंकों का मोबाइल नंबर दर्ज करें।");
-      authenticatePhone(phone, true);
-    }
 
-    function authenticatePhone(phone, shouldSpeak) {
-      document.getElementById("status").innerHTML = "🔄 कर्मचारी रिकॉर्ड सत्यापित किया जा रहा है...";
-      fetch(`${SCRIPT_URL}?action=authDevice&phone=${encodeURIComponent(phone)}`)
+      document.getElementById("status").innerHTML = "🔄 सत्यापन जारी...";
+      fetch(`${SCRIPT_URL}?action=authDevice&phone=${phone}`)
         .then(res => res.json())
         .then(data => {
           if (data.success) {
@@ -769,23 +657,13 @@
             document.getElementById("displayEmpName").innerText = data.name;
             document.getElementById("displayEmpPhone").innerText = "📱 +91 " + phone;
 
-            if (shouldSpeak && audioUnlocked) greetUserBasedOnTime(data.name);
-            else refreshTodayStatus(false);
+            let hour = new Date().getHours();
+            if (hour < 14) speakHindi(`सुप्रभात ${data.name} जी!`);
+            else speakHindi(`नमस्ते ${data.name} जी!`);
+
+            refreshTodayStatus();
           } else {
-            document.getElementById("loginBox").style.display = "block";
-            document.getElementById("punchForm").style.display = "none";
             alert("⚠️ " + data.message);
-          }
-        })
-        .catch(() => {
-          let cachedName = localStorage.getItem("aa_emp_name");
-          if (cachedName) {
-            currentEmp = { name: cachedName, phone: phone };
-            document.getElementById("loginBox").style.display = "none";
-            document.getElementById("punchForm").style.display = "block";
-            document.getElementById("displayEmpName").innerText = cachedName;
-            document.getElementById("displayEmpPhone").innerText = "📱 +91 " + phone;
-            refreshTodayStatus(false);
           }
         });
     }
@@ -808,7 +686,7 @@
       } else if (status === "COMPLETED") {
         btnIn.style.display = "none"; btnOut.style.display = "none";
         document.getElementById("topCancelBar").style.display = "none";
-        statusDiv.style.color = "#059669"; statusDiv.innerHTML = "✅ आज की उपस्थिति पूर्ण हो चुकी है।";
+        statusDiv.style.color = "#059669"; statusDiv.innerHTML = "✅ आज की दोनों उपस्थिति दर्ज हो चुकी हैं।";
       } else if (status === "ON_LEAVE") {
         btnIn.style.display = "none"; btnOut.style.display = "none";
         document.getElementById("topCancelBar").style.display = "none";
@@ -816,17 +694,20 @@
       }
     }
 
-    function refreshTodayStatus(speak) {
+    function refreshTodayStatus() {
       fetch(`${SCRIPT_URL}?action=checkStatus&name=${encodeURIComponent(currentEmp.name)}`)
         .then(res => res.json())
-        .then(res => {
-          updateButtonVisibility(res.status);
-          if (speak && audioUnlocked) greetUserBasedOnTime(currentEmp.name);
-        })
-        .catch(() => document.getElementById("btnIn").style.display = "flex");
+        .then(res => updateButtonVisibility(res.status))
+        .catch(() => {});
     }
 
-    // 🛰️ 3. ANTI-SPOOF GPS & OFFLINE QUEUING
+    function dismissFormForNow() {
+      document.getElementById("topCancelBar").style.display = "none";
+      speakHindi("ठीक है, फॉर्म बंद किया गया। काम पूरा होने पर उपस्थिति दर्ज करें।");
+      document.getElementById("status").innerHTML = "ℹ️ उपस्थिति स्थगित की गई।";
+    }
+
+    // 🛰️ FAST RESILIENT SUBMISSION WITH OFFLINE QUEUING
     function startAttendanceFlow(type) {
       let mode = document.getElementById("workMode").value;
       let siteVal = document.getElementById("siteNameInput").value.trim();
@@ -835,30 +716,28 @@
       let btnIn = document.getElementById("btnIn");
       let btnOut = document.getElementById("btnOut");
 
-      // Validate Exploits
       if (mode === "Site" && !siteVal) {
-        alert("⚠️ कृपया प्रोजेक्ट / साइट का नाम दर्ज करें।");
+        alert("⚠️ कृपया प्रोजेक्ट या साइट का नाम दर्ज करें।");
         return document.getElementById("siteNameInput").focus();
       }
       if (mode === "WFH" && !wfhVal) {
-        alert("⚠️ कृपया WFH कार्य का कारण दर्ज करें।");
+        alert("⚠️ कृपया WFH का कारण दर्ज करें।");
         return document.getElementById("wfhReasonInput").focus();
       }
 
       btnIn.disabled = true; btnOut.disabled = true;
       statusDiv.style.color = "#d97706";
-      statusDiv.innerHTML = "🛰️ सुरक्षित जीपीएस स्थान सत्यापित किया जा रहा है...";
+      statusDiv.innerHTML = "🛰️ जीपीएस स्थान सत्यापित किया जा रहा है...";
       speakHindi(`${type === 'Clock In' ? 'क्लॉक इन' : 'क्लॉक आउट'} प्रक्रिया जारी है।`);
 
       if (mode === "Office") {
         navigator.geolocation.getCurrentPosition(
           pos => {
             let acc = pos.coords.accuracy;
-            // Anti-Mock GPS detection
             if (acc > 0 && acc < 1.0) {
               statusDiv.style.color = "#dc2626";
-              statusDiv.innerHTML = "⚠️ त्रुटि: कृत्रिम/नकली GPS ऐप बंद करें।";
-              speakHindi("नकली जीपीएस लोकेशन बंद करें।");
+              statusDiv.innerHTML = "⚠️ त्रुटि: कृत्रिम/नकली GPS बंद करें।";
+              speakHindi("नकली जीपीएस बंद करें।");
               btnIn.disabled = false; btnOut.disabled = false;
               return;
             }
@@ -867,18 +746,17 @@
           () => {
             btnIn.disabled = false; btnOut.disabled = false;
             statusDiv.style.color = "#dc2626";
-            statusDiv.innerHTML = "❌ जीपीएस सिग्नल नहीं मिला। लोकेशन ऑन करें।";
+            statusDiv.innerHTML = "❌ जीपीएस उपलब्ध नहीं है। लोकेशन ऑन करें।";
             speakHindi("फोन की लोकेशन ऑन करें।");
           },
-          { enableHighAccuracy: true, timeout: 8000 }
+          { enableHighAccuracy: true, timeout: 7000 }
         );
       } else {
         executePunch(null, null, null, mode, type, siteVal, wfhVal);
       }
     }
 
-    function executePunch(lat, lon, accuracy, mode, type, siteVal, wfhVal) {
-      let statusDiv = document.getElementById("status");
+    function executePunch(lat, lon, acc, mode, type, siteVal, wfhVal) {
       let payload = {
         name: currentEmp.name,
         phone: currentEmp.phone,
@@ -887,13 +765,13 @@
         wfhReason: wfhVal,
         lat: lat,
         lon: lon,
-        accuracy: accuracy,
+        accuracy: acc,
         forceType: type,
         clientTimestamp: new Date().toISOString()
       };
 
       if (!navigator.onLine) {
-        saveOfflinePunch(payload);
+        saveOffline(payload);
         return;
       }
 
@@ -906,51 +784,37 @@
       .then(() => {
         document.getElementById("btnIn").disabled = false;
         document.getElementById("btnOut").disabled = false;
-        document.getElementById("topCancelBar").style.display = "none";
-        showByeAnimation(`${type} दर्ज हुआ!`, "आपकी उपस्थिति दर्ज हो चुकी है। धन्यवाद!");
-        speakHindi(`धन्यवाद ${currentEmp.name} जी, आपका ${type === 'Clock In' ? 'क्लॉक इन' : 'क्लॉक आउट'} सफलतापूर्वक दर्ज हो चुका है।`);
-        setTimeout(() => refreshTodayStatus(false), 2000);
+        showByeAnimation(`${type} सफल!`, "आपकी उपस्थिति दर्ज हो चुकी है। धन्यवाद!");
+        speakHindi(`धन्यवाद ${currentEmp.name} जी, आपका ${type === 'Clock In' ? 'क्लॉक इन' : 'क्लॉक आउट'} दर्ज हो चुका है।`);
+        setTimeout(refreshTodayStatus, 1500);
       })
-      .catch(() => saveOfflinePunch(payload));
+      .catch(() => saveOffline(payload));
     }
 
-    // 💾 OFFLINE LOCAL QUEUE (INDEXEDDB / STORAGE FALLBACK)
-    function saveOfflinePunch(payload) {
-      let queue = JSON.parse(localStorage.getItem("aa_offline_punches") || "[]");
-      queue.push(payload);
-      localStorage.setItem("aa_offline_punches", JSON.stringify(queue));
-
+    function saveOffline(payload) {
+      let q = JSON.parse(localStorage.getItem("aa_offline_q") || "[]");
+      q.push(payload);
+      localStorage.setItem("aa_offline_q", JSON.stringify(q));
       document.getElementById("btnIn").disabled = false;
       document.getElementById("btnOut").disabled = false;
-      document.getElementById("status").style.color = "#d97706";
-      document.getElementById("status").innerHTML = "⚠️ ऑफलाइन मोड: उपस्थिति सुरक्षित रखी गई है। नेटवर्क आते ही स्वतः सिंक हो जाएगी।";
-      speakHindi("इंटरनेट नहीं है। उपस्थिति फोन में सुरक्षित है, नेटवर्क आते ही स्वतः सिंक होगी।");
+      document.getElementById("status").innerHTML = "⚠️ ऑफलाइन मोड: डेटा फोन में सुरक्षित है। नेटवर्क आते ही सिंक होगा।";
+      speakHindi("इंटरनेट नहीं है। डेटा सुरक्षित है, नेटवर्क आते ही सिंक होगा।");
     }
 
-    function flushOfflinePunchQueue() {
-      let queue = JSON.parse(localStorage.getItem("aa_offline_punches") || "[]");
-      if (queue.length === 0) return;
-
-      document.getElementById("status").innerHTML = "🔄 नेटवर्क पुनः उपलब्ध: ऑफलाइन डेटा सिंक हो रहा है...";
-      let promises = queue.map(p => {
-        return fetch(SCRIPT_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(p)
-        });
-      });
-
+    function flushOfflineQueue() {
+      let q = JSON.parse(localStorage.getItem("aa_offline_q") || "[]");
+      if (!q.length) return;
+      document.getElementById("status").innerHTML = "🔄 ऑफलाइन डेटा सिंक हो रहा है...";
+      let promises = q.map(p => fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(p) }));
       Promise.all(promises).then(() => {
-        localStorage.removeItem("aa_offline_punches");
-        document.getElementById("status").style.color = "#059669";
-        document.getElementById("status").innerHTML = "✅ सभी ऑफलाइन रिकॉर्ड Google Sheets में सिंक हो चुके हैं!";
-        refreshTodayStatus(false);
+        localStorage.removeItem("aa_offline_q");
+        document.getElementById("status").innerHTML = "✅ ऑफलाइन रिकॉर्ड सिंक हो गए!";
+        refreshTodayStatus();
       });
     }
 
-    // 📝 4. LEAVE & CALENDAR HANDLERS
-    function openLeaveModal() { document.getElementById("leaveModal").style.display = "flex"; speakHindi("छुट्टी का प्रकार, तारीख और कारण चुनें।"); }
+    // 📝 LEAVE & CALENDAR
+    function openLeaveModal() { document.getElementById("leaveModal").style.display = "flex"; speakHindi("छुट्टी का प्रकार और तारीख चुनें।"); }
     function closeLeaveModal() { document.getElementById("leaveModal").style.display = "none"; }
     function toggleDateRange(val) {
       document.getElementById("singleDateBox").style.display = (val === "range") ? "none" : "block";
@@ -964,8 +828,7 @@
       let eDate = duration === "single" ? sDate : document.getElementById("leaveEndDate").value;
       let reason = document.getElementById("leaveReason").value.trim();
 
-      if (!sDate || !eDate) return alert("कृपया तारीख चुनें।");
-      if (!reason) return alert("कृपया कारण लिखें।");
+      if (!sDate || !eDate || !reason) return alert("तारीख और कारण दोनों दर्ज करें।");
 
       let btn = document.getElementById("btnSubmitLeave");
       btn.disabled = true; btn.innerText = "जमा हो रहा है...";
@@ -986,15 +849,15 @@
       }).then(() => {
         btn.disabled = false; btn.innerText = "आवेदन जमा करें ✨";
         closeLeaveModal();
-        showByeAnimation("छुट्टी दर्ज हुई!", "आपका अवकाश आवेदन सफलतापूर्वक जमा हो चुका है।");
-        speakHindi("आपका अवकाश आवेदन दर्ज हो चुका है।");
-        setTimeout(() => refreshTodayStatus(false), 2000);
+        showByeAnimation("छुट्टी दर्ज हुई!", "अवकाश आवेदन सफलतापूर्वक जमा हो चुका है।");
+        speakHindi("अवकाश आवेदन दर्ज हो चुका है।");
+        setTimeout(refreshTodayStatus, 1500);
       });
     }
 
     function openCalendarModal() {
       document.getElementById("calModal").style.display = "flex";
-      speakHindi("यहाँ आप अपनी पूरे महीने की उपस्थिति देख सकते हैं।");
+      speakHindi("यहाँ आप महीने की उपस्थिति देख सकते हैं।");
       renderCalendar();
     }
     function closeCalendarModal() { document.getElementById("calModal").style.display = "none"; }
@@ -1004,8 +867,8 @@
     function renderCalendar() {
       let year = calDate.getFullYear();
       let month = calDate.getMonth();
-      const monthNamesHindi = ["जनवरी","फरवरी","मार्च","अप्रैल","मई","जून","जुलाई","अगस्त","सितंबर","अक्टूबर","नवंबर","दिसंबर"];
-      document.getElementById("calMonthTitle").innerText = monthNamesHindi[month] + " " + year;
+      const months = ["जनवरी","फरवरी","मार्च","अप्रैल","मई","जून","जुलाई","अगस्त","सितंबर","अक्टूबर","नवंबर","दिसंबर"];
+      document.getElementById("calMonthTitle").innerText = months[month] + " " + year;
 
       let body = document.getElementById("calendarBody");
       body.innerHTML = "<div class='cal-header'>रवि</div><div class='cal-header'>सोम</div><div class='cal-header'>मंगल</div><div class='cal-header'>बुध</div><div class='cal-header'>गुरु</div><div class='cal-header'>शुक्र</div><div class='cal-header'>शनि</div>";
@@ -1014,25 +877,23 @@
         .then(res => res.json())
         .then(data => {
           let history = data.history || {};
-          let firstDayIndex = new Date(year, month, 1).getDay();
-          let daysInMonth = new Date(year, month + 1, 0).getDate();
+          let firstDay = new Date(year, month, 1).getDay();
+          let totalDays = new Date(year, month + 1, 0).getDate();
 
-          for (let i = 0; i < firstDayIndex; i++) body.innerHTML += "<div></div>";
+          for (let i = 0; i < firstDay; i++) body.innerHTML += "<div></div>";
 
-          for (let d = 1; d <= daysInMonth; d++) {
-            let dayDate = new Date(year, month, d);
+          for (let d = 1; d <= totalDays; d++) {
             let dateKey = year + "-" + String(month + 1).padStart(2, '0') + "-" + String(d).padStart(2, '0');
-            let isSunday = dayDate.getDay() === 0;
+            let isSunday = new Date(year, month, d).getDay() === 0;
             let entry = history[dateKey];
             let cellClass = "cal-cell";
             let title = "";
 
             if (isSunday) cellClass += " cal-sunday";
             if (entry) {
-              let punchText = entry.punches.join(", ");
-              title = punchText;
-              if (punchText.indexOf("Leave") !== -1) cellClass += " cal-leave";
-              else cellClass += " cal-present";
+              let txt = entry.punches.join(", ");
+              title = txt;
+              cellClass += (txt.indexOf("Leave") !== -1) ? " cal-leave" : " cal-present";
             }
             body.innerHTML += `<div class="${cellClass}" title="${title}">${d}</div>`;
           }
