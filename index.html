@@ -547,15 +547,32 @@
       if (isMuted && 'speechSynthesis' in window) window.speechSynthesis.cancel();
     }
 
-    function enableDirectPhoneAlerts() {
-      if (!("Notification" in window)) return alert("ब्राउज़र नोटिफिकेशन समर्थित नहीं है।");
-      Notification.requestPermission().then(permission => {
-        if (permission === "granted") {
-          new Notification("आर्यावर्त अलर्ट सक्रिय! 🔔", { body: "आपको कार्य समय पर उपस्थिति नोटिफिकेशन मिलेंगे।" });
-          alert("✅ फोन अलर्ट सक्रिय हो चुके हैं!");
-        }
+    // 🔔 DIRECT SERVICE WORKER NOTIFICATION HANDLER
+function enableDirectPhoneAlerts() {
+  if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+    return alert("यह फोन वेब नोटिफिकेशन का समर्थन नहीं करता है।");
+  }
+
+  Notification.requestPermission().then((permission) => {
+    if (permission === 'granted') {
+      navigator.serviceWorker.ready.then((reg) => {
+        // High-Priority persistent system test
+        reg.showNotification("आर्यावर्त अटेंडेंस अलर्ट सक्रिय! 🔔", {
+          body: "फोन अलर्ट सक्षम हो गए हैं। कार्य समय पर आपको सूचना प्राप्त होगी।",
+          icon: "./logo.png",
+          badge: "./logo.png",
+          vibrate: [250, 100, 250],
+          requireInteraction: true,
+          tag: "alert-confirmed",
+          data: { url: "./index.html" }
+        });
       });
+      alert("✅ फोन अलर्ट सक्रिय हो चुके हैं!");
+    } else {
+      alert("⚠️ कृपया नोटिफिकेशन अनुमति दें ताकि 10:01 AM पर अलर्ट प्राप्त हो सके।");
     }
+  });
+}
 
    function unlockPortalAndSpeak() {
   // 1. Open Visual Curtains Instantly
