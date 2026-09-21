@@ -557,19 +557,25 @@
       });
     }
 
-    function unlockPortalAndSpeak() {
-      initVoice();
-      document.getElementById("curtainOverlay").classList.add("curtain-open");
-      let hour = new Date().getHours();
-      let savedName = localStorage.getItem("aa_emp_name") || currentEmp.name;
+   function unlockPortalAndSpeak() {
+  // 1. Open Visual Curtains Instantly
+  document.getElementById("curtainOverlay").classList.add("curtain-open");
 
-      if (savedName) {
-        if (hour < 14) speakHindi(`सुप्रभात और नमस्कार ${savedName} जी, आपका आर्यावर्त अटेंडेंस फॉर्म में स्वागत है।`);
-        else speakHindi(`नमस्ते ${savedName} जी, कैसा रहा आपका दिन?`);
-      }
-      if (currentEmp.name) refreshTodayStatus();
-    }
+  // 2. Speak Immediately on Click (Zero Latency)
+  let savedName = localStorage.getItem("aa_emp_name") || currentEmp.name || "सहकर्मी";
+  let hour = new Date().getHours();
 
+  if (hour < 14) {
+    speakHindi(`सुप्रभात और नमस्कार ${savedName} जी! आपका आर्यावर्त अटेंडेंस पोर्टल में स्वागत है।`);
+  } else {
+    speakHindi(`नमस्ते ${savedName} जी! कैसा रहा आपका दिन? कृपया प्रस्थान के लिए क्लॉक आउट करें।`);
+  }
+
+  // 3. Sync with Google Sheets quietly in background
+  if (currentEmp.name) {
+    refreshTodayStatus();
+  }
+}
     // ⏱️ 6. LIVE DIGITAL SHIFT TIMER & WORKDAY PROGRESS BAR
     function startLiveShiftTimer(isoStartTime) {
       if (!isoStartTime) return;
