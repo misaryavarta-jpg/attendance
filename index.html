@@ -548,32 +548,55 @@
     }
 
     // 🔔 DIRECT SERVICE WORKER NOTIFICATION HANDLER
-function enableDirectPhoneAlerts() {
-  if (!('Notification' in window) || !('serviceWorker' in navigator)) {
-    return alert("यह फोन वेब नोटिफिकेशन का समर्थन नहीं करता है।");
-  }
-
-  Notification.requestPermission().then((permission) => {
-    if (permission === 'granted') {
-      navigator.serviceWorker.ready.then((reg) => {
-        // High-Priority persistent system test
-        reg.showNotification("आर्यावर्त अटेंडेंस अलर्ट सक्रिय! 🔔", {
-          body: "फोन अलर्ट सक्षम हो गए हैं। कार्य समय पर आपको सूचना प्राप्त होगी।",
-          icon: "./logo.png",
-          badge: "./logo.png",
-          vibrate: [250, 100, 250],
-          requireInteraction: true,
-          tag: "alert-confirmed",
-          data: { url: "./index.html" }
-        });
-      });
-      alert("✅ फोन अलर्ट सक्रिय हो चुके हैं!");
-    } else {
-      alert("⚠️ कृपया नोटिफिकेशन अनुमति दें ताकि 10:01 AM पर अलर्ट प्राप्त हो सके।");
-    }
-  });
+// 1. ROBUST SERVICE WORKER REGISTRATION
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js', { scope: './' })
+    .then((reg) => {
+      console.log('✅ Service Worker active under scope:', reg.scope);
+    })
+    .catch((err) => {
+      console.error('❌ Service Worker registration failed:', err);
+    });
 }
 
+// 2. ANDROID-CERTIFIED NOTIFICATION HANDLER
+async function enableDirectPhoneAlerts() {
+  if (!('Notification' in window)) {
+    return alert("❌ यह ब्राउज़र वेब नोटिफिकेशन का समर्थन नहीं करता है।");
+  }
+
+  let permission = Notification.permission;
+  if (permission !== "granted") {
+    permission = await Notification.requestPermission();
+  }
+
+  if (permission !== "granted") {
+    return alert("⚠️ नोटिफिकेशन अनुमति अस्वीकृत (Denied) है!\n\nChrome के URL बार में बाएँ तरफ वाले लॉक (🔒) आइकन पर टैप करें और Notifications को 'Allow' करें।");
+  }
+
+  if (!('serviceWorker' in navigator)) {
+    return alert("❌ Service Worker समर्थित नहीं है।");
+  }
+
+  try {
+    // Wait until the Service Worker is fully active on the device
+    const reg = await navigator.serviceWorker.ready;
+    await reg.showNotification("आर्यावर्त अटेंडेंस अलर्ट सक्रिय! 🔔", {
+      body: "सुप्रभात! 10:01 AM और 6:01 PM पर उपस्थिति नोटिफिकेशन सक्रिय हो चुके हैं।",
+      icon: "./logo.png",
+      badge: "./logo.png",
+      vibrate: [300, 100, 300],
+      tag: "attendance-active-test",
+      renotify: true,
+      requireInteraction: true,
+      data: { url: "./index.html" }
+    });
+
+    alert("✅ फोन अलर्ट सक्रिय हो गया है! अपने फोन का नोटिफिकेशन बार नीचे खींचकर देखें।");
+  } catch (err) {
+    alert("⚠️ नोटिफिकेशन एरर: " + err.message);
+  }
+}
    function unlockPortalAndSpeak() {
   // 1. Open Visual Curtains Instantly
   document.getElementById("curtainOverlay").classList.add("curtain-open");
