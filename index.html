@@ -1,569 +1,985 @@
-// =============================================================
-// ARYAVARTA AUTOMATION - HEAD OFFICE ATTENDANCE SYSTEM
-// =============================================================
-const OFFICE_LAT = 18.6870094;              
-const OFFICE_LON = 73.8056477;              
-const MAX_RADIUS_METERS = 150.0;          
-const MANAGER_PHONE = "9766037466";
-const MANAGER_EMAIL = "singhsumeet97@gmail.com";
-const MANAGER_NAME = "Sumeet Singh";
-
-// Employee Roster: Mobile -> Full Name
-const EMPLOYEE_ROSTER = {
-  "8600291470": "Samsher Khan",
-  "9022919364": "Amasidha Pujari",
-  "9021782827": "Vinod Zoje",
-  "9598994006": "Vikash Modanwal",
-  "7877082453": "Shashikant Sharma",
-  "7378464714": "Mohnish Apturkar",
-  "9850852342": "Bhushan Shirsath",
-  "8788135940": "Rameshwar Khotkar",
-  "6390413284": "Aman Singh",
-  "9529450273": "Gorakh Rathod",
-  "8878685439": "Pranita Mane",
-  "9960156154": "Trupti Shende",
-  "8855956154": "Manisha Kambale",
-  "9060776013": "Tafizur Rehman",
-  "8451062174": "Kshitija Raut",
-  "9322476735": "Ashish Ingle",
-  "8010259709": "Shivappa Done",
-  "8805150888": "Kalpesh Somaji",
-  "8956677924": "Pratik Shinde",
-  "9209110190": "Pankaj Jadhav",
-  "9766037466": "Sumeet Singh"
-};
-
-// Registered Employee Emails for Automated Notifications
-const EMPLOYEE_EMAILS = {
-  "Ashish Ingle": "ashishingle735@gmail.com",
-  "Sumeet Singh": "singhsumeet97@gmail.com",
-  "Samsher Khan": "samsher@aryavartaautomation.com",
-  "Amasidha Pujari": "amasidha@aryavartaautomation.com",
-  "Vinod Zoje": "vinod@aryavartaautomation.com",
-  "Vikash Modanwal": "vikash@aryavartaautomation.com",
-  "Shashikant Sharma": "shashikant@aryavartaautomation.com",
-  "Mohnish Apturkar": "mohnish@aryavartaautomation.com",
-  "Bhushan Shirsath": "bhushan@aryavartaautomation.com",
-  "Rameshwar Khotkar": "rameshwar@aryavartaautomation.com",
-  "Aman Singh": "aman@aryavartaautomation.com",
-  "Gorakh Rathod": "gorakh@aryavartaautomation.com",
-  "Pranita Mane": "pranita@aryavartaautomation.com",
-  "Trupti Shende": "trupti@aryavartaautomation.com",
-  "Manisha Kambale": "manisha@aryavartaautomation.com",
-  "Tafizur Rehman": "tafizur@aryavartaautomation.com",
-  "Kshitija Raut": "kshitija@aryavartaautomation.com",
-  "Shivappa Done": "shivappa@aryavartaautomation.com",
-  "Kalpesh Somaji": "kalpesh@aryavartaautomation.com",
-  "Pratik Shinde": "pratik@aryavartaautomation.com",
-  "Pankaj Jadhav": "pankaj@aryavartaautomation.com"
-};
-
-function getEmployeeEmail(name, phone) {
-  if (EMPLOYEE_EMAILS[name]) return EMPLOYEE_EMAILS[name];
-  var rosterName = EMPLOYEE_ROSTER[phone];
-  if (rosterName && EMPLOYEE_EMAILS[rosterName]) return EMPLOYEE_EMAILS[rosterName];
-  return null;
-}
-
-// -------------------------------------------------------------
-// 1. GET ROUTER
-// -------------------------------------------------------------
-function doGet(e) {
-  var action = e.parameter.action;
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-
-  // A. One-Click Manager Leave Decision via Email
-  if (action === "managerDecision") {
-    var row = parseInt(e.parameter.row, 10);
-    var decision = e.parameter.decision;
-    var leaveSheet = ss.getSheetByName("Leave Requests");
-
-    if (leaveSheet && row > 1 && row <= leaveSheet.getLastRow()) {
-      leaveSheet.getRange(row, 8).setValue(decision);
-
-      var rowData = leaveSheet.getRange(row, 1, 1, 8).getValues()[0];
-      var empName = rowData[1];
-      var empPhone = rowData[2];
-      var leaveType = rowData[3];
-      var startDate = formatDateStr(rowData[4]);
-      var endDate = formatDateStr(rowData[5]);
-      var dateRangeText = (startDate === endDate) ? startDate : (startDate + " to " + endDate);
-
-      // Trigger automated confirmation email to employee
-      var empEmail = getEmployeeEmail(empName, empPhone);
-      if (empEmail) {
-        var subject = "📋 Leave Request Update: " + decision + " - Aryavarta Automation";
-        var bodyHtml = 
-          "<div style='font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; max-width: 500px; color: #1e293b;'>" +
-            "<h2 style='color: #1e3a8a; margin-top: 0;'>Aryavarta Automation</h2>" +
-            "<p>Hello <b>" + empName + "</b>,</p>" +
-            "<p>Your leave request for <b>" + dateRangeText + " (" + leaveType + ")</b> has been " +
-            "<span style='font-weight:bold; color:" + (decision === "Approved" ? "#059669" : "#dc2626") + ";'>" + decision.toUpperCase() + "</span> by Manager Sumeet Singh.</p>" +
-            "<div style='background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 4px solid " + (decision === "Approved" ? "#10b981" : "#ef4444") + "; margin: 15px 0;'>" +
-              "<p style='margin: 0; font-size: 13px;'><b>Dates:</b> " + dateRangeText + "<br><b>Status:</b> " + decision + "</p>" +
-            "</div>" +
-            "<p style='font-size: 12px; color: #64748b;'>Head Office Attendance System &bull; Chikhali, Pune</p>" +
-          "</div>";
-
-        MailApp.sendEmail({
-          to: empEmail,
-          subject: subject,
-          htmlBody: bodyHtml
-        });
-      }
-
-      var htmlOutput = 
-        "<div style='font-family:sans-serif; text-align:center; padding:40px;'>" +
-          "<h2 style='color:" + (decision === "Approved" ? "#059669" : "#dc2626") + ";'>Decision Recorded: " + decision + "</h2>" +
-          "<p>Employee <b>" + empName + "</b> has been notified via email at " + (empEmail || "registered address") + ".</p>" +
-          "<p style='color:#64748b; font-size:13px;'>You may close this window.</p>" +
-        "</div>";
-
-      return HtmlService.createHtmlOutput(htmlOutput);
-    }
-    return ContentService.createTextOutput("❌ Invalid request parameters.").setMimeType(ContentService.MimeType.TEXT);
-  }
-
-  // B. Device Authentication
-  if (action === "authDevice") {
-    var rawPhone = (e.parameter.phone || "").toString().replace(/\D/g, '').slice(-10);
-    var empName = EMPLOYEE_ROSTER[rawPhone];
-    if (!empName) return responseJSON({ success: false, message: "मोबाइल नंबर कंपनी रिकॉर्ड में नहीं मिला।" });
-
-    var regSheet = getOrCreateSheet(ss, "Device Registry", ["Employee Name", "Mobile Number", "Last Active Date"]);
-    var regData = regSheet.getDataRange().getValues();
-    var found = false;
-
-    for (var i = 1; i < regData.length; i++) {
-      if (regData[i][1].toString().replace(/\D/g, '').slice(-10) === rawPhone) {
-        regSheet.getRange(i + 1, 3).setValue(new Date());
-        found = true;
-        break;
-      }
-    }
-    if (!found) regSheet.appendRow([empName, rawPhone, new Date()]);
-
-    return responseJSON({ success: true, name: empName, phone: rawPhone });
-  }
-
-  // C. Real-Time Punch Status & Live Leave Badge Query
-  if (action === "checkStatus") {
-    var name = (e.parameter.name || "").trim();
-    var phone = (e.parameter.phone || "").toString().replace(/\D/g, '').slice(-10);
-    var todayText = Utilities.formatDate(new Date(), "Asia/Kolkata", "yyyy-MM-dd");
-    var logSheet = ss.getSheetByName("Attendance Log");
-    var status = "NEEDS_CLOCK_IN";
-    var clockInIso = null;
-
-    if (logSheet && logSheet.getLastRow() > 1) {
-      var logData = logSheet.getRange(2, 1, Math.min(logSheet.getLastRow() - 1, 150), 4).getValues();
-      for (var i = 0; i < logData.length; i++) {
-        var rawDate = logData[i][0];
-        var empName = logData[i][1];
-        var punchType = logData[i][3];
-
-        if (rawDate && empName && empName.toString().trim().toLowerCase() === name.toLowerCase()) {
-          var parsedDate = parseCellDate(rawDate);
-          if (parsedDate && Utilities.formatDate(parsedDate, "Asia/Kolkata", "yyyy-MM-dd") === todayText) {
-            if (punchType === "Clock In") {
-              if (status === "NEEDS_CLOCK_IN") {
-                status = "WORKING";
-                clockInIso = parsedDate.toISOString();
-              }
-            } else if (punchType.indexOf("Start Break") !== -1 || punchType.indexOf("Start Field") !== -1) {
-              status = "ON_BREAK";
-            } else if (punchType.indexOf("End Break") !== -1 || punchType.indexOf("End Field") !== -1) {
-              status = "WORKING";
-            } else if (punchType === "Clock Out") {
-              status = "COMPLETED";
-              break;
-            }
-          }
-        }
-      }
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e3a8a">
+  <title>Aryavarta Automation Portal</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --gold: #f59e0b;
+      --in: #059669;
+      --out: #dc2626;
+      --break: #d97706;
     }
 
-    // Inspect Latest Leave Request for Live In-App Badge
-    var latestLeave = null;
-    var leaveSheet = ss.getSheetByName("Leave Requests");
-    if (leaveSheet && leaveSheet.getLastRow() > 1) {
-      var lData = leaveSheet.getRange(2, 1, Math.min(leaveSheet.getLastRow() - 1, 60), 8).getValues();
-      for (var j = 0; j < lData.length; j++) {
-        var lEmpName = (lData[j][1] || "").toString().trim();
-        var lPhone = (lData[j][2] || "").toString().replace(/\D/g, '').slice(-10);
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        if ((name && lEmpName.toLowerCase() === name.toLowerCase()) || (phone && lPhone === phone)) {
-          var sDate = formatDateStr(lData[j][4]);
-          var eDate = formatDateStr(lData[j][5]);
-          var dText = (sDate === eDate) ? sDate : (sDate + " to " + eDate);
-
-          latestLeave = {
-            dates: dText,
-            status: lData[j][7] || "Pending",
-            type: lData[j][3] || "Full Day Leave"
-          };
-          break;
-        }
-      }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      text-align: center;
+      background: radial-gradient(circle at top, #1e1b4b, #0f172a 75%, #020617);
+      min-height: 100vh;
+      color: #1e293b;
+      overflow-x: hidden;
     }
 
-    return responseJSON({ status: status, clockInTime: clockInIso, latestLeave: latestLeave });
-  }
-
-  // D. Monthly Calendar History with Full Leave Overlay
-  if (action === "getCalendar") {
-    var name = (e.parameter.name || "").trim();
-    var month = parseInt(e.parameter.month, 10);
-    var year = parseInt(e.parameter.year, 10);
-    var logSheet = ss.getSheetByName("Attendance Log");
-    var leaveSheet = ss.getSheetByName("Leave Requests");
-    var history = {};
-
-    // 1. Load physical punches
-    if (logSheet && logSheet.getLastRow() > 1) {
-      var data = logSheet.getRange(2, 1, logSheet.getLastRow() - 1, 6).getValues();
-      for (var i = 0; i < data.length; i++) {
-        var rawDate = data[i][0];
-        var empName = data[i][1];
-        var punchType = data[i][3];
-        var durationNotes = data[i][4] || "";
-
-        if (empName && empName.toString().trim().toLowerCase() === name.toLowerCase() && rawDate) {
-          var pDate = parseCellDate(rawDate);
-          if (pDate && (pDate.getMonth() + 1) === month && pDate.getFullYear() === year) {
-            var dayKey = Utilities.formatDate(pDate, "Asia/Kolkata", "yyyy-MM-dd");
-            var timeStr = Utilities.formatDate(pDate, "Asia/Kolkata", "hh:mm a");
-            if (!history[dayKey]) history[dayKey] = { punches: [], isLeave: false, note: "" };
-            history[dayKey].punches.push(punchType + " (" + timeStr + (durationNotes ? " - " + durationNotes : "") + ")");
-          }
-        }
-      }
+    .top-action-header {
+      position: relative;
+      z-index: 30;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 415px;
+      margin: 10px auto 0 auto;
+      padding: 0 12px;
+      gap: 8px;
+    }
+    .icon-btn-pill {
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 20px;
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #ffffff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    #pwaInstallBtn {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      border: 1px solid #fef08a;
+      display: none;
     }
 
-    // 2. Overlay Approved Leaves
-    if (leaveSheet && leaveSheet.getLastRow() > 1) {
-      var lRecords = leaveSheet.getRange(2, 1, leaveSheet.getLastRow() - 1, 8).getValues();
-      for (var j = 0; j < lRecords.length; j++) {
-        var lEmp = (lRecords[j][1] || "").toString().trim();
-        var lType = lRecords[j][3] || "Full Day Leave";
-        var lStatus = lRecords[j][7] || "";
+    .curtain-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 99999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(3, 7, 18, 0.85);
+      backdrop-filter: blur(10px);
+      transition: opacity 0.8s ease, visibility 0.8s;
+    }
+    .curtain {
+      position: absolute;
+      top: 0;
+      width: 50vw;
+      height: 100vh;
+      background: radial-gradient(circle at center, #6b21a8 10%, #3b0764 60%, #0f051d 100%);
+      transition: transform 1.2s cubic-bezier(0.77, 0, 0.175, 1);
+      box-shadow: 0 0 50px rgba(0,0,0,0.8);
+    }
+    .curtain-left { left: 0; border-right: 2px solid #fde047; }
+    .curtain-right { right: 0; border-left: 2px solid #fde047; }
+    .curtain-open .curtain-left { transform: translateX(-100%); }
+    .curtain-open .curtain-right { transform: translateX(100%); }
+    .curtain-open { opacity: 0; visibility: hidden; pointer-events: none; }
 
-        if (lEmp.toLowerCase() === name.toLowerCase() && lStatus === "Approved") {
-          var startObj = parseCellDate(lRecords[j][4]);
-          var endObj = parseCellDate(lRecords[j][5]);
-
-          if (startObj && endObj) {
-            var cur = new Date(startObj.getTime());
-            while (cur <= endObj) {
-              if ((cur.getMonth() + 1) === month && cur.getFullYear() === year) {
-                var dKey = Utilities.formatDate(cur, "Asia/Kolkata", "yyyy-MM-dd");
-                if (!history[dKey]) history[dKey] = { punches: [] };
-                history[dKey].isLeave = true;
-                history[dKey].note = lType + " (Approved)";
-                history[dKey].punches.unshift("🟡 " + lType + " (Approved)");
-              }
-              cur.setDate(cur.getDate() + 1);
-            }
-          }
-        }
-      }
+    .royal-seal-btn {
+      position: relative;
+      z-index: 100000;
+      background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #b45309 100%);
+      color: #3b1704;
+      border: 3px solid #fef9c3;
+      border-radius: 50px;
+      padding: 16px 32px;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 0 30px rgba(245, 158, 11, 0.6);
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    return responseJSON({ history: history });
-  }
+    .container {
+      background: rgba(255, 255, 255, 0.96);
+      padding: 22px 18px;
+      border-radius: 26px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+      max-width: 410px;
+      margin: 15px auto 35px auto;
+      position: relative;
+      z-index: 20;
+      border: 2px solid rgba(255, 255, 255, 0.9);
+    }
 
-  return responseJSON({ status: "active" });
-}
+    .logo-container { width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; }
+    .company-logo-img { width: 100%; max-width: 240px; height: auto; display: block; object-fit: contain; }
 
-// -------------------------------------------------------------
-// 2. POST ROUTER
-// -------------------------------------------------------------
-function doPost(e) {
-  try {
-    var data = JSON.parse(e.postData.contents);
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var cleanPhone = (data.phone || "").toString().replace(/\D/g, '').slice(-10);
+    h2 { color: #0f172a; margin: 4px 0 2px 0; font-size: 20px; font-weight: 800; }
+    p.sub { color: #64748b; font-size: 13px; margin: 0 0 14px 0; }
 
-    if (!EMPLOYEE_ROSTER[cleanPhone]) return responseJSON({ status: "unauthorized" });
+    .user-card {
+      background: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 100%);
+      border: 1.5px solid #a7f3d0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      text-align: left;
+    }
+    .user-card p { margin: 2px 0; font-size: 12px; color: #047857; font-weight: 700; }
+    .user-card strong { color: #064e3b; font-size: 16px; }
 
-    var punchTime = data.clientTimestamp ? new Date(data.clientTimestamp) : new Date();
-    var todayText = Utilities.formatDate(punchTime, "Asia/Kolkata", "yyyy-MM-dd");
+    /* IN-APP LIVE STATUS BADGE */
+    #leaveStatusBadge {
+      display: none;
+      margin-top: 10px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 800;
+      text-align: left;
+      line-height: 1.4;
+    }
+    .badge-pending {
+      background: #fef3c7;
+      border: 1.5px solid #f59e0b;
+      color: #b45309;
+    }
+    .badge-approved {
+      background: #dcfce7;
+      border: 1.5px solid #10b981;
+      color: #15803d;
+    }
+    .badge-rejected {
+      background: #fee2e2;
+      border: 1.5px solid #ef4444;
+      color: #b91c1c;
+    }
 
-    // A. LEAVE APPLICATION & MANAGER NOTIFICATION DISPATCH
-    if (data.type === "Leave") {
-      var leaveSheet = getOrCreateSheet(ss, "Leave Requests", [
-        "Date Submitted", "Employee Name", "Phone", "Leave Type", "Start Date", "End Date", "Reason", "Approval Status"
-      ]);
+    .timer-card {
+      display: none;
+      background: #0f172a;
+      color: #ffffff;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 15px;
+      text-align: left;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+    }
+    .timer-title { font-size: 12px; color: #94a3b8; font-weight: 700; text-transform: uppercase; }
+    .timer-clock { font-size: 24px; font-weight: 900; color: #38bdf8; font-family: monospace; margin: 4px 0 8px 0; }
+    .progress-bar-bg { background: #334155; border-radius: 8px; height: 10px; width: 100%; overflow: hidden; }
+    .progress-bar-fill { background: linear-gradient(90deg, #10b981, #38bdf8); height: 100%; width: 0%; transition: width 1s linear; }
+    .timer-meta { display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; margin-top: 5px; }
+
+    .audit-box {
+      display: none;
+      background: #f8fafc;
+      border: 1.5px dashed #38bdf8;
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 12px;
+      text-align: left;
+    }
+    .audit-box label { font-size: 12px; margin: 0 0 4px 0; color: #0369a1; font-weight: 700; }
+
+    label { display: block; text-align: left; font-weight: 800; margin: 10px 0 5px 0; color: #334155; font-size: 13px; }
+    select, input, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      border: 1.8px solid #cbd5e1;
+      border-radius: 12px;
+      font-size: 15px;
+      box-sizing: border-box;
+      background: #ffffff;
+      color: #1e293b;
+    }
+
+    .button-group { width: 100%; margin: 8px auto; display: flex; flex-direction: column; gap: 10px; }
+    .btn {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 800;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
+      transition: transform 0.15s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { background: #94a3b8 !important; cursor: not-allowed; }
+    
+    .btn-in { background: linear-gradient(135deg, #10b981 0%, #047857 100%); }
+    .btn-out { background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%); }
+    .btn-break { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); }
+    .btn-primary { background: linear-gradient(135deg, #38bdf8 0%, #1d4ed8 100%); }
+    .btn-leave { background: linear-gradient(135deg, #d97706, #92400e); }
+    .btn-cal { background: linear-gradient(135deg, #64748b 0%, #334155 100%); }
+
+    #status { margin-top: 14px; font-weight: 700; font-size: 13.5px; padding: 10px; border-radius: 10px; line-height: 1.4; }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 10000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: #ffffff;
+      width: 90%;
+      max-width: 380px;
+      border-radius: 22px;
+      padding: 22px;
+      box-sizing: border-box;
+      text-align: left;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .modal-header h3 { margin: 0; font-size: 17px; color: #0f172a; font-weight: 800; }
+    .close-btn { font-size: 26px; cursor: pointer; color: #94a3b8; font-weight: 800; }
+
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-top: 10px; }
+    .cal-header { font-weight: 800; font-size: 11px; color: #64748b; padding: 4px 0; }
+    .cal-cell {
+      font-size: 12px;
+      padding: 9px 0;
+      border-radius: 8px;
+      background: #f1f5f9;
+      color: #1e293b;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+    }
+    .cal-cell:active { transform: scale(0.92); }
+    .cal-present { background: #dcfce7; color: #15803d; font-weight: 800; }
+    .cal-leave { background: #fef3c7; color: #b45309; font-weight: 900; border: 1.5px solid #f59e0b; }
+    .cal-sunday { background: #fee2e2; color: #b91c1c; }
+
+    .bye-modal-content { text-align: center; background: white; padding: 28px 20px; border-radius: 24px; max-width: 320px; width: 85%; }
+  </style>
+</head>
+<body>
+
+  <div class="top-action-header">
+    <button type="button" class="icon-btn-pill" id="muteToggleBtn" onclick="toggleAudioMute()">
+      <span id="muteIcon">🔊</span> <span id="muteLabel">Voice On</span>
+    </button>
+    <button type="button" class="icon-btn-pill" id="pwaInstallBtn" onclick="triggerPwaInstall()">
+      <span>📲</span> Install App
+    </button>
+    <button type="button" class="icon-btn-pill" onclick="enableDirectPhoneAlerts()">
+      <span>🔔</span> Phone Alerts
+    </button>
+  </div>
+
+  <div class="curtain-overlay" id="curtainOverlay">
+    <div class="curtain curtain-left"></div>
+    <div class="curtain curtain-right"></div>
+    <button type="button" class="royal-seal-btn" id="portalUnlockBtn" onclick="unlockPortalAndSpeak()">
+      <span>✨ 🌸</span> प्रवेश करें (Open) <span>🌸 ✨</span>
+    </button>
+  </div>
+
+  <div class="container">
+    <div class="logo-container">
+      <img src="logo.png" alt="Aryavarta Automation Logo" class="company-logo-img">
+    </div>
+
+    <h2>Aryavarta Automation</h2>
+    <p class="sub">Chikhali Head Office Portal</p>
+
+    <!-- Login Box -->
+    <div id="loginBox" style="display:none;">
+      <div style="background:#eff6ff;border:1.5px solid #bfdbfe;padding:12px;border-radius:12px;margin-bottom:14px;">
+        <p style="color:#1e40af;font-weight:bold;margin:0;font-size:13.5px;">👤 कर्मचारी पहचान (Login)</p>
+        <p style="color:#1e3a8a;font-size:12px;margin:3px 0 0 0;">कृपया अपना 10 अंकों का रजिस्टर्ड मोबाइल नंबर दर्ज करें।</p>
+      </div>
+      <label for="inputPhone">रजिस्टर्ड मोबाइल नंबर</label>
+      <input type="tel" id="inputPhone" placeholder="10-digit Mobile Number" maxlength="10">
+      <button type="button" class="btn btn-primary" onclick="handleManualLogin()">पोर्टल में प्रवेश करें 🚀</button>
+    </div>
+
+    <!-- Active Attendance Form -->
+    <div id="punchForm" style="display:none;">
+      <div class="user-card">
+        <p>प्रमाणित कर्मचारी (Verified):</p>
+        <strong id="displayEmpName">Loading...</strong>
+        <p id="displayEmpPhone" style="font-size:12px; margin-top:2px;"></p>
+        
+        <!-- Live Leave Status Badge -->
+        <div id="leaveStatusBadge"></div>
+      </div>
+
+      <!-- Live Shift Timer -->
+      <div class="timer-card" id="timerCard">
+        <div class="timer-title">⏱️ Shift Duration (Active Duty)</div>
+        <div class="timer-clock" id="liveTimerText">00 hrs : 00 mins : 00 secs</div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="timerProgressFill"></div>
+        </div>
+        <div class="timer-meta">
+          <span>Target: 8.5 Hours</span>
+          <span id="targetRemainingText">Calculating...</span>
+        </div>
+      </div>
+
+      <div id="punchControls">
+        <label for="workMode">कार्य असाइनमेंट मोड (Work Mode)</label>
+        <select id="workMode" onchange="toggleMode(this.value)">
+          <option value="Office">Office (Patil Nagar - 150m Lock)</option>
+          <option value="Site">Working from Site (Requires Project Name)</option>
+          <option value="WFH">Working from Home (Requires Reason)</option>
+        </select>
+
+        <div class="audit-box" id="siteAuditBox">
+          <label for="siteNameInput">प्रोजेक्ट / साइट का नाम (Mandatory Site Details):</label>
+          <input type="text" id="siteNameInput" placeholder="उदा: Tata Motors Bhosari / Kirloskar Site">
+        </div>
+
+        <div class="audit-box" id="wfhAuditBox">
+          <label for="wfhReasonInput">WFH का कारण (Reason for Home Working):</label>
+          <input type="text" id="wfhReasonInput" placeholder="उदा: Approved by Manager / Remote Testing">
+        </div>
+
+        <div class="button-group">
+          <button type="button" class="btn btn-in" id="btnIn" style="display:none;" onclick="startAttendanceFlow('Clock In')">
+            <span>📥</span> Confirm Clock In
+          </button>
+          
+          <button type="button" class="btn btn-break" id="btnBreak" style="display:none;" onclick="toggleBreakDuty()">
+            <span id="breakBtnIcon">☕</span> <span id="breakBtnText">Start Break / Field Visit</span>
+          </button>
+
+          <button type="button" class="btn btn-out" id="btnOut" style="display:none;" onclick="startAttendanceFlow('Clock Out')">
+            <span>🚪</span> Confirm Clock Out
+          </button>
+        </div>
+      </div>
+
+      <div id="status"></div>
+
+      <div class="button-group" style="margin-top:18px; border-top: 1.5px solid #f1f5f9; padding-top:14px;">
+        <button type="button" class="btn btn-leave" onclick="openLeaveModal()">📝 Apply Leave / Half Day</button>
+        <button type="button" class="btn btn-cal" onclick="openCalendarModal()">📅 My Attendance Calendar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEAVE APPLICATION MODAL -->
+  <div id="leaveModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>छुट्टी आवेदन (Leave Request)</h3>
+        <span class="close-btn" onclick="closeLeaveModal()">&times;</span>
+      </div>
       
-      leaveSheet.insertRowBefore(2);
-      leaveSheet.getRange(2, 1, 1, 8).setValues([[
-        punchTime, data.name, cleanPhone, data.leaveType, data.startDate, data.endDate, data.reason, "Pending"
-      ]]);
+      <label for="leaveDuration">अवधि चुनें (Duration)</label>
+      <select id="leaveDuration" onchange="toggleDateRange(this.value)">
+        <option value="single">एक दिन की छुट्टी (Single Day)</option>
+        <option value="range">कई दिनों की छुट्टी (Date Range)</option>
+      </select>
+
+      <label for="leaveType">छुट्टी का प्रकार (Leave Type)</label>
+      <select id="leaveType">
+        <option value="Full Day Leave">Full Day Leave</option>
+        <option value="Half Day Leave">Half Day Leave</option>
+      </select>
+
+      <div id="singleDateBox">
+        <label for="leaveSingleDate">दिनांक (Date)</label>
+        <input type="date" id="leaveSingleDate">
+      </div>
+
+      <div id="rangeDateBox" style="display:none;">
+        <label for="leaveStartDate">प्रारंभ दिनांक (Start Date)</label>
+        <input type="date" id="leaveStartDate">
+        <label for="leaveEndDate">अंतिम दिनांक (End Date)</label>
+        <input type="date" id="leaveEndDate">
+      </div>
+
+      <label for="leaveReason">छुट्टी का कारण (Specific Reason)</label>
+      <textarea id="leaveReason" rows="3" placeholder="यहाँ कारण लिखें..."></textarea>
+
+      <button type="button" class="btn btn-leave" id="btnSubmitLeave" onclick="submitLeave()">आवेदन जमा करें ✨</button>
+    </div>
+  </div>
+
+  <!-- CALENDAR MODAL -->
+  <div id="calModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="calMonthTitle">उपस्थिति इतिहास</h3>
+        <span class="close-btn" onclick="closeCalendarModal()">&times;</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+        <button class="btn btn-cal" style="width:45%;padding:8px;" onclick="prevMonth()">◀ पिछला</button>
+        <button class="btn btn-cal" style="width:45%;padding:8px;" onclick="nextMonth()">अगला ▶</button>
+      </div>
+      <div class="calendar-grid" id="calendarBody"></div>
+      <div style="font-size:11px;margin-top:12px;color:#64748b;font-weight:600;">
+        🟢 उपस्थित | 🟡 छुट्टी (Approved Leave) | 🔴 रविवार
+      </div>
+    </div>
+  </div>
+
+  <!-- SHIFT NOTE / DAY DETAILS MODAL -->
+  <div id="dayDetailModal" class="modal">
+    <div class="modal-content" style="max-width:320px; text-align:center;">
+      <h3 id="detailDayTitle" style="color:#0f172a; margin-bottom:8px;">Shift Details</h3>
+      <div id="detailDayBody" style="background:#f8fafc; padding:14px; border-radius:12px; font-size:14px; font-weight:700; color:#1e293b; margin-bottom:14px; line-height:1.5;"></div>
+      <button type="button" class="btn btn-primary" onclick="closeDayDetailModal()">ठीक है (OK)</button>
+    </div>
+  </div>
+
+  <!-- BYE MODAL -->
+  <div id="byeModal" class="modal">
+    <div class="bye-modal-content">
+      <h3 style="margin:12px 0 6px 0; color:#0f172a; font-size:19px; font-weight:800;" id="byeTitle">धन्यवाद!</h3>
+      <p style="color:#64748b; font-size:13.5px; margin:0;" id="byeMessage">उपस्थिति सफलतापूर्वक दर्ज कर ली गई है।</p>
+      <button class="btn btn-primary" style="margin-top:16px;" onclick="closeByeModal()">ठीक है (Close)</button>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwquZGro0VtZ-I4jegMaMiigBASs1yJ8WY50i_JkC8tofCK6o4oHPhgG3t3lF0c-IH2/exec";
+    const MANAGER_WHATSAPP = "919766037466";
+
+    let currentEmp = { name: "", phone: "" };
+    let calDate = new Date();
+    let currentVoice = null;
+    let isMuted = localStorage.getItem("aa_is_muted") === "true";
+    let deferredPrompt = null;
+    let clockInTimestamp = null;
+    let timerInterval = null;
+    let currentDutyState = "NEEDS_CLOCK_IN";
+
+    // 1. IndexedDB Offline Queuing
+    let db;
+    const dbRequest = indexedDB.open("AryavartaDB", 1);
+    dbRequest.onupgradeneeded = (e) => {
+      db = e.target.result;
+      if (!db.objectStoreNames.contains("punchQueue")) {
+        db.createObjectStore("punchQueue", { keyPath: "id", autoIncrement: true });
+      }
+    };
+    dbRequest.onsuccess = (e) => {
+      db = e.target.result;
+      flushIndexedDbQueue();
+    };
+
+    function saveToIndexedDb(payload) {
+      if (!db) return;
+      const tx = db.transaction("punchQueue", "readwrite");
+      const store = tx.objectStore("punchQueue");
+      store.add(payload);
+      tx.oncomplete = () => {
+        document.getElementById("btnIn").disabled = false;
+        document.getElementById("btnOut").disabled = false;
+        document.getElementById("status").style.color = "#d97706";
+        document.getElementById("status").innerHTML = "⚠️ ऑफलाइन मोड: उपस्थिति फोन में सुरक्षित है।";
+        speakHindi("इंटरनेट नहीं है। उपस्थिति सुरक्षित है।");
+      };
+    }
+
+    function flushIndexedDbQueue() {
+      if (!db || !navigator.onLine) return;
+      const tx = db.transaction("punchQueue", "readwrite");
+      const store = tx.objectStore("punchQueue");
+      const getAllReq = store.getAll();
+
+      getAllReq.onsuccess = () => {
+        const records = getAllReq.result;
+        if (!records || records.length === 0) return;
+
+        records.forEach(rec => {
+          fetch(SCRIPT_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(rec)
+          }).then(() => {
+            const delTx = db.transaction("punchQueue", "readwrite");
+            delTx.objectStore("punchQueue").delete(rec.id);
+          });
+        });
+
+        document.getElementById("status").style.color = "#059669";
+        document.getElementById("status").innerHTML = "✅ सभी ऑफलाइन रिकॉर्ड सिंक हो चुके हैं!";
+      };
+    }
+
+    window.addEventListener('online', flushIndexedDbQueue);
+
+    // 2. Service Worker & Push
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(console.error);
+    }
+
+    async function enableDirectPhoneAlerts() {
+      if (!('Notification' in window)) return alert("❌ ब्राउज़र वेब नोटिफिकेशन समर्थित नहीं है।");
+      let permission = Notification.permission;
+      if (permission !== "granted") permission = await Notification.requestPermission();
+      if (permission !== "granted") return alert("⚠️ नोटिफिकेशन अनुमति अस्वीकृत है।");
 
       try {
-        var scriptUrl = ScriptApp.getService().getUrl();
-        var approveUrl = scriptUrl + "?action=managerDecision&row=2&decision=Approved";
-        var rejectUrl = scriptUrl + "?action=managerDecision&row=2&decision=Rejected";
-
-        var subject = "📋 Leave Request: " + data.name + " (" + data.leaveType + ")";
-        var htmlBody = 
-          "<div style='font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; max-width: 520px; color: #0f172a;'>" +
-            "<h3 style='color: #1e3a8a; margin-top: 0;'>New Leave Application Submitted</h3>" +
-            "<p><b>Employee:</b> " + data.name + " (" + cleanPhone + ")</p>" +
-            "<p><b>Leave Type:</b> " + data.leaveType + "</p>" +
-            "<p><b>Duration:</b> " + data.startDate + " to " + data.endDate + "</p>" +
-            "<p><b>Reason:</b> " + data.reason + "</p>" +
-            "<hr style='border: none; border-top: 1px solid #cbd5e1; margin: 20px 0;'>" +
-            "<p style='font-weight:bold; margin-bottom: 12px;'>Manager Decision Required:</p>" +
-            "<div style='display: flex; gap: 12px;'>" +
-              "<a href='" + approveUrl + "' style='background: #10b981; color: white; padding: 12px 22px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;'>Approve Leave</a>&nbsp;&nbsp;" +
-              "<a href='" + rejectUrl + "' style='background: #ef4444; color: white; padding: 12px 22px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;'>Reject Leave</a>" +
-            "</div>" +
-          "</div>";
-
-        MailApp.sendEmail({ to: MANAGER_EMAIL, subject: subject, htmlBody: htmlBody });
-      } catch(mailErr) {
-        Logger.log("Manager mail dispatch failed: " + mailErr.toString());
+        const reg = await navigator.serviceWorker.ready;
+        await reg.showNotification("आर्यावर्त अटेंडेंस अलर्ट सक्रिय! 🔔", {
+          body: "सुप्रभात! 10:01 AM और 6:01 PM पर उपस्थिति नोटिफिकेशन सक्रिय हो चुके हैं।",
+          icon: "./logo.png",
+          badge: "./logo.png",
+          vibrate: [300, 100, 300],
+          tag: "attendance-active-test"
+        });
+        alert("✅ फोन अलर्ट सक्रिय हो गया है!");
+      } catch (err) {
+        alert("⚠️ नोटिफिकेशन एरर: " + err.message);
       }
-
-      return responseJSON({ status: "success" });
     }
 
-    // B. PUNCH & BREAK PROCESSING
-    var empLat = parseFloat(data.lat);
-    var empLon = parseFloat(data.lon);
-    var accuracy = parseFloat(data.accuracy) || 0;
-    var mode = data.mode;
-    var punchType = data.forceType;
-    var siteDetails = data.siteDetails ? " [Site: " + data.siteDetails + "]" : "";
-    var wfhJustification = data.wfhReason ? " [WFH: " + data.wfhReason + "]" : "";
-    var fullModeText = mode + siteDetails + wfhJustification;
-
-    var distanceText = "N/A (" + mode + ")";
-    if (mode === "Office") {
-      if (!empLat || !empLon) return responseJSON({ status: "error", message: "Location coordinates required." });
-      var distance = haversineDistance(empLat, empLon, OFFICE_LAT, OFFICE_LON);
-      if (distance > MAX_RADIUS_METERS) {
-        return responseJSON({ status: "geofence_fail", distance: Math.round(distance) });
+    // 3. Audio Handlers
+    function initVoice() {
+      if ('speechSynthesis' in window) {
+        let voices = window.speechSynthesis.getVoices();
+        currentVoice = voices.find(v => v.lang === 'hi-IN' || v.lang.startsWith('hi')) || null;
       }
-      distanceText = Math.round(distance) + " meters";
+    }
+    if ('speechSynthesis' in window) window.speechSynthesis.onvoiceschanged = initVoice;
+
+    function speakHindi(text) {
+      if (isMuted || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      let utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'hi-IN';
+      utterance.rate = 0.95;
+      if (currentVoice) utterance.voice = currentVoice;
+      window.speechSynthesis.speak(utterance);
     }
 
-    var logSheet = ss.getSheetByName("Attendance Log");
-    var totalHoursDec = 0.0;
-    var totalHoursText = "Active Duty";
-    var overtimeHours = 0.0;
-    var lateMarkStatus = "On Time";
+    function toggleAudioMute() {
+      isMuted = !isMuted;
+      localStorage.setItem("aa_is_muted", isMuted);
+      document.getElementById("muteIcon").innerText = isMuted ? "🔇" : "🔊";
+      document.getElementById("muteLabel").innerText = isMuted ? "Muted" : "Voice On";
+      if (isMuted && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+    }
 
-    var hourIST = parseInt(Utilities.formatDate(punchTime, "Asia/Kolkata", "HH"), 10);
-    var minIST = parseInt(Utilities.formatDate(punchTime, "Asia/Kolkata", "mm"), 10);
+    function unlockPortalAndSpeak() {
+      document.getElementById("curtainOverlay").classList.add("curtain-open");
+      let savedName = localStorage.getItem("aa_emp_name") || currentEmp.name || "सहकर्मी";
+      let hour = new Date().getHours();
 
-    if (punchType === "Clock In") {
-      if (hourIST > 10 || (hourIST === 10 && minIST > 0)) {
-        lateMarkStatus = "Late (Grace Exceeded)";
+      if (hour < 14) {
+        speakHindi(`सुप्रभात ${savedName} जी! आर्यावर्त पोर्टल में आपका स्वागत है।`);
+      } else {
+        speakHindi(`नमस्ते ${savedName} जी! प्रस्थान के लिए कृपया क्लॉक आउट करें।`);
       }
-    } else if (punchType === "Clock Out") {
-      if (logSheet && logSheet.getLastRow() > 1) {
-        var existingLogs = logSheet.getRange(2, 1, Math.min(logSheet.getLastRow() - 1, 100), 4).getValues();
-        for (var k = 0; k < existingLogs.length; k++) {
-          var pDate = parseCellDate(existingLogs[k][0]);
-          var pName = existingLogs[k][1];
-          var pType = existingLogs[k][3];
 
-          if (pName && pName.toString().trim().toLowerCase() === data.name.trim().toLowerCase() && pType === "Clock In" && pDate) {
-            if (Utilities.formatDate(pDate, "Asia/Kolkata", "yyyy-MM-dd") === todayText) {
-              var diffHours = (punchTime.getTime() - pDate.getTime()) / (1000 * 60 * 60);
-              totalHoursDec = parseFloat(diffHours.toFixed(2));
-              totalHoursText = totalHoursDec + " hrs worked";
-              if (totalHoursDec > 8.5) {
-                overtimeHours = parseFloat((totalHoursDec - 8.5).toFixed(2));
-              }
-              break;
+      if (currentEmp.name) refreshTodayStatus();
+    }
+
+    // 4. Timer Logic
+    function startLiveShiftTimer(isoStartTime) {
+      if (!isoStartTime) return;
+      clockInTimestamp = new Date(isoStartTime).getTime();
+      document.getElementById("timerCard").style.display = "block";
+
+      if (timerInterval) clearInterval(timerInterval);
+
+      timerInterval = setInterval(() => {
+        let now = new Date().getTime();
+        let diffMs = Math.max(0, now - clockInTimestamp);
+
+        let totalSecs = Math.floor(diffMs / 1000);
+        let hrs = Math.floor(totalSecs / 3600);
+        let mins = Math.floor((totalSecs % 3600) / 60);
+        let secs = totalSecs % 60;
+
+        document.getElementById("liveTimerText").innerText = 
+          `${String(hrs).padStart(2, '0')} hrs : ${String(mins).padStart(2, '0')} mins : ${String(secs).padStart(2, '0')} secs`;
+
+        let targetMs = 8.5 * 3600 * 1000;
+        let pct = Math.min(100, (diffMs / targetMs) * 100);
+        document.getElementById("timerProgressFill").style.width = pct.toFixed(1) + "%";
+
+        let remainingMs = targetMs - diffMs;
+        if (remainingMs > 0) {
+          let remHrs = Math.floor(remainingMs / 3600000);
+          let remMins = Math.floor((remainingMs % 3600000) / 60000);
+          document.getElementById("targetRemainingText").innerText = `${remHrs}h ${remMins}m remaining`;
+        } else {
+          document.getElementById("targetRemainingText").innerText = "Overtime Active ⭐";
+        }
+      }, 1000);
+    }
+
+    function stopLiveShiftTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      document.getElementById("timerCard").style.display = "none";
+    }
+
+    // 5. App Lifecycle & Status Synchronization
+    window.onload = function() {
+      initVoice();
+      let todayStr = new Date().toISOString().split('T')[0];
+      document.getElementById("leaveSingleDate").value = todayStr;
+      document.getElementById("leaveStartDate").value = todayStr;
+      document.getElementById("leaveEndDate").value = todayStr;
+
+      const urlParams = new URLSearchParams(window.location.search);
+      let directPhone = urlParams.get('p') || urlParams.get('phone');
+      let savedPhone = directPhone ? directPhone.replace(/\D/g, '').slice(-10) : localStorage.getItem("aa_emp_phone");
+      let savedName = localStorage.getItem("aa_emp_name");
+
+      if (savedPhone && savedPhone.length === 10) {
+        currentEmp = { name: savedName || "Employee", phone: savedPhone };
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("punchForm").style.display = "block";
+        document.getElementById("displayEmpName").innerText = savedName || "Loading...";
+        document.getElementById("displayEmpPhone").innerText = "📱 +91 " + savedPhone;
+
+        fetch(`${SCRIPT_URL}?action=authDevice&phone=${savedPhone}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              currentEmp.name = data.name;
+              localStorage.setItem("aa_emp_name", data.name);
+              document.getElementById("displayEmpName").innerText = data.name;
+              refreshTodayStatus();
             }
+          });
+      } else {
+        document.getElementById("loginBox").style.display = "block";
+        document.getElementById("punchForm").style.display = "none";
+      }
+    };
+
+    function handleManualLogin() {
+      let phone = document.getElementById("inputPhone").value.trim().replace(/\D/g, '').slice(-10);
+      if (phone.length !== 10) return alert("कृपया 10 अंकों का मोबाइल नंबर दर्ज करें।");
+
+      document.getElementById("status").innerHTML = "🔄 सत्यापन जारी...";
+      fetch(`${SCRIPT_URL}?action=authDevice&phone=${phone}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            localStorage.setItem("aa_emp_phone", phone);
+            localStorage.setItem("aa_emp_name", data.name);
+            currentEmp = { name: data.name, phone: phone };
+
+            document.getElementById("loginBox").style.display = "none";
+            document.getElementById("punchForm").style.display = "block";
+            document.getElementById("displayEmpName").innerText = data.name;
+            document.getElementById("displayEmpPhone").innerText = "📱 +91 " + phone;
+            refreshTodayStatus();
+          } else {
+            alert("⚠️ " + data.message);
           }
+        });
+    }
+
+    function toggleMode(val) {
+      document.getElementById("siteAuditBox").style.display = (val === "Site") ? "block" : "none";
+      document.getElementById("wfhAuditBox").style.display = (val === "WFH") ? "block" : "none";
+    }
+
+    // Refresh Shift State & In-App Live Leave Badge
+    function refreshTodayStatus() {
+      fetch(`${SCRIPT_URL}?action=checkStatus&name=${encodeURIComponent(currentEmp.name)}&phone=${currentEmp.phone}`)
+        .then(res => res.json())
+        .then(res => {
+          currentDutyState = res.status;
+          let btnIn = document.getElementById("btnIn");
+          let btnOut = document.getElementById("btnOut");
+          let btnBreak = document.getElementById("btnBreak");
+          let statusDiv = document.getElementById("status");
+
+          // Handle In-App Live Leave Status Badge
+          let badge = document.getElementById("leaveStatusBadge");
+          if (res.latestLeave) {
+            badge.style.display = "block";
+            badge.className = "";
+            let st = res.latestLeave.status;
+
+            if (st === "Pending") {
+              badge.className = "badge-pending";
+              badge.innerHTML = `⏳ Leave Request for <b>${res.latestLeave.dates}</b> is PENDING Manager Approval`;
+            } else if (st === "Approved") {
+              badge.className = "badge-approved";
+              badge.innerHTML = `🟢 Leave Request for <b>${res.latestLeave.dates}</b> has been APPROVED by Sumeet Singh`;
+            } else if (st === "Rejected") {
+              badge.className = "badge-rejected";
+              badge.innerHTML = `🔴 Leave Request for <b>${res.latestLeave.dates}</b> was REJECTED by Manager`;
+            } else {
+              badge.style.display = "none";
+            }
+          } else {
+            badge.style.display = "none";
+          }
+
+          if (res.status === "NEEDS_CLOCK_IN") {
+            btnIn.style.display = "flex";
+            btnOut.style.display = "none";
+            btnBreak.style.display = "none";
+            stopLiveShiftTimer();
+            statusDiv.innerHTML = "";
+          } else if (res.status === "WORKING") {
+            btnIn.style.display = "none";
+            btnOut.style.display = "flex";
+            btnBreak.style.display = "flex";
+            document.getElementById("breakBtnIcon").innerText = "☕";
+            document.getElementById("breakBtnText").innerText = "Start Break / Field Visit";
+            statusDiv.style.color = "#2563eb";
+            statusDiv.innerHTML = "ℹ️ आप कार्यरत हैं (Active Duty)।";
+            if (res.clockInTime) startLiveShiftTimer(res.clockInTime);
+          } else if (res.status === "ON_BREAK") {
+            btnIn.style.display = "none";
+            btnOut.style.display = "none";
+            btnBreak.style.display = "flex";
+            document.getElementById("breakBtnIcon").innerText = "▶️";
+            document.getElementById("breakBtnText").innerText = "Resume Duty (End Break)";
+            statusDiv.style.color = "#d97706";
+            statusDiv.innerHTML = "⏸️ आप ब्रेक / फील्ड विजिट पर हैं।";
+          } else if (res.status === "COMPLETED") {
+            btnIn.style.display = "none";
+            btnOut.style.display = "none";
+            btnBreak.style.display = "none";
+            stopLiveShiftTimer();
+            statusDiv.style.color = "#059669";
+            statusDiv.innerHTML = "✅ आज की उपस्थिति पूर्ण हो चुकी है।";
+          }
+        });
+    }
+
+    function toggleBreakDuty() {
+      if (currentDutyState === "WORKING") {
+        let reason = prompt("ब्रेक या फील्ड विजिट का उद्देश्य दर्ज करें:", "Lunch Break");
+        if (!reason) return;
+        startAttendanceFlow("Start Break (" + reason + ")");
+      } else if (currentDutyState === "ON_BREAK") {
+        startAttendanceFlow("End Break");
+      }
+    }
+
+    // 6. Punch Submission Flow
+    function startAttendanceFlow(type) {
+      let mode = document.getElementById("workMode").value;
+      let siteVal = document.getElementById("siteNameInput").value.trim();
+      let wfhVal = document.getElementById("wfhReasonInput").value.trim();
+      let statusDiv = document.getElementById("status");
+      let btnIn = document.getElementById("btnIn");
+      let btnOut = document.getElementById("btnOut");
+
+      if (mode === "Site" && !siteVal) {
+        alert("⚠️ कृपया साइट का नाम दर्ज करें।");
+        return document.getElementById("siteNameInput").focus();
+      }
+      if (mode === "WFH" && !wfhVal) {
+        alert("⚠️ कृपया WFH का कारण दर्ज करें।");
+        return document.getElementById("wfhReasonInput").focus();
+      }
+
+      btnIn.disabled = true;
+      btnOut.disabled = true;
+      statusDiv.style.color = "#d97706";
+      statusDiv.innerHTML = "🛰️ जीपीएस स्थान सत्यापित किया जा रहा है...";
+      speakHindi(`${type} प्रक्रिया जारी है।`);
+
+      if (mode === "Office") {
+        navigator.geolocation.getCurrentPosition(
+          pos => executePunch(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, mode, type, siteVal, wfhVal),
+          () => {
+            btnIn.disabled = false;
+            btnOut.disabled = false;
+            statusDiv.style.color = "#dc2626";
+            statusDiv.innerHTML = "❌ जीपीएस सिग्नल नहीं मिला। लोकेशन ऑन करें।";
+          },
+          { enableHighAccuracy: true, timeout: 7000 }
+        );
+      } else {
+        executePunch(null, null, null, mode, type, siteVal, wfhVal);
+      }
+    }
+
+    function executePunch(lat, lon, acc, mode, type, siteVal, wfhVal) {
+      let payload = {
+        name: currentEmp.name,
+        phone: currentEmp.phone,
+        mode: mode,
+        siteDetails: siteVal,
+        wfhReason: wfhVal,
+        lat: lat,
+        lon: lon,
+        accuracy: acc,
+        forceType: type,
+        clientTimestamp: new Date().toISOString()
+      };
+
+      if (!navigator.onLine) {
+        saveToIndexedDb(payload);
+        return;
+      }
+
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        document.getElementById("btnIn").disabled = false;
+        document.getElementById("btnOut").disabled = false;
+        showByeAnimation(`${type} सफल!`, "आपकी उपस्थिति दर्ज हो चुकी है। धन्यवाद!");
+        speakHindi(`धन्यवाद ${currentEmp.name} जी, आपका ${type} दर्ज हो चुका है।`);
+        setTimeout(refreshTodayStatus, 1500);
+      })
+      .catch(() => saveToIndexedDb(payload));
+    }
+
+    // 7. Leave Application Flow
+    function openLeaveModal() { document.getElementById("leaveModal").style.display = "flex"; }
+    function closeLeaveModal() { document.getElementById("leaveModal").style.display = "none"; }
+    function toggleDateRange(val) {
+      document.getElementById("singleDateBox").style.display = (val === "range") ? "none" : "block";
+      document.getElementById("rangeDateBox").style.display = (val === "range") ? "block" : "none";
+    }
+
+    function submitLeave() {
+      let duration = document.getElementById("leaveDuration").value;
+      let lType = document.getElementById("leaveType").value;
+      let sDate = duration === "single" ? document.getElementById("leaveSingleDate").value : document.getElementById("leaveStartDate").value;
+      let eDate = duration === "single" ? sDate : document.getElementById("leaveEndDate").value;
+      let reason = document.getElementById("leaveReason").value.trim();
+
+      if (!sDate || !eDate || !reason) return alert("तारीख और कारण दोनों दर्ज करें।");
+
+      let btn = document.getElementById("btnSubmitLeave");
+      btn.disabled = true;
+      btn.innerText = "जमा हो रहा है...";
+
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "Leave",
+          name: currentEmp.name,
+          phone: currentEmp.phone,
+          leaveType: lType,
+          startDate: sDate,
+          endDate: eDate,
+          reason: reason
+        })
+      }).then(() => {
+        btn.disabled = false;
+        btn.innerText = "आवेदन जमा करें ✨";
+        closeLeaveModal();
+
+        let msg = `*Aryavarta Leave Request*%0A*Employee:* ${currentEmp.name}%0A*Type:* ${lType}%0A*Dates:* ${sDate} to ${eDate}%0A*Reason:* ${reason}`;
+        let waUrl = `https://wa.me/${MANAGER_WHATSAPP}?text=${msg}`;
+
+        if (confirm("✅ अवकाश आवेदन जमा हो चुका है!\n\nक्या आप मैनेजर सुमीत सिंह जी को व्हाट्सएप पर भी सूचित करना चाहते हैं?")) {
+          window.open(waUrl, '_blank');
         }
-      }
-      lateMarkStatus = "Clocked Out";
-    } else if (punchType.indexOf("Break") !== -1 || punchType.indexOf("Field Duty") !== -1) {
-      totalHoursText = punchType;
-      lateMarkStatus = "Mid-Day Log";
+
+        speakHindi("अवकाश आवेदन दर्ज हो चुका है।");
+        setTimeout(refreshTodayStatus, 1500);
+      });
     }
 
-    logSheet.insertRowBefore(2);
-    logSheet.getRange(2, 1, 1, 11).setValues([[
-      punchTime, data.name, fullModeText, punchType, totalHoursDec, totalHoursText, overtimeHours, lateMarkStatus, distanceText, empLat || "N/A", empLon || "N/A"
-    ]]);
+    // 8. Calendar & Shift Note Viewer
+    function openCalendarModal() { document.getElementById("calModal").style.display = "flex"; renderCalendar(); }
+    function closeCalendarModal() { document.getElementById("calModal").style.display = "none"; }
+    function prevMonth() { calDate.setMonth(calDate.getMonth() - 1); renderCalendar(); }
+    function nextMonth() { calDate.setMonth(calDate.getMonth() + 1); renderCalendar(); }
 
-    if (lateMarkStatus === "Late (Grace Exceeded)") {
-      logSheet.getRange(2, 8).setBackground("#fef08a");
+    function renderCalendar() {
+      let year = calDate.getFullYear();
+      let month = calDate.getMonth();
+      const months = ["जनवरी","फरवरी","मार्च","अप्रैल","मई","जून","जुलाई","अगस्त","सितंबर","अक्टूबर","नवंबर","दिसंबर"];
+      document.getElementById("calMonthTitle").innerText = months[month] + " " + year;
+
+      let body = document.getElementById("calendarBody");
+      body.innerHTML = "<div class='cal-header'>रवि</div><div class='cal-header'>सोम</div><div class='cal-header'>मंगल</div><div class='cal-header'>बुध</div><div class='cal-header'>गुरु</div><div class='cal-header'>शुक्र</div><div class='cal-header'>शनि</div>";
+
+      fetch(`${SCRIPT_URL}?action=getCalendar&name=${encodeURIComponent(currentEmp.name)}&month=${month + 1}&year=${year}`)
+        .then(res => res.json())
+        .then(data => {
+          let history = data.history || {};
+          let firstDay = new Date(year, month, 1).getDay();
+          let totalDays = new Date(year, month + 1, 0).getDate();
+
+          for (let i = 0; i < firstDay; i++) body.innerHTML += "<div></div>";
+
+          for (let d = 1; d <= totalDays; d++) {
+            let dateKey = year + "-" + String(month + 1).padStart(2, '0') + "-" + String(d).padStart(2, '0');
+            let isSunday = new Date(year, month, d).getDay() === 0;
+            let entry = history[dateKey];
+            let cellClass = "cal-cell";
+            let shiftNote = "";
+
+            if (isSunday) {
+              cellClass += " cal-sunday";
+              shiftNote = "Sunday (Weekly Off)";
+            }
+
+            if (entry) {
+              if (entry.isLeave) {
+                cellClass += " cal-leave";
+                shiftNote = entry.note || "Full Day Leave (Approved)";
+              } else {
+                cellClass += " cal-present";
+                shiftNote = entry.punches.join("<br>");
+              }
+            } else if (!isSunday) {
+              shiftNote = "No Record / Absent";
+            }
+
+            let cellElem = document.createElement("div");
+            cellElem.className = cellClass;
+            cellElem.innerText = d;
+            cellElem.onclick = function() {
+              openDayDetailModal(dateKey, shiftNote);
+            };
+            body.appendChild(cellElem);
+          }
+        });
     }
 
-    var mapSheet = getOrCreateSheet(ss, "Daily Map View", [
-      "Timestamp", "Employee Name", "Phone", "Mode", "Punch Type", "Latitude", "Longitude", "Exact Map Pin Link"
-    ]);
-    var mapUrl = (empLat && empLon) ? '=HYPERLINK("https://www.google.com/maps?q=' + empLat + ',' + empLon + '", "📍 View Exact Location on Map")' : "Location Unavailable";
-    mapSheet.insertRowBefore(2);
-    mapSheet.getRange(2, 1, 1, 8).setValues([[
-      punchTime, data.name, cleanPhone, fullModeText, punchType, empLat || "N/A", empLon || "N/A", mapUrl
-    ]]);
-
-    return responseJSON({ status: "success", shiftDuration: totalHoursText });
-
-  } catch(error) {
-    return responseJSON({ status: "error", message: error.toString() });
-  }
-}
-
-// -------------------------------------------------------------
-// 3. SCHEDULED TRIGGER HANDLERS (Resolves 100% Error Rate)
-// -------------------------------------------------------------
-function sendMorning1001Alert() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var logSheet = ss.getSheetByName("Attendance Log");
-  var todayText = Utilities.formatDate(new Date(), "Asia/Kolkata", "yyyy-MM-dd");
-  var clockedInUsers = {};
-
-  if (logSheet && logSheet.getLastRow() > 1) {
-    var logs = logSheet.getRange(2, 1, Math.min(logSheet.getLastRow() - 1, 200), 4).getValues();
-    for (var i = 0; i < logs.length; i++) {
-      var pDate = parseCellDate(logs[i][0]);
-      if (pDate && Utilities.formatDate(pDate, "Asia/Kolkata", "yyyy-MM-dd") === todayText) {
-        if (logs[i][3] === "Clock In") {
-          clockedInUsers[(logs[i][1] || "").toString().trim().toLowerCase()] = true;
-        }
-      }
+    function openDayDetailModal(dateStr, noteHtml) {
+      document.getElementById("detailDayTitle").innerText = "📅 " + dateStr;
+      document.getElementById("detailDayBody").innerHTML = noteHtml;
+      document.getElementById("dayDetailModal").style.display = "flex";
     }
-  }
 
-  var missing = [];
-  for (var phone in EMPLOYEE_ROSTER) {
-    var emp = EMPLOYEE_ROSTER[phone];
-    if (!clockedInUsers[emp.toLowerCase()] && emp !== MANAGER_NAME) {
-      missing.push(emp + " (+91 " + phone + ")");
+    function closeDayDetailModal() {
+      document.getElementById("dayDetailModal").style.display = "none";
     }
-  }
 
-  if (missing.length > 0) {
-    var html = "<p>The following employees have not clocked in by 10:01 AM today (" + todayText + "):</p><ul>";
-    for (var m = 0; m < missing.length; m++) html += "<li>" + missing[m] + "</li>";
-    html += "</ul>";
-    MailApp.sendEmail({
-      to: MANAGER_EMAIL,
-      subject: "⚠️ Attendance Alert: Unmarked Employees at 10:01 AM",
-      htmlBody: html
-    });
-  }
-}
-
-function sendEvening1801Alert() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var logSheet = ss.getSheetByName("Attendance Log");
-  var todayText = Utilities.formatDate(new Date(), "Asia/Kolkata", "yyyy-MM-dd");
-  var stillWorking = {};
-
-  if (logSheet && logSheet.getLastRow() > 1) {
-    var logs = logSheet.getRange(2, 1, Math.min(logSheet.getLastRow() - 1, 200), 4).getValues();
-    for (var i = 0; i < logs.length; i++) {
-      var pDate = parseCellDate(logs[i][0]);
-      if (pDate && Utilities.formatDate(pDate, "Asia/Kolkata", "yyyy-MM-dd") === todayText) {
-        var emp = (logs[i][1] || "").toString().trim();
-        var pType = logs[i][3];
-        if (pType === "Clock In" && stillWorking[emp] === undefined) {
-          stillWorking[emp] = true;
-        } else if (pType === "Clock Out") {
-          stillWorking[emp] = false;
-        }
-      }
+    function showByeAnimation(title, message) {
+      document.getElementById("byeTitle").innerText = title;
+      document.getElementById("byeMessage").innerText = message;
+      document.getElementById("byeModal").style.display = "flex";
     }
-  }
-
-  var pendingOut = [];
-  for (var name in stillWorking) {
-    if (stillWorking[name] === true && name !== MANAGER_NAME) {
-      pendingOut.push(name);
-    }
-  }
-
-  if (pendingOut.length > 0) {
-    var html = "<p>Employees currently active without Clock-Out as of 6:01 PM (" + todayText + "):</p><ul>";
-    for (var k = 0; k < pendingOut.length; k++) html += "<li>" + pendingOut[k] + "</li>";
-    html += "</ul>";
-    MailApp.sendEmail({
-      to: MANAGER_EMAIL,
-      subject: "🔔 Evening Attendance Status: Active Shifts at 6:01 PM",
-      htmlBody: html
-    });
-  }
-}
-
-function autoClockOutAt11PM() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var logSheet = ss.getSheetByName("Attendance Log");
-  var today = new Date();
-  var todayText = Utilities.formatDate(today, "Asia/Kolkata", "yyyy-MM-dd");
-  if (!logSheet || logSheet.getLastRow() <= 1) return;
-
-  var logs = logSheet.getRange(2, 1, Math.min(logSheet.getLastRow() - 1, 200), 4).getValues();
-  var openPunches = {};
-
-  for (var i = 0; i < logs.length; i++) {
-    var pDate = parseCellDate(logs[i][0]);
-    if (pDate && Utilities.formatDate(pDate, "Asia/Kolkata", "yyyy-MM-dd") === todayText) {
-      var emp = (logs[i][1] || "").toString().trim();
-      var pType = logs[i][3];
-      if (pType === "Clock In" && openPunches[emp] === undefined) {
-        openPunches[emp] = pDate;
-      } else if (pType === "Clock Out") {
-        delete openPunches[emp];
-      }
-    }
-  }
-
-  for (var unclosedEmp in openPunches) {
-    logSheet.insertRowBefore(2);
-    logSheet.getRange(2, 1, 1, 11).setValues([[
-      today, unclosedEmp, "System", "Clock Out", 0, "Auto-Closed at 11:00 PM", 0, "Auto Clock Out", "N/A", "N/A", "N/A"
-    ]]);
-  }
-}
-
-// -------------------------------------------------------------
-// 4. UTILITIES
-// -------------------------------------------------------------
-function getOrCreateSheet(ss, sheetName, headers) {
-  var sheet = ss.getSheetByName(sheetName);
-  if (!sheet) {
-    sheet = ss.insertSheet(sheetName);
-    sheet.appendRow(headers);
-    sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#e2e8f0");
-    sheet.setFrozenRows(1);
-  }
-  return sheet;
-}
-
-function haversineDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371000;
-  var dLat = (lat2 - lat1) * Math.PI / 180;
-  var dLon = (lon2 - lon1) * Math.PI / 180;
-  var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-}
-
-function parseCellDate(cellValue) {
-  if (!cellValue) return null;
-  if (cellValue instanceof Date) return cellValue;
-  var str = cellValue.toString().trim();
-  var parsed = new Date(str);
-  if (!isNaN(parsed.getTime())) return parsed;
-  return null;
-}
-
-function formatDateStr(val) {
-  if (!val) return "";
-  if (val instanceof Date) return Utilities.formatDate(val, "Asia/Kolkata", "yyyy-MM-dd");
-  return val.toString().split('T')[0];
-}
-
-function responseJSON(obj) {
-  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
-}
+    function closeByeModal() { document.getElementById("byeModal").style.display = "none"; }
+  </script>
+</body>
+</html>
