@@ -15,7 +15,7 @@
       --break: #d97706;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -69,7 +69,7 @@
       align-items: center;
       background: rgba(3, 7, 18, 0.85);
       backdrop-filter: blur(10px);
-      transition: opacity 0.8s ease, visibility 0.8s;
+      transition: opacity 0.6s ease, visibility 0.6s;
     }
     .curtain {
       position: absolute;
@@ -77,7 +77,7 @@
       width: 50vw;
       height: 100vh;
       background: radial-gradient(circle at center, #6b21a8 10%, #3b0764 60%, #0f051d 100%);
-      transition: transform 1.2s cubic-bezier(0.77, 0, 0.175, 1);
+      transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1);
       box-shadow: 0 0 50px rgba(0,0,0,0.8);
     }
     .curtain-left { left: 0; border-right: 2px solid #fde047; }
@@ -93,7 +93,7 @@
       color: #3b1704;
       border: 3px solid #fef9c3;
       border-radius: 50px;
-      padding: 16px 32px;
+      padding: 15px 30px;
       font-size: 16px;
       font-weight: 900;
       cursor: pointer;
@@ -104,7 +104,7 @@
     }
 
     .container {
-      background: rgba(255, 255, 255, 0.96);
+      background: rgba(255, 255, 255, 0.97);
       padding: 22px 18px;
       border-radius: 26px;
       box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
@@ -116,7 +116,7 @@
     }
 
     .logo-container { width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; }
-    .company-logo-img { width: 100%; max-width: 240px; height: auto; display: block; object-fit: contain; }
+    .company-logo-img { width: 100%; max-width: 230px; height: auto; display: block; object-fit: contain; }
 
     h2 { color: #0f172a; margin: 4px 0 2px 0; font-size: 20px; font-weight: 800; }
     p.sub { color: #64748b; font-size: 13px; margin: 0 0 14px 0; }
@@ -132,32 +132,19 @@
     .user-card p { margin: 2px 0; font-size: 12px; color: #047857; font-weight: 700; }
     .user-card strong { color: #064e3b; font-size: 16px; }
 
-    /* IN-APP LIVE STATUS BADGE */
     #leaveStatusBadge {
       display: none;
       margin-top: 10px;
-      padding: 8px 12px;
+      padding: 9px 12px;
       border-radius: 10px;
       font-size: 12px;
       font-weight: 800;
       text-align: left;
       line-height: 1.4;
     }
-    .badge-pending {
-      background: #fef3c7;
-      border: 1.5px solid #f59e0b;
-      color: #b45309;
-    }
-    .badge-approved {
-      background: #dcfce7;
-      border: 1.5px solid #10b981;
-      color: #15803d;
-    }
-    .badge-rejected {
-      background: #fee2e2;
-      border: 1.5px solid #ef4444;
-      color: #b91c1c;
-    }
+    .badge-pending { background: #fef3c7; border: 1.5px solid #f59e0b; color: #b45309; }
+    .badge-approved { background: #dcfce7; border: 1.5px solid #10b981; color: #15803d; }
+    .badge-rejected { background: #fee2e2; border: 1.5px solid #ef4444; color: #b91c1c; }
 
     .timer-card {
       display: none;
@@ -267,7 +254,6 @@
       color: #1e293b;
       font-weight: 600;
       cursor: pointer;
-      user-select: none;
     }
     .cal-cell:active { transform: scale(0.92); }
     .cal-present { background: #dcfce7; color: #15803d; font-weight: 800; }
@@ -307,7 +293,7 @@
     <h2>Aryavarta Automation</h2>
     <p class="sub">Chikhali Head Office Portal</p>
 
-    <!-- Login Box -->
+    <!-- Login Screen -->
     <div id="loginBox" style="display:none;">
       <div style="background:#eff6ff;border:1.5px solid #bfdbfe;padding:12px;border-radius:12px;margin-bottom:14px;">
         <p style="color:#1e40af;font-weight:bold;margin:0;font-size:13.5px;">👤 कर्मचारी पहचान (Login)</p>
@@ -318,18 +304,15 @@
       <button type="button" class="btn btn-primary" onclick="handleManualLogin()">पोर्टल में प्रवेश करें 🚀</button>
     </div>
 
-    <!-- Active Attendance Form -->
+    <!-- Active Form -->
     <div id="punchForm" style="display:none;">
       <div class="user-card">
         <p>प्रमाणित कर्मचारी (Verified):</p>
         <strong id="displayEmpName">Loading...</strong>
         <p id="displayEmpPhone" style="font-size:12px; margin-top:2px;"></p>
-        
-        <!-- Live Leave Status Badge -->
         <div id="leaveStatusBadge"></div>
       </div>
 
-      <!-- Live Shift Timer -->
       <div class="timer-card" id="timerCard">
         <div class="timer-title">⏱️ Shift Duration (Active Duty)</div>
         <div class="timer-clock" id="liveTimerText">00 hrs : 00 mins : 00 secs</div>
@@ -384,7 +367,7 @@
     </div>
   </div>
 
-  <!-- LEAVE APPLICATION MODAL -->
+  <!-- Leave Modal -->
   <div id="leaveModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -423,7 +406,7 @@
     </div>
   </div>
 
-  <!-- CALENDAR MODAL -->
+  <!-- Calendar Modal -->
   <div id="calModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -441,7 +424,7 @@
     </div>
   </div>
 
-  <!-- SHIFT NOTE / DAY DETAILS MODAL -->
+  <!-- Shift Note Modal -->
   <div id="dayDetailModal" class="modal">
     <div class="modal-content" style="max-width:320px; text-align:center;">
       <h3 id="detailDayTitle" style="color:#0f172a; margin-bottom:8px;">Shift Details</h3>
@@ -450,7 +433,7 @@
     </div>
   </div>
 
-  <!-- BYE MODAL -->
+  <!-- Bye Modal -->
   <div id="byeModal" class="modal">
     <div class="bye-modal-content">
       <h3 style="margin:12px 0 6px 0; color:#0f172a; font-size:19px; font-weight:800;" id="byeTitle">धन्यवाद!</h3>
@@ -472,7 +455,21 @@
     let timerInterval = null;
     let currentDutyState = "NEEDS_CLOCK_IN";
 
-    // 1. IndexedDB Offline Queuing
+    // 1. Fetch With Abort Timeout
+    async function fetchWithTimeout(resource, options = {}, timeout = 8000) {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeout);
+      try {
+        const response = await fetch(resource, { ...options, signal: controller.signal });
+        clearTimeout(id);
+        return response;
+      } catch (error) {
+        clearTimeout(id);
+        throw error;
+      }
+    }
+
+    // 2. IndexedDB Storage
     let db;
     const dbRequest = indexedDB.open("AryavartaDB", 1);
     dbRequest.onupgradeneeded = (e) => {
@@ -489,14 +486,13 @@
     function saveToIndexedDb(payload) {
       if (!db) return;
       const tx = db.transaction("punchQueue", "readwrite");
-      const store = tx.objectStore("punchQueue");
-      store.add(payload);
+      tx.objectStore("punchQueue").add(payload);
       tx.oncomplete = () => {
         document.getElementById("btnIn").disabled = false;
         document.getElementById("btnOut").disabled = false;
         document.getElementById("status").style.color = "#d97706";
-        document.getElementById("status").innerHTML = "⚠️ ऑफलाइन मोड: उपस्थिति फोन में सुरक्षित है।";
-        speakHindi("इंटरनेट नहीं है। उपस्थिति सुरक्षित है।");
+        document.getElementById("status").innerHTML = "⚠️ धीमा/ऑफ़लाइन नेटवर्क: उपस्थिति फोन में सुरक्षित है। नेटवर्क आते ही सिंक होगी।";
+        speakHindi("इंटरनेट कमजोर है। उपस्थिति सुरक्षित कर ली गई है।");
       };
     }
 
@@ -519,7 +515,7 @@
           }).then(() => {
             const delTx = db.transaction("punchQueue", "readwrite");
             delTx.objectStore("punchQueue").delete(rec.id);
-          });
+          }).catch(console.error);
         });
 
         document.getElementById("status").style.color = "#059669";
@@ -528,12 +524,14 @@
     }
 
     window.addEventListener('online', flushIndexedDbQueue);
+    setInterval(flushIndexedDbQueue, 25000);
 
-    // 2. Service Worker & Push
+    // 3. Service Worker Registration
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(console.error);
     }
 
+    // 4. Notifications & Voice
     async function enableDirectPhoneAlerts() {
       if (!('Notification' in window)) return alert("❌ ब्राउज़र वेब नोटिफिकेशन समर्थित नहीं है।");
       let permission = Notification.permission;
@@ -555,7 +553,6 @@
       }
     }
 
-    // 3. Audio Handlers
     function initVoice() {
       if ('speechSynthesis' in window) {
         let voices = window.speechSynthesis.getVoices();
@@ -588,15 +585,15 @@
       let hour = new Date().getHours();
 
       if (hour < 14) {
-        speakHindi(`सुप्रभात ${savedName} जी! आर्यावर्त पोर्टल में आपका स्वागत है।`);
+        speakHindi(`सुप्रभात ${savedName} जी! आर्यावर्त पोर्टल में स्वागत है।`);
       } else {
-        speakHindi(`नमस्ते ${savedName} जी! प्रस्थान के लिए कृपया क्लॉक आउट करें।`);
+        speakHindi(`नमस्ते ${savedName} जी! प्रस्थान के लिए क्लॉक आउट करें।`);
       }
 
       if (currentEmp.name) refreshTodayStatus();
     }
 
-    // 4. Timer Logic
+    // 5. Digital Workday Timer
     function startLiveShiftTimer(isoStartTime) {
       if (!isoStartTime) return;
       clockInTimestamp = new Date(isoStartTime).getTime();
@@ -636,7 +633,7 @@
       document.getElementById("timerCard").style.display = "none";
     }
 
-    // 5. App Lifecycle & Status Synchronization
+    // 6. Fast Startup & Status Hydration
     window.onload = function() {
       initVoice();
       let todayStr = new Date().toISOString().split('T')[0];
@@ -649,6 +646,7 @@
       let savedPhone = directPhone ? directPhone.replace(/\D/g, '').slice(-10) : localStorage.getItem("aa_emp_phone");
       let savedName = localStorage.getItem("aa_emp_name");
 
+      // Fast UI Hydration from local cache
       if (savedPhone && savedPhone.length === 10) {
         currentEmp = { name: savedName || "Employee", phone: savedPhone };
         document.getElementById("loginBox").style.display = "none";
@@ -656,7 +654,16 @@
         document.getElementById("displayEmpName").innerText = savedName || "Loading...";
         document.getElementById("displayEmpPhone").innerText = "📱 +91 " + savedPhone;
 
-        fetch(`${SCRIPT_URL}?action=authDevice&phone=${savedPhone}`)
+        // Restore cached badge if available
+        let cachedBadge = localStorage.getItem("aa_cached_badge");
+        if (cachedBadge) {
+          let badge = document.getElementById("leaveStatusBadge");
+          badge.style.display = "block";
+          badge.innerHTML = cachedBadge;
+          badge.className = localStorage.getItem("aa_cached_badge_class") || "badge-pending";
+        }
+
+        fetchWithTimeout(`${SCRIPT_URL}?action=authDevice&phone=${savedPhone}`, {}, 7000)
           .then(res => res.json())
           .then(data => {
             if (data.success) {
@@ -665,6 +672,9 @@
               document.getElementById("displayEmpName").innerText = data.name;
               refreshTodayStatus();
             }
+          }).catch(() => {
+            // Offline fallback
+            refreshTodayStatus();
           });
       } else {
         document.getElementById("loginBox").style.display = "block";
@@ -677,7 +687,7 @@
       if (phone.length !== 10) return alert("कृपया 10 अंकों का मोबाइल नंबर दर्ज करें।");
 
       document.getElementById("status").innerHTML = "🔄 सत्यापन जारी...";
-      fetch(`${SCRIPT_URL}?action=authDevice&phone=${phone}`)
+      fetchWithTimeout(`${SCRIPT_URL}?action=authDevice&phone=${phone}`, {}, 8000)
         .then(res => res.json())
         .then(data => {
           if (data.success) {
@@ -693,6 +703,8 @@
           } else {
             alert("⚠️ " + data.message);
           }
+        }).catch(() => {
+          alert("नेटवर्क त्रुटि। कृपया इंटरनेट कनेक्शन जांचें।");
         });
     }
 
@@ -701,9 +713,9 @@
       document.getElementById("wfhAuditBox").style.display = (val === "WFH") ? "block" : "none";
     }
 
-    // Refresh Shift State & In-App Live Leave Badge
     function refreshTodayStatus() {
-      fetch(`${SCRIPT_URL}?action=checkStatus&name=${encodeURIComponent(currentEmp.name)}&phone=${currentEmp.phone}`)
+      if (!currentEmp.name) return;
+      fetchWithTimeout(`${SCRIPT_URL}?action=checkStatus&name=${encodeURIComponent(currentEmp.name)}&phone=${currentEmp.phone}`, {}, 7000)
         .then(res => res.json())
         .then(res => {
           currentDutyState = res.status;
@@ -712,11 +724,10 @@
           let btnBreak = document.getElementById("btnBreak");
           let statusDiv = document.getElementById("status");
 
-          // Handle In-App Live Leave Status Badge
+          // 1. Live Leave Status Badge Rendering
           let badge = document.getElementById("leaveStatusBadge");
           if (res.latestLeave) {
             badge.style.display = "block";
-            badge.className = "";
             let st = res.latestLeave.status;
 
             if (st === "Pending") {
@@ -728,13 +739,16 @@
             } else if (st === "Rejected") {
               badge.className = "badge-rejected";
               badge.innerHTML = `🔴 Leave Request for <b>${res.latestLeave.dates}</b> was REJECTED by Manager`;
-            } else {
-              badge.style.display = "none";
             }
+
+            localStorage.setItem("aa_cached_badge", badge.innerHTML);
+            localStorage.setItem("aa_cached_badge_class", badge.className);
           } else {
             badge.style.display = "none";
+            localStorage.removeItem("aa_cached_badge");
           }
 
+          // 2. Button State Rendering
           if (res.status === "NEEDS_CLOCK_IN") {
             btnIn.style.display = "flex";
             btnOut.style.display = "none";
@@ -766,7 +780,7 @@
             statusDiv.style.color = "#059669";
             statusDiv.innerHTML = "✅ आज की उपस्थिति पूर्ण हो चुकी है।";
           }
-        });
+        }).catch(console.error);
     }
 
     function toggleBreakDuty() {
@@ -779,7 +793,7 @@
       }
     }
 
-    // 6. Punch Submission Flow
+    // 7. Punch Flow with GPS Fallback
     function startAttendanceFlow(type) {
       let mode = document.getElementById("workMode").value;
       let siteVal = document.getElementById("siteNameInput").value.trim();
@@ -804,15 +818,22 @@
       speakHindi(`${type} प्रक्रिया जारी है।`);
 
       if (mode === "Office") {
+        // High accuracy GPS with fallback to coarse location
         navigator.geolocation.getCurrentPosition(
           pos => executePunch(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, mode, type, siteVal, wfhVal),
           () => {
-            btnIn.disabled = false;
-            btnOut.disabled = false;
-            statusDiv.style.color = "#dc2626";
-            statusDiv.innerHTML = "❌ जीपीएस सिग्नल नहीं मिला। लोकेशन ऑन करें।";
+            navigator.geolocation.getCurrentPosition(
+              pos => executePunch(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, mode, type, siteVal, wfhVal),
+              () => {
+                btnIn.disabled = false;
+                btnOut.disabled = false;
+                statusDiv.style.color = "#dc2626";
+                statusDiv.innerHTML = "❌ जीपीएस सिग्नल नहीं मिला। कृपया लोकेशन ऑन करें।";
+              },
+              { enableHighAccuracy: false, timeout: 5000 }
+            );
           },
-          { enableHighAccuracy: true, timeout: 7000 }
+          { enableHighAccuracy: true, timeout: 6000 }
         );
       } else {
         executePunch(null, null, null, mode, type, siteVal, wfhVal);
@@ -838,12 +859,12 @@
         return;
       }
 
-      fetch(SCRIPT_URL, {
+      fetchWithTimeout(SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
-      })
+      }, 7000)
       .then(() => {
         document.getElementById("btnIn").disabled = false;
         document.getElementById("btnOut").disabled = false;
@@ -851,10 +872,12 @@
         speakHindi(`धन्यवाद ${currentEmp.name} जी, आपका ${type} दर्ज हो चुका है।`);
         setTimeout(refreshTodayStatus, 1500);
       })
-      .catch(() => saveToIndexedDb(payload));
+      .catch(() => {
+        saveToIndexedDb(payload);
+      });
     }
 
-    // 7. Leave Application Flow
+    // 8. Leave Application
     function openLeaveModal() { document.getElementById("leaveModal").style.display = "flex"; }
     function closeLeaveModal() { document.getElementById("leaveModal").style.display = "none"; }
     function toggleDateRange(val) {
@@ -875,7 +898,7 @@
       btn.disabled = true;
       btn.innerText = "जमा हो रहा है...";
 
-      fetch(SCRIPT_URL, {
+      fetchWithTimeout(SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
@@ -888,7 +911,7 @@
           endDate: eDate,
           reason: reason
         })
-      }).then(() => {
+      }, 8000).then(() => {
         btn.disabled = false;
         btn.innerText = "आवेदन जमा करें ✨";
         closeLeaveModal();
@@ -902,10 +925,14 @@
 
         speakHindi("अवकाश आवेदन दर्ज हो चुका है।");
         setTimeout(refreshTodayStatus, 1500);
+      }).catch(() => {
+        btn.disabled = false;
+        btn.innerText = "आवेदन जमा करें ✨";
+        alert("नेटवर्क त्रुटि: आवेदन जमा नहीं हो सका। इंटरनेट जांचें।");
       });
     }
 
-    // 8. Calendar & Shift Note Viewer
+    // 9. Calendar Visuals & Day Notes
     function openCalendarModal() { document.getElementById("calModal").style.display = "flex"; renderCalendar(); }
     function closeCalendarModal() { document.getElementById("calModal").style.display = "none"; }
     function prevMonth() { calDate.setMonth(calDate.getMonth() - 1); renderCalendar(); }
@@ -920,7 +947,7 @@
       let body = document.getElementById("calendarBody");
       body.innerHTML = "<div class='cal-header'>रवि</div><div class='cal-header'>सोम</div><div class='cal-header'>मंगल</div><div class='cal-header'>बुध</div><div class='cal-header'>गुरु</div><div class='cal-header'>शुक्र</div><div class='cal-header'>शनि</div>";
 
-      fetch(`${SCRIPT_URL}?action=getCalendar&name=${encodeURIComponent(currentEmp.name)}&month=${month + 1}&year=${year}`)
+      fetchWithTimeout(`${SCRIPT_URL}?action=getCalendar&name=${encodeURIComponent(currentEmp.name)}&month=${month + 1}&year=${year}`, {}, 8000)
         .then(res => res.json())
         .then(data => {
           let history = data.history || {};
@@ -956,11 +983,11 @@
             let cellElem = document.createElement("div");
             cellElem.className = cellClass;
             cellElem.innerText = d;
-            cellElem.onclick = function() {
-              openDayDetailModal(dateKey, shiftNote);
-            };
+            cellElem.onclick = () => openDayDetailModal(dateKey, shiftNote);
             body.appendChild(cellElem);
           }
+        }).catch(() => {
+          body.innerHTML += "<p style='grid-column: span 7; color: #dc2626; font-size: 12px; margin-top: 10px;'>ऑफ़लाइन: कैलेंडर लोड नहीं हो सका।</p>";
         });
     }
 
