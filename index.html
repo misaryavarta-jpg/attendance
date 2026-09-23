@@ -293,7 +293,7 @@
     <h2>Aryavarta Automation</h2>
     <p class="sub">Chikhali Head Office Portal</p>
 
-    <!-- Login Screen -->
+    <!-- Login -->
     <div id="loginBox" style="display:none;">
       <div style="background:#eff6ff;border:1.5px solid #bfdbfe;padding:12px;border-radius:12px;margin-bottom:14px;">
         <p style="color:#1e40af;font-weight:bold;margin:0;font-size:13.5px;">👤 कर्मचारी पहचान (Login)</p>
@@ -304,7 +304,7 @@
       <button type="button" class="btn btn-primary" onclick="handleManualLogin()">पोर्टल में प्रवेश करें 🚀</button>
     </div>
 
-    <!-- Active Form -->
+    <!-- Active Punch Portal -->
     <div id="punchForm" style="display:none;">
       <div class="user-card">
         <p>प्रमाणित कर्मचारी (Verified):</p>
@@ -367,7 +367,7 @@
     </div>
   </div>
 
-  <!-- Leave Modal -->
+  <!-- Modals -->
   <div id="leaveModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -406,7 +406,6 @@
     </div>
   </div>
 
-  <!-- Calendar Modal -->
   <div id="calModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -424,7 +423,6 @@
     </div>
   </div>
 
-  <!-- Shift Note Modal -->
   <div id="dayDetailModal" class="modal">
     <div class="modal-content" style="max-width:320px; text-align:center;">
       <h3 id="detailDayTitle" style="color:#0f172a; margin-bottom:8px;">Shift Details</h3>
@@ -433,7 +431,6 @@
     </div>
   </div>
 
-  <!-- Bye Modal -->
   <div id="byeModal" class="modal">
     <div class="bye-modal-content">
       <h3 style="margin:12px 0 6px 0; color:#0f172a; font-size:19px; font-weight:800;" id="byeTitle">धन्यवाद!</h3>
@@ -455,7 +452,7 @@
     let timerInterval = null;
     let currentDutyState = "NEEDS_CLOCK_IN";
 
-    // 1. Fetch With Abort Timeout
+    // 1. Network Fetch with Timeout (Prevents App Freezing)
     async function fetchWithTimeout(resource, options = {}, timeout = 8000) {
       const controller = new AbortController();
       const id = setTimeout(() => controller.abort(), timeout);
@@ -469,7 +466,7 @@
       }
     }
 
-    // 2. IndexedDB Storage
+    // 2. Offline IndexedDB
     let db;
     const dbRequest = indexedDB.open("AryavartaDB", 1);
     dbRequest.onupgradeneeded = (e) => {
@@ -491,8 +488,8 @@
         document.getElementById("btnIn").disabled = false;
         document.getElementById("btnOut").disabled = false;
         document.getElementById("status").style.color = "#d97706";
-        document.getElementById("status").innerHTML = "⚠️ धीमा/ऑफ़लाइन नेटवर्क: उपस्थिति फोन में सुरक्षित है। नेटवर्क आते ही सिंक होगी।";
-        speakHindi("इंटरनेट कमजोर है। उपस्थिति सुरक्षित कर ली गई है।");
+        document.getElementById("status").innerHTML = "⚠️ कमज़ोर नेटवर्क: उपस्थिति फोन में सुरक्षित है। नेटवर्क आते ही सिंक होगी।";
+        speakHindi("इंटरनेट धीमा है। उपस्थिति सुरक्षित कर ली गई है।");
       };
     }
 
@@ -526,22 +523,21 @@
     window.addEventListener('online', flushIndexedDbQueue);
     setInterval(flushIndexedDbQueue, 25000);
 
-    // 3. Service Worker Registration
+    // 3. Service Worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(console.error);
     }
 
-    // 4. Notifications & Voice
     async function enableDirectPhoneAlerts() {
-      if (!('Notification' in window)) return alert("❌ ब्राउज़र वेब नोटिफिकेशन समर्थित नहीं है।");
-      let permission = Notification.permission;
-      if (permission !== "granted") permission = await Notification.requestPermission();
-      if (permission !== "granted") return alert("⚠️ नोटिफिकेशन अनुमति अस्वीकृत है।");
+      if (!('Notification' in window)) return alert("❌ वेब नोटिफिकेशन समर्थित नहीं है।");
+      let perm = Notification.permission;
+      if (perm !== "granted") perm = await Notification.requestPermission();
+      if (perm !== "granted") return alert("⚠️ नोटिफिकेशन अनुमति अस्वीकृत है।");
 
       try {
         const reg = await navigator.serviceWorker.ready;
         await reg.showNotification("आर्यावर्त अटेंडेंस अलर्ट सक्रिय! 🔔", {
-          body: "सुप्रभात! 10:01 AM और 6:01 PM पर उपस्थिति नोटिफिकेशन सक्रिय हो चुके हैं।",
+          body: "सुप्रभात! 10:01 AM और 6:01 PM पर अलर्ट सक्रिय हो चुके हैं।",
           icon: "./logo.png",
           badge: "./logo.png",
           vibrate: [300, 100, 300],
@@ -549,17 +545,21 @@
         });
         alert("✅ फोन अलर्ट सक्रिय हो गया है!");
       } catch (err) {
-        alert("⚠️ नोटिफिकेशन एरर: " + err.message);
+        alert("⚠️ एरर: " + err.message);
       }
     }
 
+    // 4. Voice Engine with Asynchronous Voice Polling
     function initVoice() {
       if ('speechSynthesis' in window) {
         let voices = window.speechSynthesis.getVoices();
-        currentVoice = voices.find(v => v.lang === 'hi-IN' || v.lang.startsWith('hi')) || null;
+        currentVoice = voices.find(v => v.lang === 'hi-IN' || v.lang === 'hi_IN' || v.lang.startsWith('hi')) || null;
       }
     }
-    if ('speechSynthesis' in window) window.speechSynthesis.onvoiceschanged = initVoice;
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = initVoice;
+      initVoice();
+    }
 
     function speakHindi(text) {
       if (isMuted || !('speechSynthesis' in window)) return;
@@ -567,6 +567,7 @@
       let utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'hi-IN';
       utterance.rate = 0.95;
+      if (!currentVoice) initVoice();
       if (currentVoice) utterance.voice = currentVoice;
       window.speechSynthesis.speak(utterance);
     }
@@ -579,21 +580,31 @@
       if (isMuted && 'speechSynthesis' in window) window.speechSynthesis.cancel();
     }
 
+    // Natural Contextual Voice on Open
     function unlockPortalAndSpeak() {
       document.getElementById("curtainOverlay").classList.add("curtain-open");
       let savedName = localStorage.getItem("aa_emp_name") || currentEmp.name || "सहकर्मी";
-      let hour = new Date().getHours();
-
-      if (hour < 14) {
-        speakHindi(`सुप्रभात ${savedName} जी! आर्यावर्त पोर्टल में स्वागत है।`);
+      
+      // Select natural spoken message based on real duty status
+      if (currentDutyState === "COMPLETED") {
+        speakHindi(`नमस्ते ${savedName} जी! आपकी आज की उपस्थिति पहले ही पूरी हो चुकी है।`);
+      } else if (currentDutyState === "WORKING") {
+        speakHindi(`नमस्ते ${savedName} जी! आप अभी कार्यरत हैं।`);
+      } else if (currentDutyState === "ON_BREAK") {
+        speakHindi(`नमस्ते ${savedName} जी! आप ब्रेक पर हैं।`);
       } else {
-        speakHindi(`नमस्ते ${savedName} जी! प्रस्थान के लिए क्लॉक आउट करें।`);
+        let hr = new Date().getHours();
+        if (hr < 12) {
+          speakHindi(`सुप्रभात ${savedName} जी! कृपया क्लॉक इन करें।`);
+        } else {
+          speakHindi(`नमस्ते ${savedName} जी! आर्यावर्त पोर्टल में स्वागत है।`);
+        }
       }
 
       if (currentEmp.name) refreshTodayStatus();
     }
 
-    // 5. Digital Workday Timer
+    // 5. Shift Duration Timer
     function startLiveShiftTimer(isoStartTime) {
       if (!isoStartTime) return;
       clockInTimestamp = new Date(isoStartTime).getTime();
@@ -633,7 +644,7 @@
       document.getElementById("timerCard").style.display = "none";
     }
 
-    // 6. Fast Startup & Status Hydration
+    // 6. Fast Portal Boot
     window.onload = function() {
       initVoice();
       let todayStr = new Date().toISOString().split('T')[0];
@@ -646,7 +657,6 @@
       let savedPhone = directPhone ? directPhone.replace(/\D/g, '').slice(-10) : localStorage.getItem("aa_emp_phone");
       let savedName = localStorage.getItem("aa_emp_name");
 
-      // Fast UI Hydration from local cache
       if (savedPhone && savedPhone.length === 10) {
         currentEmp = { name: savedName || "Employee", phone: savedPhone };
         document.getElementById("loginBox").style.display = "none";
@@ -654,7 +664,6 @@
         document.getElementById("displayEmpName").innerText = savedName || "Loading...";
         document.getElementById("displayEmpPhone").innerText = "📱 +91 " + savedPhone;
 
-        // Restore cached badge if available
         let cachedBadge = localStorage.getItem("aa_cached_badge");
         if (cachedBadge) {
           let badge = document.getElementById("leaveStatusBadge");
@@ -672,10 +681,7 @@
               document.getElementById("displayEmpName").innerText = data.name;
               refreshTodayStatus();
             }
-          }).catch(() => {
-            // Offline fallback
-            refreshTodayStatus();
-          });
+          }).catch(() => refreshTodayStatus());
       } else {
         document.getElementById("loginBox").style.display = "block";
         document.getElementById("punchForm").style.display = "none";
@@ -703,9 +709,7 @@
           } else {
             alert("⚠️ " + data.message);
           }
-        }).catch(() => {
-          alert("नेटवर्क त्रुटि। कृपया इंटरनेट कनेक्शन जांचें।");
-        });
+        }).catch(() => alert("नेटवर्क त्रुटि। कृपया इंटरनेट कनेक्शन जांचें।"));
     }
 
     function toggleMode(val) {
@@ -724,7 +728,7 @@
           let btnBreak = document.getElementById("btnBreak");
           let statusDiv = document.getElementById("status");
 
-          // 1. Live Leave Status Badge Rendering
+          // 1. Live Leave Badge
           let badge = document.getElementById("leaveStatusBadge");
           if (res.latestLeave) {
             badge.style.display = "block";
@@ -748,7 +752,7 @@
             localStorage.removeItem("aa_cached_badge");
           }
 
-          // 2. Button State Rendering
+          // 2. Buttons Display
           if (res.status === "NEEDS_CLOCK_IN") {
             btnIn.style.display = "flex";
             btnOut.style.display = "none";
@@ -793,7 +797,7 @@
       }
     }
 
-    // 7. Punch Flow with GPS Fallback
+    // 7. Punch Flow with Hindi Voice Integration
     function startAttendanceFlow(type) {
       let mode = document.getElementById("workMode").value;
       let siteVal = document.getElementById("siteNameInput").value.trim();
@@ -815,10 +819,9 @@
       btnOut.disabled = true;
       statusDiv.style.color = "#d97706";
       statusDiv.innerHTML = "🛰️ जीपीएस स्थान सत्यापित किया जा रहा है...";
-      speakHindi(`${type} प्रक्रिया जारी है।`);
+      speakHindi("उपस्थिति दर्ज की जा रही है, कृपया प्रतीक्षा करें।");
 
       if (mode === "Office") {
-        // High accuracy GPS with fallback to coarse location
         navigator.geolocation.getCurrentPosition(
           pos => executePunch(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, mode, type, siteVal, wfhVal),
           () => {
@@ -869,15 +872,22 @@
         document.getElementById("btnIn").disabled = false;
         document.getElementById("btnOut").disabled = false;
         showByeAnimation(`${type} सफल!`, "आपकी उपस्थिति दर्ज हो चुकी है। धन्यवाद!");
-        speakHindi(`धन्यवाद ${currentEmp.name} जी, आपका ${type} दर्ज हो चुका है।`);
+        
+        // Natural Hindi confirmation
+        if (type === "Clock In") {
+          speakHindi(`धन्यवाद ${currentEmp.name} जी, आपका क्लॉक इन सफल रहा।`);
+        } else if (type === "Clock Out") {
+          speakHindi(`धन्यवाद ${currentEmp.name} जी, आपका क्लॉक आउट दर्ज हो चुका है। शुभ संध्या!`);
+        } else {
+          speakHindi("आपकी उपस्थिति दर्ज हो चुकी है।");
+        }
+        
         setTimeout(refreshTodayStatus, 1500);
       })
-      .catch(() => {
-        saveToIndexedDb(payload);
-      });
+      .catch(() => saveToIndexedDb(payload));
     }
 
-    // 8. Leave Application
+    // 8. Leave Submission
     function openLeaveModal() { document.getElementById("leaveModal").style.display = "flex"; }
     function closeLeaveModal() { document.getElementById("leaveModal").style.display = "none"; }
     function toggleDateRange(val) {
@@ -915,24 +925,17 @@
         btn.disabled = false;
         btn.innerText = "आवेदन जमा करें ✨";
         closeLeaveModal();
-
-        let msg = `*Aryavarta Leave Request*%0A*Employee:* ${currentEmp.name}%0A*Type:* ${lType}%0A*Dates:* ${sDate} to ${eDate}%0A*Reason:* ${reason}`;
-        let waUrl = `https://wa.me/${MANAGER_WHATSAPP}?text=${msg}`;
-
-        if (confirm("✅ अवकाश आवेदन जमा हो चुका है!\n\nक्या आप मैनेजर सुमीत सिंह जी को व्हाट्सएप पर भी सूचित करना चाहते हैं?")) {
-          window.open(waUrl, '_blank');
-        }
-
         speakHindi("अवकाश आवेदन दर्ज हो चुका है।");
+        alert("✅ अवकाश आवेदन सफलतापूर्वक जमा हो चुका है।");
         setTimeout(refreshTodayStatus, 1500);
       }).catch(() => {
         btn.disabled = false;
         btn.innerText = "आवेदन जमा करें ✨";
-        alert("नेटवर्क त्रुटि: आवेदन जमा नहीं हो सका। इंटरनेट जांचें।");
+        alert("नेटवर्क त्रुटि: आवेदन जमा नहीं हो सका।");
       });
     }
 
-    // 9. Calendar Visuals & Day Notes
+    // 9. Calendar Rendering & Interactive Day Popups
     function openCalendarModal() { document.getElementById("calModal").style.display = "flex"; renderCalendar(); }
     function closeCalendarModal() { document.getElementById("calModal").style.display = "none"; }
     function prevMonth() { calDate.setMonth(calDate.getMonth() - 1); renderCalendar(); }
