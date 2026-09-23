@@ -151,14 +151,13 @@
       background: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 100%);
       border: 1.5px solid #a7f3d0;
       border-radius: 14px;
-      padding: 12px 14px;
+      padding: 14px;
       margin-bottom: 14px;
       text-align: left;
     }
     .user-card p { margin: 2px 0; font-size: 12px; color: #047857; font-weight: 700; }
-    .user-card strong { color: #064e3b; font-size: 16px; }
+    .user-card strong { color: #064e3b; font-size: 17px; }
 
-    /* Live Network & Offline Queue Pill */
     .sync-status-pill {
       display: inline-flex;
       align-items: center;
@@ -167,25 +166,36 @@
       font-weight: 800;
       padding: 3px 8px;
       border-radius: 12px;
-      margin-top: 4px;
     }
     .sync-online { background: #dcfce7; color: #15803d; }
     .sync-offline { background: #fef3c7; color: #b45309; }
 
-    /* Live Leave Status Badge */
+    /* IN-APP LIVE STATUS BADGE */
     #leaveStatusBadge {
       display: none;
       margin-top: 10px;
-      padding: 9px 12px;
+      padding: 10px 14px;
       border-radius: 10px;
-      font-size: 12px;
+      font-size: 12.5px;
       font-weight: 800;
       text-align: left;
-      line-height: 1.4;
+      line-height: 1.45;
     }
-    .badge-pending { background: #fef3c7; border: 1.5px solid #f59e0b; color: #b45309; }
-    .badge-approved { background: #dcfce7; border: 1.5px solid #10b981; color: #15803d; }
-    .badge-rejected { background: #fee2e2; border: 1.5px solid #ef4444; color: #b91c1c; }
+    .badge-pending {
+      background: #fef3c7;
+      border: 1.5px solid #f59e0b;
+      color: #92400e;
+    }
+    .badge-approved {
+      background: #dcfce7;
+      border: 1.5px solid #10b981;
+      color: #166534;
+    }
+    .badge-rejected {
+      background: #fee2e2;
+      border: 1.5px solid #ef4444;
+      color: #991b1b;
+    }
 
     .timer-card {
       display: none;
@@ -348,7 +358,7 @@
       <button type="button" class="btn btn-primary" onclick="handleManualLogin()">पोर्टल में प्रवेश करें 🚀</button>
     </div>
 
-    <!-- Active Punch Portal -->
+    <!-- Active Form -->
     <div id="punchForm" style="display:none;">
       <div class="user-card">
         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -357,6 +367,8 @@
         </div>
         <strong id="displayEmpName">Loading...</strong>
         <p id="displayEmpPhone" style="font-size:12px; margin-top:2px;"></p>
+        
+        <!-- IN-APP LIVE STATUS BADGE -->
         <div id="leaveStatusBadge"></div>
       </div>
 
@@ -591,7 +603,7 @@
       }
     }
 
-    // 5. INDEXEDDB OFFLINE PUNCH QUEUE
+    // 5. INDEXEDDB QUEUE
     let db;
     const dbRequest = indexedDB.open("AryavartaDB", 1);
     dbRequest.onupgradeneeded = (e) => {
@@ -745,7 +757,7 @@
       let savedName = localStorage.getItem("aa_emp_name") || currentEmp.name || "सहकर्मी";
       
       if (currentDutyState === "COMPLETED") {
-        speakHindi(`नमस्ते ${savedName} जी! आपकी आज की उपस्थिति पहले ही पूरी हो चुकी है।`);
+        speakHindi(`नमस्ते ${savedName} जी! आपकी आज की उपस्थिति पूरी हो चुकी है।`);
       } else if (currentDutyState === "WORKING") {
         speakHindi(`नमस्ते ${savedName} जी! आप अभी कार्यरत हैं।`);
       } else if (currentDutyState === "ON_BREAK") {
@@ -759,7 +771,7 @@
         }
       }
 
-      if (currentEmp.name) refreshTodayStatus();
+      if (currentEmp.phone) refreshTodayStatus();
     }
 
     // 8. SHIFT TIMER
@@ -802,7 +814,7 @@
       document.getElementById("timerCard").style.display = "none";
     }
 
-    // 9. APP STARTUP & STATUS
+    // 9. INSTANT APP STARTUP & CACHED BADGE HYDRATION
     window.onload = function() {
       applySunAndWeatherTheme();
       initVoice();
@@ -823,12 +835,14 @@
         document.getElementById("displayEmpName").innerText = savedName || "Loading...";
         document.getElementById("displayEmpPhone").innerText = "📱 +91 " + savedPhone;
 
-        let cachedBadge = localStorage.getItem("aa_cached_badge");
-        if (cachedBadge) {
-          let badge = document.getElementById("leaveStatusBadge");
-          badge.style.display = "block";
-          badge.innerHTML = cachedBadge;
-          badge.className = localStorage.getItem("aa_cached_badge_class") || "badge-pending";
+        // INSTANT ZERO-LATENCY BADGE HYDRATION FROM CACHE
+        let cachedBadgeHtml = localStorage.getItem("aa_cached_badge_html");
+        let cachedBadgeClass = localStorage.getItem("aa_cached_badge_class");
+        let badgeElem = document.getElementById("leaveStatusBadge");
+        if (cachedBadgeHtml) {
+          badgeElem.innerHTML = cachedBadgeHtml;
+          badgeElem.className = cachedBadgeClass || "badge-pending";
+          badgeElem.style.display = "block";
         }
 
         fetchWithTimeout(`${SCRIPT_URL}?action=authDevice&phone=${savedPhone}`, {}, 7000)
@@ -880,9 +894,11 @@
       document.getElementById("wfhAuditBox").style.display = (val === "WFH") ? "block" : "none";
     }
 
+    // 10. REFRESH STATUS & RENDER LIVE BADGE
     function refreshTodayStatus() {
-      if (!currentEmp.name) return;
-      fetchWithTimeout(`${SCRIPT_URL}?action=checkStatus&name=${encodeURIComponent(currentEmp.name)}&phone=${currentEmp.phone}`, {}, 7000)
+      if (!currentEmp.phone && !currentEmp.name) return;
+      
+      fetchWithTimeout(`${SCRIPT_URL}?action=checkStatus&phone=${currentEmp.phone}&name=${encodeURIComponent(currentEmp.name)}`, {}, 7000)
         .then(res => res.json())
         .then(res => {
           currentDutyState = res.status;
@@ -891,29 +907,33 @@
           let btnBreak = document.getElementById("btnBreak");
           let statusDiv = document.getElementById("status");
 
+          // RENDER IN-APP LIVE STATUS BADGE
           let badge = document.getElementById("leaveStatusBadge");
-          if (res.latestLeave) {
+          if (res.latestLeave && res.latestLeave.dates) {
             badge.style.display = "block";
-            let st = res.latestLeave.status;
+            let st = (res.latestLeave.status || "").toLowerCase();
+            let dates = res.latestLeave.dates;
 
-            if (st === "Pending") {
-              badge.className = "badge-pending";
-              badge.innerHTML = `⏳ Leave Request for <b>${res.latestLeave.dates}</b> is PENDING Manager Approval`;
-            } else if (st === "Approved") {
+            if (st === "approved") {
               badge.className = "badge-approved";
-              badge.innerHTML = `🟢 Leave Request for <b>${res.latestLeave.dates}</b> has been APPROVED by Sumeet Singh`;
-            } else if (st === "Rejected") {
+              badge.innerHTML = `🟢 Leave Request for ${dates} has been APPROVED by Sumeet Singh`;
+            } else if (st === "rejected") {
               badge.className = "badge-rejected";
-              badge.innerHTML = `🔴 Leave Request for <b>${res.latestLeave.dates}</b> was REJECTED by Manager`;
+              badge.innerHTML = `🔴 Leave Request for ${dates} was REJECTED by Manager`;
+            } else {
+              badge.className = "badge-pending";
+              badge.innerHTML = `⏳ Leave Request for ${dates} is PENDING Manager Approval`;
             }
 
-            localStorage.setItem("aa_cached_badge", badge.innerHTML);
+            localStorage.setItem("aa_cached_badge_html", badge.innerHTML);
             localStorage.setItem("aa_cached_badge_class", badge.className);
           } else {
             badge.style.display = "none";
-            localStorage.removeItem("aa_cached_badge");
+            localStorage.removeItem("aa_cached_badge_html");
+            localStorage.removeItem("aa_cached_badge_class");
           }
 
+          // Render Shift Controls
           if (res.status === "NEEDS_CLOCK_IN") {
             btnIn.style.display = "flex";
             btnOut.style.display = "none";
@@ -959,7 +979,7 @@
       }
     }
 
-    // 10. UNIFIED GPS CAPTURE FOR ALL MODES
+    // 11. GPS ATTENDANCE FLOW (ALL MODES CAPTURE GPS)
     function startAttendanceFlow(type) {
       triggerHaptic('tick');
       let mode = document.getElementById("workMode").value;
@@ -986,14 +1006,12 @@
       statusDiv.innerHTML = "🛰️ जीपीएस स्थान सत्यापित किया जा रहा है...";
       speakHindi("स्थान सत्यापित हो रहा है, कृपया प्रतीक्षा करें।");
 
-      // Captures GPS coordinates for Office, Site, and WFH
       navigator.geolocation.getCurrentPosition(
         pos => {
           triggerHaptic('lock');
           executePunch(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, mode, type, siteVal, wfhVal);
         },
         () => {
-          // Fallback to lower-accuracy network location for indoor factory sheds
           navigator.geolocation.getCurrentPosition(
             pos => {
               triggerHaptic('lock');
@@ -1061,7 +1079,7 @@
       .catch(() => saveToIndexedDb(payload));
     }
 
-    // 11. LEAVE & CALENDAR
+    // 12. LEAVE SUBMISSION FLOW
     function openLeaveModal() { triggerHaptic('tick'); document.getElementById("leaveModal").style.display = "flex"; }
     function closeLeaveModal() { triggerHaptic('tick'); document.getElementById("leaveModal").style.display = "none"; }
     function toggleDateRange(val) {
@@ -1104,8 +1122,16 @@
         btn.disabled = false;
         btn.innerText = "आवेदन जमा करें ✨";
         closeLeaveModal();
+
+        // Prompt for Manager WhatsApp Alert
+        let msg = `*Aryavarta Leave Request*%0A*Employee:* ${currentEmp.name}%0A*Type:* ${lType}%0A*Dates:* ${sDate} to ${eDate}%0A*Reason:* ${reason}`;
+        let waUrl = `https://wa.me/${MANAGER_WHATSAPP}?text=${msg}`;
+
         speakHindi("अवकाश आवेदन दर्ज हो चुका है।");
-        alert("✅ अवकाश आवेदन सफलतापूर्वक जमा हो चुका है।");
+        if (confirm("✅ अवकाश आवेदन जमा हो चुका है!\n\nक्या आप मैनेजर सुमीत सिंह जी को व्हाट्सएप पर भी सूचित करना चाहते हैं?")) {
+          window.open(waUrl, '_blank');
+        }
+
         setTimeout(refreshTodayStatus, 1500);
       }).catch(() => {
         triggerHaptic('error');
@@ -1115,6 +1141,7 @@
       });
     }
 
+    // 13. CALENDAR OVERLAY & SHIFT NOTE POPUP
     function openCalendarModal() { triggerHaptic('tick'); document.getElementById("calModal").style.display = "flex"; renderCalendar(); }
     function closeCalendarModal() { triggerHaptic('tick'); document.getElementById("calModal").style.display = "none"; }
     function prevMonth() { triggerHaptic('tick'); calDate.setMonth(calDate.getMonth() - 1); renderCalendar(); }
@@ -1129,7 +1156,7 @@
       let body = document.getElementById("calendarBody");
       body.innerHTML = "<div class='cal-header'>रवि</div><div class='cal-header'>सोम</div><div class='cal-header'>मंगल</div><div class='cal-header'>बुध</div><div class='cal-header'>गुरु</div><div class='cal-header'>शुक्र</div><div class='cal-header'>शनि</div>";
 
-      fetchWithTimeout(`${SCRIPT_URL}?action=getCalendar&name=${encodeURIComponent(currentEmp.name)}&month=${month + 1}&year=${year}`, {}, 8000)
+      fetchWithTimeout(`${SCRIPT_URL}?action=getCalendar&phone=${currentEmp.phone}&name=${encodeURIComponent(currentEmp.name)}&month=${month + 1}&year=${year}`, {}, 8000)
         .then(res => res.json())
         .then(data => {
           let history = data.history || {};
@@ -1153,7 +1180,7 @@
             if (entry) {
               if (entry.isLeave) {
                 cellClass += " cal-leave";
-                shiftNote = entry.note || "Full Day Leave (Approved)";
+                shiftNote = "Full Day Leave (Approved)";
               } else {
                 cellClass += " cal-present";
                 shiftNote = entry.punches.join("<br>");
