@@ -6,7 +6,6 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(clients.claim());
 });
 
-// Responds to background push alerts
 self.addEventListener('push', (event) => {
   let payload = {
     title: '⚠️ आर्यावर्त उपस्थिति सूचना',
@@ -30,7 +29,6 @@ self.addEventListener('push', (event) => {
   );
 });
 
-// Opens the attendance portal when tapping the notification
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   event.waitUntil(
