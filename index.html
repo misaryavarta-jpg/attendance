@@ -28,7 +28,6 @@
       transition: background 1.5s ease;
     }
 
-    /* Ambient Fairy Dust Canvas */
     #ambientCanvas {
       position: fixed;
       top: 0;
@@ -39,7 +38,6 @@
       z-index: 2;
     }
 
-    /* Weather Rain Overlay */
     .rain-overlay {
       display: none;
       position: fixed;
@@ -160,6 +158,21 @@
     .user-card p { margin: 2px 0; font-size: 12px; color: #047857; font-weight: 700; }
     .user-card strong { color: #064e3b; font-size: 16px; }
 
+    /* Live Network & Offline Queue Pill */
+    .sync-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 12px;
+      margin-top: 4px;
+    }
+    .sync-online { background: #dcfce7; color: #15803d; }
+    .sync-offline { background: #fef3c7; color: #b45309; }
+
+    /* Live Leave Status Badge */
     #leaveStatusBadge {
       display: none;
       margin-top: 10px;
@@ -293,7 +306,6 @@
 </head>
 <body>
 
-  <!-- Ambient Dust & Rain Elements -->
   <canvas id="ambientCanvas"></canvas>
   <div class="rain-overlay" id="rainOverlay"></div>
 
@@ -336,10 +348,13 @@
       <button type="button" class="btn btn-primary" onclick="handleManualLogin()">पोर्टल में प्रवेश करें 🚀</button>
     </div>
 
-    <!-- Active Form -->
+    <!-- Active Punch Portal -->
     <div id="punchForm" style="display:none;">
       <div class="user-card">
-        <p>प्रमाणित कर्मचारी (Verified):</p>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <p>प्रमाणित कर्मचारी (Verified):</p>
+          <span id="networkPill" class="sync-status-pill sync-online">🟢 ऑनलाइन</span>
+        </div>
         <strong id="displayEmpName">Loading...</strong>
         <p id="displayEmpPhone" style="font-size:12px; margin-top:2px;"></p>
         <div id="leaveStatusBadge"></div>
@@ -487,7 +502,7 @@
     let timerInterval = null;
     let currentDutyState = "NEEDS_CLOCK_IN";
 
-    // 1. HAPTIC FEEDBACK ENGINE
+    // 1. HAPTIC FEEDBACK
     function triggerHaptic(type) {
       if (!('vibrate' in navigator)) return;
       if (type === 'tick') navigator.vibrate(20);
@@ -497,24 +512,20 @@
       else if (type === 'error') navigator.vibrate([150, 80, 150]);
     }
 
-    // 2. REAL-TIME SUN & WEATHER ENGINE (Pune / Chikhali)
+    // 2. REAL-TIME SUN & RAIN TELEMETRY
     function applySunAndWeatherTheme() {
       const hour = new Date().getHours();
-      let skyGradient = "radial-gradient(circle at top, #1e1b4b, #0f172a 75%, #020617)"; // Default night
+      let skyGradient = "radial-gradient(circle at top, #1e1b4b, #0f172a 75%, #020617)";
 
       if (hour >= 6 && hour < 9) {
-        // Sunrise God-Rays
         skyGradient = "radial-gradient(circle at top, #b45309, #78350f 45%, #0f172a 90%)";
       } else if (hour >= 9 && hour < 17) {
-        // Crisp Daylight
         skyGradient = "radial-gradient(circle at top, #0284c7, #1e3a8a 60%, #0f172a 100%)";
       } else if (hour >= 17 && hour < 19) {
-        // Dusk Velvet
         skyGradient = "radial-gradient(circle at top, #86198f, #4c1d95 50%, #020617 100%)";
       }
       document.body.style.background = skyGradient;
 
-      // Telemetry: Open-Meteo Pune Telemetry (Lat 18.68, Lon 73.80)
       fetch("https://api.open-meteo.com/v1/forecast?latitude=18.687&longitude=73.805&current=precipitation,rain")
         .then(res => res.json())
         .then(data => {
@@ -524,7 +535,7 @@
         }).catch(() => {});
     }
 
-    // 3. LIGHTWEIGHT FAIRY DUST / FIREFLY PARTICLES (Canvas 60fps)
+    // 3. FAIRY DUST FIREFLY PARTICLES (Canvas 60fps)
     const canvas = document.getElementById("ambientCanvas");
     const ctx = canvas.getContext("2d");
     let particles = [];
@@ -566,7 +577,7 @@
     }
     renderFairyParticles();
 
-    // 4. FETCH TIMEOUT WRAPPER
+    // 4. TIMEOUT-ENFORCED FETCH
     async function fetchWithTimeout(resource, options = {}, timeout = 8000) {
       const controller = new AbortController();
       const id = setTimeout(() => controller.abort(), timeout);
@@ -580,7 +591,7 @@
       }
     }
 
-    // 5. INDEXEDDB QUEUE
+    // 5. INDEXEDDB OFFLINE PUNCH QUEUE
     let db;
     const dbRequest = indexedDB.open("AryavartaDB", 1);
     dbRequest.onupgradeneeded = (e) => {
@@ -591,8 +602,29 @@
     };
     dbRequest.onsuccess = (e) => {
       db = e.target.result;
+      updateSyncStatusUI();
       flushIndexedDbQueue();
     };
+
+    function updateSyncStatusUI() {
+      if (!db) return;
+      const tx = db.transaction("punchQueue", "readonly");
+      const req = tx.objectStore("punchQueue").count();
+      req.onsuccess = () => {
+        const count = req.result;
+        const pill = document.getElementById("networkPill");
+        if (!navigator.onLine) {
+          pill.className = "sync-status-pill sync-offline";
+          pill.innerHTML = `📡 ऑफ़लाइन (${count} सुरक्षित)`;
+        } else if (count > 0) {
+          pill.className = "sync-status-pill sync-offline";
+          pill.innerHTML = `🔄 सिंक हो रहा है (${count})`;
+        } else {
+          pill.className = "sync-status-pill sync-online";
+          pill.innerHTML = `🟢 ऑनलाइन`;
+        }
+      };
+    }
 
     function saveToIndexedDb(payload) {
       if (!db) return;
@@ -602,21 +634,28 @@
         document.getElementById("btnIn").disabled = false;
         document.getElementById("btnOut").disabled = false;
         document.getElementById("status").style.color = "#d97706";
-        document.getElementById("status").innerHTML = "⚠️ कमज़ोर नेटवर्क: उपस्थिति फोन में सुरक्षित है। नेटवर्क आते ही सिंक होगी।";
-        speakHindi("इंटरनेट धीमा है। उपस्थिति सुरक्षित कर ली गई है।");
+        document.getElementById("status").innerHTML = "⚠️ नेटवर्क धीमा है: उपस्थिति फोन में सुरक्षित है।";
+        speakHindi("इंटरनेट कमजोर है। उपस्थिति सुरक्षित कर ली गई है।");
         triggerHaptic('error');
+        updateSyncStatusUI();
       };
     }
 
     function flushIndexedDbQueue() {
-      if (!db || !navigator.onLine) return;
+      if (!db || !navigator.onLine) {
+        updateSyncStatusUI();
+        return;
+      }
       const tx = db.transaction("punchQueue", "readwrite");
       const store = tx.objectStore("punchQueue");
       const getAllReq = store.getAll();
 
       getAllReq.onsuccess = () => {
         const records = getAllReq.result;
-        if (!records || records.length === 0) return;
+        if (!records || records.length === 0) {
+          updateSyncStatusUI();
+          return;
+        }
 
         records.forEach(rec => {
           fetch(SCRIPT_URL, {
@@ -627,6 +666,7 @@
           }).then(() => {
             const delTx = db.transaction("punchQueue", "readwrite");
             delTx.objectStore("punchQueue").delete(rec.id);
+            delTx.oncomplete = updateSyncStatusUI;
           }).catch(console.error);
         });
 
@@ -636,6 +676,7 @@
     }
 
     window.addEventListener('online', flushIndexedDbQueue);
+    window.addEventListener('offline', updateSyncStatusUI);
     setInterval(flushIndexedDbQueue, 25000);
 
     // 6. SERVICE WORKER
@@ -918,7 +959,7 @@
       }
     }
 
-    // 10. UNIFIED GPS CAPTURE (OFFICE, SITE, WFH)
+    // 10. UNIFIED GPS CAPTURE FOR ALL MODES
     function startAttendanceFlow(type) {
       triggerHaptic('tick');
       let mode = document.getElementById("workMode").value;
@@ -945,14 +986,14 @@
       statusDiv.innerHTML = "🛰️ जीपीएस स्थान सत्यापित किया जा रहा है...";
       speakHindi("स्थान सत्यापित हो रहा है, कृपया प्रतीक्षा करें।");
 
-      // Captures GPS for all modes (Office enforces 150m, Site/WFH logs real location)
+      // Captures GPS coordinates for Office, Site, and WFH
       navigator.geolocation.getCurrentPosition(
         pos => {
           triggerHaptic('lock');
           executePunch(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, mode, type, siteVal, wfhVal);
         },
         () => {
-          // Coarse fallback
+          // Fallback to lower-accuracy network location for indoor factory sheds
           navigator.geolocation.getCurrentPosition(
             pos => {
               triggerHaptic('lock');
@@ -966,14 +1007,13 @@
                 statusDiv.style.color = "#dc2626";
                 statusDiv.innerHTML = "❌ जीपीएस सिग्नल नहीं मिला। कृपया लोकेशन ऑन करें।";
               } else {
-                // Allow Site/WFH to submit without GPS if device has hardware failure
                 executePunch(null, null, null, mode, type, siteVal, wfhVal);
               }
             },
-            { enableHighAccuracy: false, timeout: 5000 }
+            { enableHighAccuracy: false, timeout: 5000, maximumAge: 30000 }
           );
         },
-        { enableHighAccuracy: true, timeout: 6000 }
+        { enableHighAccuracy: true, timeout: 7000, maximumAge: 30000 }
       );
     }
 
