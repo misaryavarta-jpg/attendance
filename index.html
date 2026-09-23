@@ -13,6 +13,7 @@
       --in: #059669;
       --out: #dc2626;
       --break: #d97706;
+      --bg-sky: radial-gradient(circle at top, #1e1b4b, #0f172a 75%, #020617);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
@@ -20,11 +21,38 @@
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       text-align: center;
-      background: radial-gradient(circle at top, #1e1b4b, #0f172a 75%, #020617);
+      background: var(--bg-sky);
       min-height: 100vh;
       color: #1e293b;
       overflow-x: hidden;
+      transition: background 1.5s ease;
     }
+
+    /* Ambient Fairy Dust Canvas */
+    #ambientCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Weather Rain Overlay */
+    .rain-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 3;
+      background: repeating-linear-gradient(transparent, transparent 50px, rgba(255, 255, 255, 0.12) 53px, transparent 56px);
+      animation: rainMotion 0.6s linear infinite;
+    }
+    @keyframes rainMotion { 0% { background-position: 0 0; } 100% { background-position: 20px 100px; } }
 
     .top-action-header {
       position: relative;
@@ -265,6 +293,10 @@
 </head>
 <body>
 
+  <!-- Ambient Dust & Rain Elements -->
+  <canvas id="ambientCanvas"></canvas>
+  <div class="rain-overlay" id="rainOverlay"></div>
+
   <div class="top-action-header">
     <button type="button" class="icon-btn-pill" id="muteToggleBtn" onclick="toggleAudioMute()">
       <span id="muteIcon">🔊</span> <span id="muteLabel">Voice On</span>
@@ -293,7 +325,7 @@
     <h2>Aryavarta Automation</h2>
     <p class="sub">Chikhali Head Office Portal</p>
 
-    <!-- Login -->
+    <!-- Login Box -->
     <div id="loginBox" style="display:none;">
       <div style="background:#eff6ff;border:1.5px solid #bfdbfe;padding:12px;border-radius:12px;margin-bottom:14px;">
         <p style="color:#1e40af;font-weight:bold;margin:0;font-size:13.5px;">👤 कर्मचारी पहचान (Login)</p>
@@ -304,7 +336,7 @@
       <button type="button" class="btn btn-primary" onclick="handleManualLogin()">पोर्टल में प्रवेश करें 🚀</button>
     </div>
 
-    <!-- Active Punch Portal -->
+    <!-- Active Form -->
     <div id="punchForm" style="display:none;">
       <div class="user-card">
         <p>प्रमाणित कर्मचारी (Verified):</p>
@@ -367,7 +399,7 @@
     </div>
   </div>
 
-  <!-- Modals -->
+  <!-- Leave Modal -->
   <div id="leaveModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -406,6 +438,7 @@
     </div>
   </div>
 
+  <!-- Calendar Modal -->
   <div id="calModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -423,6 +456,7 @@
     </div>
   </div>
 
+  <!-- Shift Note Modal -->
   <div id="dayDetailModal" class="modal">
     <div class="modal-content" style="max-width:320px; text-align:center;">
       <h3 id="detailDayTitle" style="color:#0f172a; margin-bottom:8px;">Shift Details</h3>
@@ -431,6 +465,7 @@
     </div>
   </div>
 
+  <!-- Bye Modal -->
   <div id="byeModal" class="modal">
     <div class="bye-modal-content">
       <h3 style="margin:12px 0 6px 0; color:#0f172a; font-size:19px; font-weight:800;" id="byeTitle">धन्यवाद!</h3>
@@ -452,7 +487,86 @@
     let timerInterval = null;
     let currentDutyState = "NEEDS_CLOCK_IN";
 
-    // 1. Network Fetch with Timeout (Prevents App Freezing)
+    // 1. HAPTIC FEEDBACK ENGINE
+    function triggerHaptic(type) {
+      if (!('vibrate' in navigator)) return;
+      if (type === 'tick') navigator.vibrate(20);
+      else if (type === 'triple') navigator.vibrate([20, 30, 20, 30, 20]);
+      else if (type === 'lock') navigator.vibrate(60);
+      else if (type === 'success') navigator.vibrate([80, 50, 120]);
+      else if (type === 'error') navigator.vibrate([150, 80, 150]);
+    }
+
+    // 2. REAL-TIME SUN & WEATHER ENGINE (Pune / Chikhali)
+    function applySunAndWeatherTheme() {
+      const hour = new Date().getHours();
+      let skyGradient = "radial-gradient(circle at top, #1e1b4b, #0f172a 75%, #020617)"; // Default night
+
+      if (hour >= 6 && hour < 9) {
+        // Sunrise God-Rays
+        skyGradient = "radial-gradient(circle at top, #b45309, #78350f 45%, #0f172a 90%)";
+      } else if (hour >= 9 && hour < 17) {
+        // Crisp Daylight
+        skyGradient = "radial-gradient(circle at top, #0284c7, #1e3a8a 60%, #0f172a 100%)";
+      } else if (hour >= 17 && hour < 19) {
+        // Dusk Velvet
+        skyGradient = "radial-gradient(circle at top, #86198f, #4c1d95 50%, #020617 100%)";
+      }
+      document.body.style.background = skyGradient;
+
+      // Telemetry: Open-Meteo Pune Telemetry (Lat 18.68, Lon 73.80)
+      fetch("https://api.open-meteo.com/v1/forecast?latitude=18.687&longitude=73.805&current=precipitation,rain")
+        .then(res => res.json())
+        .then(data => {
+          if (data.current && (data.current.rain > 0 || data.current.precipitation > 0)) {
+            document.getElementById("rainOverlay").style.display = "block";
+          }
+        }).catch(() => {});
+    }
+
+    // 3. LIGHTWEIGHT FAIRY DUST / FIREFLY PARTICLES (Canvas 60fps)
+    const canvas = document.getElementById("ambientCanvas");
+    const ctx = canvas.getContext("2d");
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    for (let i = 0; i < 26; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 2 + 1,
+        dx: (Math.random() - 0.5) * 0.6,
+        dy: (Math.random() - 0.5) * 0.6,
+        alpha: Math.random() * 0.7 + 0.2
+      });
+    }
+
+    function renderFairyParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(253, 224, 71, ${p.alpha})`;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = "#fde047";
+        ctx.fill();
+
+        p.x += p.dx;
+        p.y += p.dy;
+        if (p.x < 0 || p.x > canvas.width) p.dx = -p.dx;
+        if (p.y < 0 || p.y > canvas.height) p.dy = -p.dy;
+      });
+      requestAnimationFrame(renderFairyParticles);
+    }
+    renderFairyParticles();
+
+    // 4. FETCH TIMEOUT WRAPPER
     async function fetchWithTimeout(resource, options = {}, timeout = 8000) {
       const controller = new AbortController();
       const id = setTimeout(() => controller.abort(), timeout);
@@ -466,7 +580,7 @@
       }
     }
 
-    // 2. Offline IndexedDB
+    // 5. INDEXEDDB QUEUE
     let db;
     const dbRequest = indexedDB.open("AryavartaDB", 1);
     dbRequest.onupgradeneeded = (e) => {
@@ -490,6 +604,7 @@
         document.getElementById("status").style.color = "#d97706";
         document.getElementById("status").innerHTML = "⚠️ कमज़ोर नेटवर्क: उपस्थिति फोन में सुरक्षित है। नेटवर्क आते ही सिंक होगी।";
         speakHindi("इंटरनेट धीमा है। उपस्थिति सुरक्षित कर ली गई है।");
+        triggerHaptic('error');
       };
     }
 
@@ -523,12 +638,13 @@
     window.addEventListener('online', flushIndexedDbQueue);
     setInterval(flushIndexedDbQueue, 25000);
 
-    // 3. Service Worker
+    // 6. SERVICE WORKER
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(console.error);
     }
 
     async function enableDirectPhoneAlerts() {
+      triggerHaptic('tick');
       if (!('Notification' in window)) return alert("❌ वेब नोटिफिकेशन समर्थित नहीं है।");
       let perm = Notification.permission;
       if (perm !== "granted") perm = await Notification.requestPermission();
@@ -543,13 +659,14 @@
           vibrate: [300, 100, 300],
           tag: "attendance-active-test"
         });
+        triggerHaptic('success');
         alert("✅ फोन अलर्ट सक्रिय हो गया है!");
       } catch (err) {
         alert("⚠️ एरर: " + err.message);
       }
     }
 
-    // 4. Voice Engine with Asynchronous Voice Polling
+    // 7. VOICE SYNTHESIS
     function initVoice() {
       if ('speechSynthesis' in window) {
         let voices = window.speechSynthesis.getVoices();
@@ -573,6 +690,7 @@
     }
 
     function toggleAudioMute() {
+      triggerHaptic('tick');
       isMuted = !isMuted;
       localStorage.setItem("aa_is_muted", isMuted);
       document.getElementById("muteIcon").innerText = isMuted ? "🔇" : "🔊";
@@ -580,12 +698,11 @@
       if (isMuted && 'speechSynthesis' in window) window.speechSynthesis.cancel();
     }
 
-    // Natural Contextual Voice on Open
     function unlockPortalAndSpeak() {
+      triggerHaptic('triple');
       document.getElementById("curtainOverlay").classList.add("curtain-open");
       let savedName = localStorage.getItem("aa_emp_name") || currentEmp.name || "सहकर्मी";
       
-      // Select natural spoken message based on real duty status
       if (currentDutyState === "COMPLETED") {
         speakHindi(`नमस्ते ${savedName} जी! आपकी आज की उपस्थिति पहले ही पूरी हो चुकी है।`);
       } else if (currentDutyState === "WORKING") {
@@ -604,7 +721,7 @@
       if (currentEmp.name) refreshTodayStatus();
     }
 
-    // 5. Shift Duration Timer
+    // 8. SHIFT TIMER
     function startLiveShiftTimer(isoStartTime) {
       if (!isoStartTime) return;
       clockInTimestamp = new Date(isoStartTime).getTime();
@@ -644,8 +761,9 @@
       document.getElementById("timerCard").style.display = "none";
     }
 
-    // 6. Fast Portal Boot
+    // 9. APP STARTUP & STATUS
     window.onload = function() {
+      applySunAndWeatherTheme();
       initVoice();
       let todayStr = new Date().toISOString().split('T')[0];
       document.getElementById("leaveSingleDate").value = todayStr;
@@ -689,6 +807,7 @@
     };
 
     function handleManualLogin() {
+      triggerHaptic('tick');
       let phone = document.getElementById("inputPhone").value.trim().replace(/\D/g, '').slice(-10);
       if (phone.length !== 10) return alert("कृपया 10 अंकों का मोबाइल नंबर दर्ज करें।");
 
@@ -697,6 +816,7 @@
         .then(res => res.json())
         .then(data => {
           if (data.success) {
+            triggerHaptic('success');
             localStorage.setItem("aa_emp_phone", phone);
             localStorage.setItem("aa_emp_name", data.name);
             currentEmp = { name: data.name, phone: phone };
@@ -707,12 +827,14 @@
             document.getElementById("displayEmpPhone").innerText = "📱 +91 " + phone;
             refreshTodayStatus();
           } else {
+            triggerHaptic('error');
             alert("⚠️ " + data.message);
           }
         }).catch(() => alert("नेटवर्क त्रुटि। कृपया इंटरनेट कनेक्शन जांचें।"));
     }
 
     function toggleMode(val) {
+      triggerHaptic('tick');
       document.getElementById("siteAuditBox").style.display = (val === "Site") ? "block" : "none";
       document.getElementById("wfhAuditBox").style.display = (val === "WFH") ? "block" : "none";
     }
@@ -728,7 +850,6 @@
           let btnBreak = document.getElementById("btnBreak");
           let statusDiv = document.getElementById("status");
 
-          // 1. Live Leave Badge
           let badge = document.getElementById("leaveStatusBadge");
           if (res.latestLeave) {
             badge.style.display = "block";
@@ -752,7 +873,6 @@
             localStorage.removeItem("aa_cached_badge");
           }
 
-          // 2. Buttons Display
           if (res.status === "NEEDS_CLOCK_IN") {
             btnIn.style.display = "flex";
             btnOut.style.display = "none";
@@ -788,6 +908,7 @@
     }
 
     function toggleBreakDuty() {
+      triggerHaptic('tick');
       if (currentDutyState === "WORKING") {
         let reason = prompt("ब्रेक या फील्ड विजिट का उद्देश्य दर्ज करें:", "Lunch Break");
         if (!reason) return;
@@ -797,8 +918,9 @@
       }
     }
 
-    // 7. Punch Flow with Hindi Voice Integration
+    // 10. UNIFIED GPS CAPTURE (OFFICE, SITE, WFH)
     function startAttendanceFlow(type) {
+      triggerHaptic('tick');
       let mode = document.getElementById("workMode").value;
       let siteVal = document.getElementById("siteNameInput").value.trim();
       let wfhVal = document.getElementById("wfhReasonInput").value.trim();
@@ -807,10 +929,12 @@
       let btnOut = document.getElementById("btnOut");
 
       if (mode === "Site" && !siteVal) {
+        triggerHaptic('error');
         alert("⚠️ कृपया साइट का नाम दर्ज करें।");
         return document.getElementById("siteNameInput").focus();
       }
       if (mode === "WFH" && !wfhVal) {
+        triggerHaptic('error');
         alert("⚠️ कृपया WFH का कारण दर्ज करें।");
         return document.getElementById("wfhReasonInput").focus();
       }
@@ -819,28 +943,38 @@
       btnOut.disabled = true;
       statusDiv.style.color = "#d97706";
       statusDiv.innerHTML = "🛰️ जीपीएस स्थान सत्यापित किया जा रहा है...";
-      speakHindi("उपस्थिति दर्ज की जा रही है, कृपया प्रतीक्षा करें।");
+      speakHindi("स्थान सत्यापित हो रहा है, कृपया प्रतीक्षा करें।");
 
-      if (mode === "Office") {
-        navigator.geolocation.getCurrentPosition(
-          pos => executePunch(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, mode, type, siteVal, wfhVal),
-          () => {
-            navigator.geolocation.getCurrentPosition(
-              pos => executePunch(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, mode, type, siteVal, wfhVal),
-              () => {
+      // Captures GPS for all modes (Office enforces 150m, Site/WFH logs real location)
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          triggerHaptic('lock');
+          executePunch(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, mode, type, siteVal, wfhVal);
+        },
+        () => {
+          // Coarse fallback
+          navigator.geolocation.getCurrentPosition(
+            pos => {
+              triggerHaptic('lock');
+              executePunch(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, mode, type, siteVal, wfhVal);
+            },
+            () => {
+              if (mode === "Office") {
+                triggerHaptic('error');
                 btnIn.disabled = false;
                 btnOut.disabled = false;
                 statusDiv.style.color = "#dc2626";
                 statusDiv.innerHTML = "❌ जीपीएस सिग्नल नहीं मिला। कृपया लोकेशन ऑन करें।";
-              },
-              { enableHighAccuracy: false, timeout: 5000 }
-            );
-          },
-          { enableHighAccuracy: true, timeout: 6000 }
-        );
-      } else {
-        executePunch(null, null, null, mode, type, siteVal, wfhVal);
-      }
+              } else {
+                // Allow Site/WFH to submit without GPS if device has hardware failure
+                executePunch(null, null, null, mode, type, siteVal, wfhVal);
+              }
+            },
+            { enableHighAccuracy: false, timeout: 5000 }
+          );
+        },
+        { enableHighAccuracy: true, timeout: 6000 }
+      );
     }
 
     function executePunch(lat, lon, acc, mode, type, siteVal, wfhVal) {
@@ -869,11 +1003,11 @@
         body: JSON.stringify(payload)
       }, 7000)
       .then(() => {
+        triggerHaptic('success');
         document.getElementById("btnIn").disabled = false;
         document.getElementById("btnOut").disabled = false;
         showByeAnimation(`${type} सफल!`, "आपकी उपस्थिति दर्ज हो चुकी है। धन्यवाद!");
         
-        // Natural Hindi confirmation
         if (type === "Clock In") {
           speakHindi(`धन्यवाद ${currentEmp.name} जी, आपका क्लॉक इन सफल रहा।`);
         } else if (type === "Clock Out") {
@@ -887,10 +1021,11 @@
       .catch(() => saveToIndexedDb(payload));
     }
 
-    // 8. Leave Submission
-    function openLeaveModal() { document.getElementById("leaveModal").style.display = "flex"; }
-    function closeLeaveModal() { document.getElementById("leaveModal").style.display = "none"; }
+    // 11. LEAVE & CALENDAR
+    function openLeaveModal() { triggerHaptic('tick'); document.getElementById("leaveModal").style.display = "flex"; }
+    function closeLeaveModal() { triggerHaptic('tick'); document.getElementById("leaveModal").style.display = "none"; }
     function toggleDateRange(val) {
+      triggerHaptic('tick');
       document.getElementById("singleDateBox").style.display = (val === "range") ? "none" : "block";
       document.getElementById("rangeDateBox").style.display = (val === "range") ? "block" : "none";
     }
@@ -902,7 +1037,10 @@
       let eDate = duration === "single" ? sDate : document.getElementById("leaveEndDate").value;
       let reason = document.getElementById("leaveReason").value.trim();
 
-      if (!sDate || !eDate || !reason) return alert("तारीख और कारण दोनों दर्ज करें।");
+      if (!sDate || !eDate || !reason) {
+        triggerHaptic('error');
+        return alert("तारीख और कारण दोनों दर्ज करें।");
+      }
 
       let btn = document.getElementById("btnSubmitLeave");
       btn.disabled = true;
@@ -922,6 +1060,7 @@
           reason: reason
         })
       }, 8000).then(() => {
+        triggerHaptic('success');
         btn.disabled = false;
         btn.innerText = "आवेदन जमा करें ✨";
         closeLeaveModal();
@@ -929,17 +1068,17 @@
         alert("✅ अवकाश आवेदन सफलतापूर्वक जमा हो चुका है।");
         setTimeout(refreshTodayStatus, 1500);
       }).catch(() => {
+        triggerHaptic('error');
         btn.disabled = false;
         btn.innerText = "आवेदन जमा करें ✨";
         alert("नेटवर्क त्रुटि: आवेदन जमा नहीं हो सका।");
       });
     }
 
-    // 9. Calendar Rendering & Interactive Day Popups
-    function openCalendarModal() { document.getElementById("calModal").style.display = "flex"; renderCalendar(); }
-    function closeCalendarModal() { document.getElementById("calModal").style.display = "none"; }
-    function prevMonth() { calDate.setMonth(calDate.getMonth() - 1); renderCalendar(); }
-    function nextMonth() { calDate.setMonth(calDate.getMonth() + 1); renderCalendar(); }
+    function openCalendarModal() { triggerHaptic('tick'); document.getElementById("calModal").style.display = "flex"; renderCalendar(); }
+    function closeCalendarModal() { triggerHaptic('tick'); document.getElementById("calModal").style.display = "none"; }
+    function prevMonth() { triggerHaptic('tick'); calDate.setMonth(calDate.getMonth() - 1); renderCalendar(); }
+    function nextMonth() { triggerHaptic('tick'); calDate.setMonth(calDate.getMonth() + 1); renderCalendar(); }
 
     function renderCalendar() {
       let year = calDate.getFullYear();
@@ -986,7 +1125,10 @@
             let cellElem = document.createElement("div");
             cellElem.className = cellClass;
             cellElem.innerText = d;
-            cellElem.onclick = () => openDayDetailModal(dateKey, shiftNote);
+            cellElem.onclick = () => {
+              triggerHaptic('tick');
+              openDayDetailModal(dateKey, shiftNote);
+            };
             body.appendChild(cellElem);
           }
         }).catch(() => {
@@ -1001,6 +1143,7 @@
     }
 
     function closeDayDetailModal() {
+      triggerHaptic('tick');
       document.getElementById("dayDetailModal").style.display = "none";
     }
 
@@ -1009,7 +1152,10 @@
       document.getElementById("byeMessage").innerText = message;
       document.getElementById("byeModal").style.display = "flex";
     }
-    function closeByeModal() { document.getElementById("byeModal").style.display = "none"; }
+    function closeByeModal() {
+      triggerHaptic('tick');
+      document.getElementById("byeModal").style.display = "none";
+    }
   </script>
 </body>
 </html>
