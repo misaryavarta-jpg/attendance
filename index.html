@@ -36,6 +36,7 @@
       z-index: 5;
     }
 
+    /* TOP ACTION BAR */
     .top-action-header {
       position: relative;
       z-index: 30;
@@ -67,6 +68,7 @@
       display: none;
     }
 
+    /* THEATRICAL CURTAIN OVERLAY */
     .curtain-overlay {
       position: fixed;
       top: 0;
@@ -79,7 +81,7 @@
       align-items: center;
       background: rgba(3, 7, 18, 0.85);
       backdrop-filter: blur(10px);
-      transition: opacity 0.4s ease, visibility 0.4s;
+      transition: opacity 0.8s ease, visibility 0.8s;
     }
     .curtain {
       position: absolute;
@@ -87,7 +89,7 @@
       width: 50vw;
       height: 100vh;
       background: radial-gradient(circle at center, #6b21a8 10%, #3b0764 60%, #0f051d 100%);
-      transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+      transition: transform 1.2s cubic-bezier(0.77, 0, 0.175, 1);
       box-shadow: 0 0 50px rgba(0,0,0,0.8);
     }
     .curtain-left { left: 0; border-right: 2px solid #fde047; }
@@ -113,6 +115,7 @@
       gap: 10px;
     }
 
+    /* MAIN CONTAINER */
     .container {
       background: rgba(255, 255, 255, 0.96);
       padding: 22px 18px;
@@ -170,6 +173,7 @@
     .user-card p { margin: 2px 0; font-size: 12px; color: #047857; font-weight: 700; }
     .user-card strong { color: #064e3b; font-size: 16px; }
 
+    /* LEAVE STATUS BADGE */
     #leaveStatusBadge {
       display: none;
       padding: 10px 14px;
@@ -180,6 +184,7 @@
       font-weight: 700;
     }
 
+    /* LIVE SHIFT WORKING TIMER & PROGRESS BAR */
     .timer-card {
       display: none;
       background: #0f172a;
@@ -193,7 +198,7 @@
     .timer-title { font-size: 12px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
     .timer-clock { font-size: 24px; font-weight: 900; color: #38bdf8; font-family: monospace; margin: 4px 0 8px 0; }
     .progress-bar-bg { background: #334155; border-radius: 8px; height: 10px; width: 100%; overflow: hidden; }
-    .progress-bar-fill { background: linear-gradient(90deg, #10b981, #38bdf8); height: 100%; width: 0%; transition: width 0.5s linear; }
+    .progress-bar-fill { background: linear-gradient(90deg, #10b981, #38bdf8); height: 100%; width: 0%; transition: width 1s linear; }
     .timer-meta { display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; margin-top: 5px; }
 
     .audit-box {
@@ -249,6 +254,7 @@
 
     #status { margin-top: 14px; font-weight: 700; font-size: 13.5px; padding: 10px; border-radius: 10px; line-height: 1.4; }
 
+    /* MODALS */
     .modal {
       display: none;
       position: fixed;
@@ -280,9 +286,9 @@
 
     .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-top: 10px; }
     .cal-header { font-weight: 800; font-size: 11px; color: #64748b; padding: 4px 0; }
-    .cal-cell { font-size: 12px; padding: 8px 0; border-radius: 8px; background: #f1f5f9; color: #1e293b; font-weight: 600; min-height: 34px; display: flex; align-items: center; justify-content: center; }
-    .cal-present { background: #dcfce7 !important; color: #15803d !important; font-weight: 800; border: 1px solid #86efac; }
-    .cal-leave { background: #fef3c7 !important; color: #b45309 !important; font-weight: 800; border: 1px solid #fde047; }
+    .cal-cell { font-size: 12px; padding: 8px 0; border-radius: 8px; background: #f1f5f9; color: #1e293b; font-weight: 600; }
+    .cal-present { background: #dcfce7; color: #15803d; font-weight: 800; }
+    .cal-leave { background: #fef3c7; color: #b45309; font-weight: 800; }
     .cal-sunday { background: #fee2e2; color: #b91c1c; }
 
     .bye-modal-content { text-align: center; background: white; padding: 28px 20px; border-radius: 24px; max-width: 320px; width: 85%; }
@@ -292,6 +298,7 @@
 
   <canvas id="fairyCanvas"></canvas>
 
+  <!-- TOP ACTION BAR -->
   <div class="top-action-header">
     <button type="button" class="icon-btn-pill" id="muteToggleBtn" onclick="toggleAudioMute()">
       <span id="muteIcon">🔊</span> <span id="muteLabel">Voice On</span>
@@ -304,6 +311,7 @@
     </button>
   </div>
 
+  <!-- THEATRICAL PORTAL CURTAINS -->
   <div class="curtain-overlay" id="curtainOverlay">
     <div class="curtain curtain-left"></div>
     <div class="curtain curtain-right"></div>
@@ -325,6 +333,7 @@
     <h2>Aryavarta Automation</h2>
     <p class="sub">Chikhali Head Office Portal</p>
 
+    <!-- Mobile Login Screen -->
     <div id="loginBox" style="display:none;">
       <div style="background:#eff6ff;border:1.5px solid #bfdbfe;padding:12px;border-radius:12px;margin-bottom:14px;">
         <p style="color:#1e40af;font-weight:bold;margin:0;font-size:13.5px;">👤 कर्मचारी पहचान (Login)</p>
@@ -335,6 +344,7 @@
       <button type="button" class="btn btn-primary" onclick="handleManualLogin()">पोर्टल में प्रवेश करें 🚀</button>
     </div>
 
+    <!-- Active Attendance Form -->
     <div id="punchForm" style="display:none;">
       <div class="user-card">
         <p>प्रमाणित कर्मचारी (Verified):</p>
@@ -342,8 +352,10 @@
         <p id="displayEmpPhone" style="font-size:12px; margin-top:2px;"></p>
       </div>
 
+      <!-- Real-Time Leave Status Badge -->
       <div id="leaveStatusBadge"></div>
 
+      <!-- LIVE DIGITAL SHIFT TIMER & PROGRESS BAR -->
       <div class="timer-card" id="timerCard">
         <div class="timer-title">⏱️ Shift Duration (Active Duty)</div>
         <div class="timer-clock" id="liveTimerText">00 hrs : 00 mins : 00 secs</div>
@@ -398,6 +410,7 @@
     </div>
   </div>
 
+  <!-- LEAVE MODAL -->
   <div id="leaveModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -436,6 +449,7 @@
     </div>
   </div>
 
+  <!-- CALENDAR MODAL -->
   <div id="calModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -453,6 +467,7 @@
     </div>
   </div>
 
+  <!-- BYE MODAL -->
   <div id="byeModal" class="modal">
     <div class="bye-modal-content">
       <h3 style="margin:12px 0 6px 0; color:#0f172a; font-size:19px; font-weight:800;" id="byeTitle">धन्यवाद!</h3>
@@ -462,7 +477,7 @@
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw9EsuwTVJr25P7aAV6w5cTT1Ii8xnU0gkfASsCSfzA0XWa8j03aABkIhhVARjnLz9m/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwquZGro0VtZ-I4jegMaMiigBASs1yJ8WY50i_JkC8tofCK6o4oHPhgG3t3lF0c-IH2/exec";
     const MANAGER_WHATSAPP = "919766037466";
 
     let currentEmp = { name: "", phone: "" };
@@ -474,41 +489,7 @@
     let timerInterval = null;
     let currentDutyState = "NEEDS_CLOCK_IN";
 
-    // 1. LIGHTWEIGHT CANVAS
-    const canvas = document.getElementById("fairyCanvas");
-    const ctx = canvas.getContext("2d");
-    let particles = [];
-    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    window.addEventListener("resize", resizeCanvas);
-    resizeCanvas();
-
-    for (let i = 0; i < 12; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 5 + 3,
-        speedY: Math.random() * 0.8 + 0.4,
-        speedX: Math.random() * 0.6 - 0.3,
-        hue: Math.random() > 0.4 ? 335 : 45
-      });
-    }
-
-    function renderFairyCanvas() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach(p => {
-        p.y += p.speedY;
-        p.x += p.speedX;
-        if (p.y > canvas.height) { p.y = -10; p.x = Math.random() * canvas.width; }
-        ctx.fillStyle = `hsla(${p.hue}, 90%, 65%, 0.5)`;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
-      });
-      requestAnimationFrame(renderFairyCanvas);
-    }
-    renderFairyCanvas();
-
-    // 2. INDEXEDDB QUEUE
+    // 1. INDEXEDDB OFFLINE QUEUE
     let db;
     const dbRequest = indexedDB.open("AryavartaDB", 1);
     dbRequest.onupgradeneeded = (e) => {
@@ -563,6 +544,7 @@
     }
     window.addEventListener('online', flushIndexedDbQueue);
 
+    // 2. PWA SERVICE WORKER
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {});
     }
@@ -582,6 +564,7 @@
       }
     }
 
+    // 3. ZERO-LAG INSTANT VOICE ENGINE
     function initVoice() {
       if ('speechSynthesis' in window) {
         let voices = window.speechSynthesis.getVoices();
@@ -643,16 +626,15 @@
       if (currentEmp.name) refreshTodayStatus();
     }
 
-    // ACCURATE DIGITAL SHIFT TIMER
+    // 4. LIVE SHIFT WORKING TIMER
     function startLiveShiftTimer(isoStartTime) {
       if (!isoStartTime) return;
       clockInTimestamp = new Date(isoStartTime).getTime();
-      if (isNaN(clockInTimestamp) || clockInTimestamp <= 0) return;
-
       document.getElementById("timerCard").style.display = "block";
+
       if (timerInterval) clearInterval(timerInterval);
 
-      function updateClock() {
+      timerInterval = setInterval(() => {
         let now = new Date().getTime();
         let diffMs = now - clockInTimestamp;
         if (diffMs < 0) diffMs = 0;
@@ -677,9 +659,7 @@
         } else {
           document.getElementById("targetRemainingText").innerText = "Overtime Active ⭐";
         }
-      }
-      updateClock();
-      timerInterval = setInterval(updateClock, 1000);
+      }, 1000);
     }
 
     function stopLiveShiftTimer() {
@@ -687,7 +667,7 @@
       document.getElementById("timerCard").style.display = "none";
     }
 
-    // 0ms INSTANT LOAD WITH ACCURATE SYNC
+    // 5. INITIALIZATION & REFRESH
     window.onload = function() {
       initVoice();
       let todayStr = new Date().toISOString().split('T')[0];
@@ -707,15 +687,6 @@
         document.getElementById("displayEmpName").innerText = savedName || "Loading...";
         document.getElementById("displayEmpPhone").innerText = "📱 +91 " + savedPhone;
 
-        // Apply true cached values if they exist
-        let cachedStatus = localStorage.getItem("aa_cached_status_" + todayStr);
-        let cachedClockIn = localStorage.getItem("aa_cached_clockin_" + todayStr);
-
-        if (cachedStatus && cachedClockIn) {
-          applyUIStatus(cachedStatus, cachedClockIn);
-        }
-
-        // Fetch fresh state from backend
         fetch(`${SCRIPT_URL}?action=authDevice&phone=${savedPhone}`)
           .then(res => res.json())
           .then(data => {
@@ -725,53 +696,12 @@
               document.getElementById("displayEmpName").innerText = data.name;
               refreshTodayStatus();
             }
-          })
-          .catch(() => {});
+          });
       } else {
         document.getElementById("loginBox").style.display = "block";
         document.getElementById("punchForm").style.display = "none";
       }
     };
-
-    function applyUIStatus(status, clockInIso) {
-      currentDutyState = status;
-      let btnIn = document.getElementById("btnIn");
-      let btnOut = document.getElementById("btnOut");
-      let btnBreak = document.getElementById("btnBreak");
-      let statusDiv = document.getElementById("status");
-
-      if (status === "NEEDS_CLOCK_IN") {
-        btnIn.style.display = "flex";
-        btnOut.style.display = "none";
-        btnBreak.style.display = "none";
-        stopLiveShiftTimer();
-        statusDiv.innerHTML = "";
-      } else if (status === "WORKING") {
-        btnIn.style.display = "none";
-        btnOut.style.display = "flex";
-        btnBreak.style.display = "flex";
-        document.getElementById("breakBtnIcon").innerText = "☕";
-        document.getElementById("breakBtnText").innerText = "Start Break / Field Visit";
-        statusDiv.style.color = "#2563eb";
-        statusDiv.innerHTML = "ℹ️ आप कार्यरत हैं (Active Duty)।";
-        if (clockInIso) startLiveShiftTimer(clockInIso);
-      } else if (status === "ON_BREAK") {
-        btnIn.style.display = "none";
-        btnOut.style.display = "none";
-        btnBreak.style.display = "flex";
-        document.getElementById("breakBtnIcon").innerText = "▶️";
-        document.getElementById("breakBtnText").innerText = "Resume Duty (End Break)";
-        statusDiv.style.color = "#d97706";
-        statusDiv.innerHTML = "⏸️ आप ब्रेक / फील्ड विजिट पर हैं।";
-      } else if (status === "COMPLETED") {
-        btnIn.style.display = "none";
-        btnOut.style.display = "none";
-        btnBreak.style.display = "none";
-        stopLiveShiftTimer();
-        statusDiv.style.color = "#059669";
-        statusDiv.innerHTML = "✅ आज की उपस्थिति पूर्ण हो चुकी है।";
-      }
-    }
 
     function handleManualLogin() {
       let phone = document.getElementById("inputPhone").value.trim().replace(/\D/g, '').slice(-10);
@@ -803,17 +733,16 @@
     }
 
     function refreshTodayStatus() {
-      let todayStr = new Date().toISOString().split('T')[0];
       fetch(`${SCRIPT_URL}?action=checkStatus&name=${encodeURIComponent(currentEmp.name)}`)
         .then(res => res.json())
         .then(res => {
-          localStorage.setItem("aa_cached_status_" + todayStr, res.status);
-          if (res.clockInTime) {
-            localStorage.setItem("aa_cached_clockin_" + todayStr, res.clockInTime);
-          }
+          currentDutyState = res.status;
+          let btnIn = document.getElementById("btnIn");
+          let btnOut = document.getElementById("btnOut");
+          let btnBreak = document.getElementById("btnBreak");
+          let statusDiv = document.getElementById("status");
 
-          applyUIStatus(res.status, res.clockInTime);
-
+          // Update Leave Status Banner
           let badge = document.getElementById("leaveStatusBadge");
           if (res.latestLeave) {
             badge.style.display = "block";
@@ -836,8 +765,39 @@
           } else {
             badge.style.display = "none";
           }
-        })
-        .catch(() => {});
+
+          if (res.status === "NEEDS_CLOCK_IN") {
+            btnIn.style.display = "flex";
+            btnOut.style.display = "none";
+            btnBreak.style.display = "none";
+            stopLiveShiftTimer();
+            statusDiv.innerHTML = "";
+          } else if (res.status === "WORKING") {
+            btnIn.style.display = "none";
+            btnOut.style.display = "flex";
+            btnBreak.style.display = "flex";
+            document.getElementById("breakBtnIcon").innerText = "☕";
+            document.getElementById("breakBtnText").innerText = "Start Break / Field Visit";
+            statusDiv.style.color = "#2563eb";
+            statusDiv.innerHTML = "ℹ️ आप कार्यरत हैं (Active Duty)।";
+            if (res.clockInTime) startLiveShiftTimer(res.clockInTime);
+          } else if (res.status === "ON_BREAK") {
+            btnIn.style.display = "none";
+            btnOut.style.display = "none";
+            btnBreak.style.display = "flex";
+            document.getElementById("breakBtnIcon").innerText = "▶️";
+            document.getElementById("breakBtnText").innerText = "Resume Duty (End Break)";
+            statusDiv.style.color = "#d97706";
+            statusDiv.innerHTML = "⏸️ आप ब्रेक / फील्ड विजिट पर हैं। कार्य शुरू करने पर रेज्यूम करें।";
+          } else if (res.status === "COMPLETED") {
+            btnIn.style.display = "none";
+            btnOut.style.display = "none";
+            btnBreak.style.display = "none";
+            stopLiveShiftTimer();
+            statusDiv.style.color = "#059669";
+            statusDiv.innerHTML = "✅ आज की उपस्थिति पूर्ण हो चुकी है।";
+          }
+        });
     }
 
     function toggleBreakDuty() {
@@ -856,6 +816,7 @@
       document.getElementById("status").innerHTML = "ℹ️ उपस्थिति स्थगित की गई।";
     }
 
+    // 6. GEOLOCATION & RESILIENT EXECUTION
     function startAttendanceFlow(type) {
       let mode = document.getElementById("workMode").value;
       let siteVal = document.getElementById("siteNameInput").value.trim();
@@ -896,9 +857,6 @@
     }
 
     function executePunch(lat, lon, acc, mode, type, siteVal, wfhVal) {
-      let todayStr = new Date().toISOString().split('T')[0];
-      let punchTime = new Date().toISOString();
-
       let payload = {
         name: currentEmp.name,
         phone: currentEmp.phone,
@@ -909,17 +867,8 @@
         lon: lon,
         accuracy: acc,
         forceType: type,
-        clientTimestamp: punchTime
+        clientTimestamp: new Date().toISOString()
       };
-
-      if (type === "Clock In") {
-        localStorage.setItem("aa_cached_status_" + todayStr, "WORKING");
-        localStorage.setItem("aa_cached_clockin_" + todayStr, punchTime);
-        applyUIStatus("WORKING", punchTime);
-      } else if (type === "Clock Out") {
-        localStorage.setItem("aa_cached_status_" + todayStr, "COMPLETED");
-        applyUIStatus("COMPLETED", null);
-      }
 
       if (!navigator.onLine) {
         saveToIndexedDb(payload);
@@ -942,6 +891,7 @@
       .catch(() => saveToIndexedDb(payload));
     }
 
+    // 7. LEAVE & CALENDAR HANDLERS
     function openLeaveModal() { document.getElementById("leaveModal").style.display = "flex"; }
     function closeLeaveModal() { document.getElementById("leaveModal").style.display = "none"; }
     function toggleDateRange(val) {
@@ -992,11 +942,7 @@
       });
     }
 
-    // INSTANT CALENDAR WITH ACCURATE ATTENDANCE HIGHLIGHTS
-    function openCalendarModal() {
-      document.getElementById("calModal").style.display = "flex";
-      renderCalendar();
-    }
+    function openCalendarModal() { document.getElementById("calModal").style.display = "flex"; renderCalendar(); }
     function closeCalendarModal() { document.getElementById("calModal").style.display = "none"; }
     function prevMonth() { calDate.setMonth(calDate.getMonth() - 1); renderCalendar(); }
     function nextMonth() { calDate.setMonth(calDate.getMonth() + 1); renderCalendar(); }
@@ -1010,56 +956,31 @@
       let body = document.getElementById("calendarBody");
       body.innerHTML = "<div class='cal-header'>रवि</div><div class='cal-header'>सोम</div><div class='cal-header'>मंगल</div><div class='cal-header'>बुध</div><div class='cal-header'>गुरु</div><div class='cal-header'>शुक्र</div><div class='cal-header'>शनि</div>";
 
-      let firstDay = new Date(year, month, 1).getDay();
-      let totalDays = new Date(year, month + 1, 0).getDate();
-
-      let cacheKey = `aa_cal_cache_${currentEmp.name}_${year}_${month + 1}`;
-      let cachedHistory = JSON.parse(localStorage.getItem(cacheKey) || "{}");
-
-      for (let i = 0; i < firstDay; i++) body.innerHTML += "<div></div>";
-
-      for (let d = 1; d <= totalDays; d++) {
-        let dateKey = year + "-" + String(month + 1).padStart(2, '0') + "-" + String(d).padStart(2, '0');
-        let isSunday = new Date(year, month, d).getDay() === 0;
-        let entry = cachedHistory[dateKey];
-        let cellClass = "cal-cell";
-        let title = "";
-
-        if (isSunday) cellClass += " cal-sunday";
-        if (entry) {
-          let txt = entry.punches.join(", ");
-          title = txt;
-          cellClass += (txt.indexOf("Leave") !== -1) ? " cal-leave" : " cal-present";
-        }
-        body.innerHTML += `<div class="${cellClass}" id="cal-day-${d}" title="${title}">${d}</div>`;
-      }
-
       fetch(`${SCRIPT_URL}?action=getCalendar&name=${encodeURIComponent(currentEmp.name)}&month=${month + 1}&year=${year}`)
         .then(res => res.json())
         .then(data => {
           let history = data.history || {};
-          localStorage.setItem(cacheKey, JSON.stringify(history));
+          let firstDay = new Date(year, month, 1).getDay();
+          let totalDays = new Date(year, month + 1, 0).getDate();
+
+          for (let i = 0; i < firstDay; i++) body.innerHTML += "<div></div>";
 
           for (let d = 1; d <= totalDays; d++) {
             let dateKey = year + "-" + String(month + 1).padStart(2, '0') + "-" + String(d).padStart(2, '0');
             let isSunday = new Date(year, month, d).getDay() === 0;
             let entry = history[dateKey];
-            let cell = document.getElementById(`cal-day-${d}`);
+            let cellClass = "cal-cell";
+            let title = "";
 
-            if (cell) {
-              if (isSunday) cell.className = "cal-cell cal-sunday";
-              else cell.className = "cal-cell";
-
-              if (entry) {
-                let txt = entry.punches.join(", ");
-                cell.title = txt;
-                if (txt.indexOf("Leave") !== -1) cell.classList.add("cal-leave");
-                else cell.classList.add("cal-present");
-              }
+            if (isSunday) cellClass += " cal-sunday";
+            if (entry) {
+              let txt = entry.punches.join(", ");
+              title = txt;
+              cellClass += (txt.indexOf("Leave") !== -1) ? " cal-leave" : " cal-present";
             }
+            body.innerHTML += `<div class="${cellClass}" title="${title}">${d}</div>`;
           }
-        })
-        .catch(() => {});
+        });
     }
 
     function showByeAnimation(title, message) {
