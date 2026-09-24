@@ -170,7 +170,7 @@
     .sync-online { background: #dcfce7; color: #15803d; }
     .sync-offline { background: #fef3c7; color: #b45309; }
 
-    /* IN-APP LIVE STATUS BADGE */
+    /* In-App Live Status Badge */
     #leaveStatusBadge {
       display: none;
       margin-top: 10px;
@@ -181,21 +181,9 @@
       text-align: left;
       line-height: 1.45;
     }
-    .badge-pending {
-      background: #fef3c7;
-      border: 1.5px solid #f59e0b;
-      color: #92400e;
-    }
-    .badge-approved {
-      background: #dcfce7;
-      border: 1.5px solid #10b981;
-      color: #166534;
-    }
-    .badge-rejected {
-      background: #fee2e2;
-      border: 1.5px solid #ef4444;
-      color: #991b1b;
-    }
+    .badge-pending { background: #fef3c7; border: 1.5px solid #f59e0b; color: #92400e; }
+    .badge-approved { background: #dcfce7; border: 1.5px solid #10b981; color: #166534; }
+    .badge-rejected { background: #fee2e2; border: 1.5px solid #ef4444; color: #991b1b; }
 
     .timer-card {
       display: none;
@@ -358,7 +346,7 @@
       <button type="button" class="btn btn-primary" onclick="handleManualLogin()">पोर्टल में प्रवेश करें 🚀</button>
     </div>
 
-    <!-- Active Form -->
+    <!-- Active Punch Portal -->
     <div id="punchForm" style="display:none;">
       <div class="user-card">
         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -368,7 +356,6 @@
         <strong id="displayEmpName">Loading...</strong>
         <p id="displayEmpPhone" style="font-size:12px; margin-top:2px;"></p>
         
-        <!-- IN-APP LIVE STATUS BADGE -->
         <div id="leaveStatusBadge"></div>
       </div>
 
@@ -514,7 +501,6 @@
     let timerInterval = null;
     let currentDutyState = "NEEDS_CLOCK_IN";
 
-    // 1. HAPTIC FEEDBACK
     function triggerHaptic(type) {
       if (!('vibrate' in navigator)) return;
       if (type === 'tick') navigator.vibrate(20);
@@ -524,7 +510,6 @@
       else if (type === 'error') navigator.vibrate([150, 80, 150]);
     }
 
-    // 2. REAL-TIME SUN & RAIN TELEMETRY
     function applySunAndWeatherTheme() {
       const hour = new Date().getHours();
       let skyGradient = "radial-gradient(circle at top, #1e1b4b, #0f172a 75%, #020617)";
@@ -547,7 +532,7 @@
         }).catch(() => {});
     }
 
-    // 3. FAIRY DUST FIREFLY PARTICLES (Canvas 60fps)
+    // Particle Animation
     const canvas = document.getElementById("ambientCanvas");
     const ctx = canvas.getContext("2d");
     let particles = [];
@@ -589,7 +574,6 @@
     }
     renderFairyParticles();
 
-    // 4. TIMEOUT-ENFORCED FETCH
     async function fetchWithTimeout(resource, options = {}, timeout = 8000) {
       const controller = new AbortController();
       const id = setTimeout(() => controller.abort(), timeout);
@@ -603,7 +587,7 @@
       }
     }
 
-    // 5. INDEXEDDB QUEUE
+    // IndexedDB Offline Queue
     let db;
     const dbRequest = indexedDB.open("AryavartaDB", 1);
     dbRequest.onupgradeneeded = (e) => {
@@ -691,7 +675,6 @@
     window.addEventListener('offline', updateSyncStatusUI);
     setInterval(flushIndexedDbQueue, 25000);
 
-    // 6. SERVICE WORKER
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(console.error);
     }
@@ -719,7 +702,6 @@
       }
     }
 
-    // 7. VOICE SYNTHESIS
     function initVoice() {
       if ('speechSynthesis' in window) {
         let voices = window.speechSynthesis.getVoices();
@@ -759,7 +741,7 @@
       if (currentDutyState === "COMPLETED") {
         speakHindi(`नमस्ते ${savedName} जी! आपकी आज की उपस्थिति पूरी हो चुकी है।`);
       } else if (currentDutyState === "WORKING") {
-        speakHindi(`नमस्ते ${savedName} जी! आप अभी कार्यरत हैं।`);
+        speakHindi(`नमस्ते ${savedName} जी! आप अभी कार्यरत हैं। प्रस्थान के समय क्लॉक आउट करना न भूलें।`);
       } else if (currentDutyState === "ON_BREAK") {
         speakHindi(`नमस्ते ${savedName} जी! आप ब्रेक पर हैं।`);
       } else {
@@ -774,7 +756,6 @@
       if (currentEmp.phone) refreshTodayStatus();
     }
 
-    // 8. SHIFT TIMER
     function startLiveShiftTimer(isoStartTime) {
       if (!isoStartTime) return;
       clockInTimestamp = new Date(isoStartTime).getTime();
@@ -814,7 +795,48 @@
       document.getElementById("timerCard").style.display = "none";
     }
 
-    // 9. INSTANT APP STARTUP & CACHED BADGE HYDRATION
+    // Apply UI state based on duty status
+    function applyDutyStateToUI(st, clockInTime) {
+      currentDutyState = st;
+      let btnIn = document.getElementById("btnIn");
+      let btnOut = document.getElementById("btnOut");
+      let btnBreak = document.getElementById("btnBreak");
+      let statusDiv = document.getElementById("status");
+
+      if (st === "NEEDS_CLOCK_IN") {
+        btnIn.style.display = "flex";
+        btnOut.style.display = "none";
+        btnBreak.style.display = "none";
+        stopLiveShiftTimer();
+        statusDiv.innerHTML = "";
+      } else if (st === "WORKING") {
+        btnIn.style.display = "none";
+        btnOut.style.display = "flex";
+        btnBreak.style.display = "flex";
+        document.getElementById("breakBtnIcon").innerText = "☕";
+        document.getElementById("breakBtnText").innerText = "Start Break / Field Visit";
+        statusDiv.style.color = "#2563eb";
+        statusDiv.innerHTML = "ℹ️ आप कार्यरत हैं (Active Duty)।";
+        if (clockInTime) startLiveShiftTimer(clockInTime);
+      } else if (st === "ON_BREAK") {
+        btnIn.style.display = "none";
+        btnOut.style.display = "none";
+        btnBreak.style.display = "flex";
+        document.getElementById("breakBtnIcon").innerText = "▶️";
+        document.getElementById("breakBtnText").innerText = "Resume Duty (End Break)";
+        statusDiv.style.color = "#d97706";
+        statusDiv.innerHTML = "⏸️ आप ब्रेक / फील्ड विजिट पर हैं।";
+      } else if (st === "COMPLETED") {
+        btnIn.style.display = "none";
+        btnOut.style.display = "none";
+        btnBreak.style.display = "none";
+        stopLiveShiftTimer();
+        statusDiv.style.color = "#059669";
+        statusDiv.innerHTML = "✅ आज की उपस्थिति पूर्ण हो चुकी है।";
+      }
+    }
+
+    // App Startup with Optimistic Local Duty State Hydration
     window.onload = function() {
       applySunAndWeatherTheme();
       initVoice();
@@ -835,7 +857,7 @@
         document.getElementById("displayEmpName").innerText = savedName || "Loading...";
         document.getElementById("displayEmpPhone").innerText = "📱 +91 " + savedPhone;
 
-        // INSTANT ZERO-LATENCY BADGE HYDRATION FROM CACHE
+        // Restore cached badge
         let cachedBadgeHtml = localStorage.getItem("aa_cached_badge_html");
         let cachedBadgeClass = localStorage.getItem("aa_cached_badge_class");
         let badgeElem = document.getElementById("leaveStatusBadge");
@@ -843,6 +865,14 @@
           badgeElem.innerHTML = cachedBadgeHtml;
           badgeElem.className = cachedBadgeClass || "badge-pending";
           badgeElem.style.display = "block";
+        }
+
+        // Restore cached local duty state if clocked in today
+        let cachedDutyDate = localStorage.getItem("aa_duty_date");
+        let cachedDutyState = localStorage.getItem("aa_duty_state");
+        let cachedClockInTime = localStorage.getItem("aa_clock_in_time");
+        if (cachedDutyDate === todayStr && cachedDutyState) {
+          applyDutyStateToUI(cachedDutyState, cachedClockInTime);
         }
 
         fetchWithTimeout(`${SCRIPT_URL}?action=authDevice&phone=${savedPhone}`, {}, 7000)
@@ -894,20 +924,20 @@
       document.getElementById("wfhAuditBox").style.display = (val === "WFH") ? "block" : "none";
     }
 
-    // 10. REFRESH STATUS & RENDER LIVE BADGE
+    // Fetch server status and synchronize UI
     function refreshTodayStatus() {
       if (!currentEmp.phone && !currentEmp.name) return;
-      
+      let todayStr = new Date().toISOString().split('T')[0];
+
       fetchWithTimeout(`${SCRIPT_URL}?action=checkStatus&phone=${currentEmp.phone}&name=${encodeURIComponent(currentEmp.name)}`, {}, 7000)
         .then(res => res.json())
         .then(res => {
-          currentDutyState = res.status;
-          let btnIn = document.getElementById("btnIn");
-          let btnOut = document.getElementById("btnOut");
-          let btnBreak = document.getElementById("btnBreak");
-          let statusDiv = document.getElementById("status");
+          applyDutyStateToUI(res.status, res.clockInTime);
+          localStorage.setItem("aa_duty_date", todayStr);
+          localStorage.setItem("aa_duty_state", res.status);
+          if (res.clockInTime) localStorage.setItem("aa_clock_in_time", res.clockInTime);
 
-          // RENDER IN-APP LIVE STATUS BADGE
+          // Update Status Badge
           let badge = document.getElementById("leaveStatusBadge");
           if (res.latestLeave && res.latestLeave.dates) {
             badge.style.display = "block";
@@ -932,39 +962,6 @@
             localStorage.removeItem("aa_cached_badge_html");
             localStorage.removeItem("aa_cached_badge_class");
           }
-
-          // Render Shift Controls
-          if (res.status === "NEEDS_CLOCK_IN") {
-            btnIn.style.display = "flex";
-            btnOut.style.display = "none";
-            btnBreak.style.display = "none";
-            stopLiveShiftTimer();
-            statusDiv.innerHTML = "";
-          } else if (res.status === "WORKING") {
-            btnIn.style.display = "none";
-            btnOut.style.display = "flex";
-            btnBreak.style.display = "flex";
-            document.getElementById("breakBtnIcon").innerText = "☕";
-            document.getElementById("breakBtnText").innerText = "Start Break / Field Visit";
-            statusDiv.style.color = "#2563eb";
-            statusDiv.innerHTML = "ℹ️ आप कार्यरत हैं (Active Duty)।";
-            if (res.clockInTime) startLiveShiftTimer(res.clockInTime);
-          } else if (res.status === "ON_BREAK") {
-            btnIn.style.display = "none";
-            btnOut.style.display = "none";
-            btnBreak.style.display = "flex";
-            document.getElementById("breakBtnIcon").innerText = "▶️";
-            document.getElementById("breakBtnText").innerText = "Resume Duty (End Break)";
-            statusDiv.style.color = "#d97706";
-            statusDiv.innerHTML = "⏸️ आप ब्रेक / फील्ड विजिट पर हैं।";
-          } else if (res.status === "COMPLETED") {
-            btnIn.style.display = "none";
-            btnOut.style.display = "none";
-            btnBreak.style.display = "none";
-            stopLiveShiftTimer();
-            statusDiv.style.color = "#059669";
-            statusDiv.innerHTML = "✅ आज की उपस्थिति पूर्ण हो चुकी है।";
-          }
         }).catch(console.error);
     }
 
@@ -979,7 +976,6 @@
       }
     }
 
-    // 11. GPS ATTENDANCE FLOW (ALL MODES CAPTURE GPS)
     function startAttendanceFlow(type) {
       triggerHaptic('tick');
       let mode = document.getElementById("workMode").value;
@@ -1036,6 +1032,9 @@
     }
 
     function executePunch(lat, lon, acc, mode, type, siteVal, wfhVal) {
+      let punchTimestamp = new Date().toISOString();
+      let todayStr = punchTimestamp.split('T')[0];
+
       let payload = {
         name: currentEmp.name,
         phone: currentEmp.phone,
@@ -1046,8 +1045,20 @@
         lon: lon,
         accuracy: acc,
         forceType: type,
-        clientTimestamp: new Date().toISOString()
+        clientTimestamp: punchTimestamp
       };
+
+      // Immediate Optimistic UI Update
+      if (type === "Clock In") {
+        applyDutyStateToUI("WORKING", punchTimestamp);
+        localStorage.setItem("aa_duty_date", todayStr);
+        localStorage.setItem("aa_duty_state", "WORKING");
+        localStorage.setItem("aa_clock_in_time", punchTimestamp);
+      } else if (type === "Clock Out") {
+        applyDutyStateToUI("COMPLETED", null);
+        localStorage.setItem("aa_duty_date", todayStr);
+        localStorage.setItem("aa_duty_state", "COMPLETED");
+      }
 
       if (!navigator.onLine) {
         saveToIndexedDb(payload);
@@ -1074,12 +1085,11 @@
           speakHindi("आपकी उपस्थिति दर्ज हो चुकी है।");
         }
         
-        setTimeout(refreshTodayStatus, 1500);
+        setTimeout(refreshTodayStatus, 2000);
       })
       .catch(() => saveToIndexedDb(payload));
     }
 
-    // 12. LEAVE SUBMISSION FLOW
     function openLeaveModal() { triggerHaptic('tick'); document.getElementById("leaveModal").style.display = "flex"; }
     function closeLeaveModal() { triggerHaptic('tick'); document.getElementById("leaveModal").style.display = "none"; }
     function toggleDateRange(val) {
@@ -1123,7 +1133,6 @@
         btn.innerText = "आवेदन जमा करें ✨";
         closeLeaveModal();
 
-        // Prompt for Manager WhatsApp Alert
         let msg = `*Aryavarta Leave Request*%0A*Employee:* ${currentEmp.name}%0A*Type:* ${lType}%0A*Dates:* ${sDate} to ${eDate}%0A*Reason:* ${reason}`;
         let waUrl = `https://wa.me/${MANAGER_WHATSAPP}?text=${msg}`;
 
@@ -1141,7 +1150,6 @@
       });
     }
 
-    // 13. CALENDAR OVERLAY & SHIFT NOTE POPUP
     function openCalendarModal() { triggerHaptic('tick'); document.getElementById("calModal").style.display = "flex"; renderCalendar(); }
     function closeCalendarModal() { triggerHaptic('tick'); document.getElementById("calModal").style.display = "none"; }
     function prevMonth() { triggerHaptic('tick'); calDate.setMonth(calDate.getMonth() - 1); renderCalendar(); }
@@ -1180,7 +1188,7 @@
             if (entry) {
               if (entry.isLeave) {
                 cellClass += " cal-leave";
-                shiftNote = "Full Day Leave (Approved)";
+                shiftNote = entry.note || "Full Day Leave (Approved)";
               } else {
                 cellClass += " cal-present";
                 shiftNote = entry.punches.join("<br>");
