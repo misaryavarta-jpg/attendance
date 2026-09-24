@@ -574,7 +574,8 @@
     }
     renderFairyParticles();
 
-    async function fetchWithTimeout(resource, options = {}, timeout = 8000) {
+    // Robust Fetch with 25-Second Cold-Start Tolerance
+    async function fetchWithTimeout(resource, options = {}, timeout = 25000) {
       const controller = new AbortController();
       const id = setTimeout(() => controller.abort(), timeout);
       try {
@@ -896,8 +897,9 @@
       let phone = document.getElementById("inputPhone").value.trim().replace(/\D/g, '').slice(-10);
       if (phone.length !== 10) return alert("कृपया 10 अंकों का मोबाइल नंबर दर्ज करें।");
 
-      document.getElementById("status").innerHTML = "🔄 सत्यापन जारी...";
-      fetchWithTimeout(`${SCRIPT_URL}?action=authDevice&phone=${phone}`, {}, 8000)
+      document.getElementById("status").innerHTML = "🔄 सर्वर से कनेक्ट हो रहा है, कृपया प्रतीक्षा करें...";
+      
+      fetchWithTimeout(`${SCRIPT_URL}?action=authDevice&phone=${phone}`, {}, 25000)
         .then(res => res.json())
         .then(data => {
           if (data.success) {
@@ -913,9 +915,17 @@
             refreshTodayStatus();
           } else {
             triggerHaptic('error');
-            alert("⚠️ " + data.message);
+            alert("⚠️ " + (data.message || data.error || "पहचान विफल।"));
           }
-        }).catch(() => alert("नेटवर्क त्रुटि। कृपया इंटरनेट कनेक्शन जांचें।"));
+        }).catch(err => {
+          triggerHaptic('error');
+          document.getElementById("status").innerHTML = "";
+          if (err.name === 'AbortError') {
+            alert("⏳ सर्वर शुरू होने में समय ले रहा है। कृपया 5 सेकंड बाद पुनः 'पोर्टल में प्रवेश करें' दबाएं।");
+          } else {
+            alert("⚠️ सर्वर कनेक्शन त्रुटि: " + err.message + "\n\n(कृपया सुनिश्चित करें कि Apps Script में 'Who has access: Anyone' सेट है।)");
+          }
+        });
     }
 
     function toggleMode(val) {
