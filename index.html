@@ -3,1243 +3,627 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1e3a8a">
-  <title>Aryavarta Automation Portal</title>
+  <title>Aryavarta Attendance</title>
   <style>
     :root {
       --primary: #1e3a8a;
-      --gold: #f59e0b;
-      --in: #059669;
-      --out: #dc2626;
-      --break: #d97706;
-      --bg-sky: radial-gradient(circle at top, #1e1b4b, #0f172a 75%, #020617);
+      --primary-light: #2563eb;
+      --success: #059669;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --bg: #0f172a;
+      --card-bg: rgba(255, 255, 255, 0.98);
     }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      text-align: center;
-      background: var(--bg-sky);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(circle at top, #1e293b, var(--bg));
       min-height: 100vh;
-      color: #1e293b;
-      overflow-x: hidden;
-      transition: background 1.5s ease;
-    }
-
-    #ambientCanvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
-      z-index: 2;
-    }
-
-    .rain-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
-      z-index: 3;
-      background: repeating-linear-gradient(transparent, transparent 50px, rgba(255, 255, 255, 0.12) 53px, transparent 56px);
-      animation: rainMotion 0.6s linear infinite;
-    }
-    @keyframes rainMotion { 0% { background-position: 0 0; } 100% { background-position: 20px 100px; } }
-
-    .top-action-header {
-      position: relative;
-      z-index: 30;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      max-width: 415px;
-      margin: 10px auto 0 auto;
-      padding: 0 12px;
-      gap: 8px;
-    }
-    .icon-btn-pill {
-      background: rgba(255, 255, 255, 0.18);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      border-radius: 20px;
-      padding: 7px 12px;
-      font-size: 12px;
-      font-weight: 700;
-      color: #ffffff;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    #pwaInstallBtn {
-      background: linear-gradient(135deg, #f59e0b, #d97706);
-      border: 1px solid #fef08a;
-      display: none;
-    }
-
-    .curtain-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 99999;
       display: flex;
       justify-content: center;
-      align-items: center;
-      background: rgba(3, 7, 18, 0.85);
-      backdrop-filter: blur(10px);
-      transition: opacity 0.6s ease, visibility 0.6s;
+      align-items: flex-start;
+      padding: 16px 12px;
+      color: #1e293b;
     }
-    .curtain {
-      position: absolute;
-      top: 0;
-      width: 50vw;
-      height: 100vh;
-      background: radial-gradient(circle at center, #6b21a8 10%, #3b0764 60%, #0f051d 100%);
-      transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1);
-      box-shadow: 0 0 50px rgba(0,0,0,0.8);
-    }
-    .curtain-left { left: 0; border-right: 2px solid #fde047; }
-    .curtain-right { right: 0; border-left: 2px solid #fde047; }
-    .curtain-open .curtain-left { transform: translateX(-100%); }
-    .curtain-open .curtain-right { transform: translateX(100%); }
-    .curtain-open { opacity: 0; visibility: hidden; pointer-events: none; }
-
-    .royal-seal-btn {
-      position: relative;
-      z-index: 100000;
-      background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #b45309 100%);
-      color: #3b1704;
-      border: 3px solid #fef9c3;
-      border-radius: 50px;
-      padding: 15px 30px;
-      font-size: 16px;
-      font-weight: 900;
-      cursor: pointer;
-      box-shadow: 0 0 30px rgba(245, 158, 11, 0.6);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .container {
-      background: rgba(255, 255, 255, 0.97);
-      padding: 22px 18px;
-      border-radius: 26px;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+    .app-card {
+      background: var(--card-bg);
+      width: 100%;
       max-width: 410px;
-      margin: 15px auto 35px auto;
+      border-radius: 24px;
+      padding: 22px 18px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      text-align: center;
       position: relative;
-      z-index: 20;
-      border: 2px solid rgba(255, 255, 255, 0.9);
     }
+    .logo-container { width: 100%; margin-bottom: 12px; }
+    .company-logo { width: 100%; max-width: 220px; height: auto; object-fit: contain; }
+    h2 { font-size: 20px; font-weight: 800; color: #0f172a; }
+    p.sub { font-size: 13px; color: #64748b; margin-bottom: 16px; }
 
-    .logo-container { width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; }
-    .company-logo-img { width: 100%; max-width: 230px; height: auto; display: block; object-fit: contain; }
-
-    h2 { color: #0f172a; margin: 4px 0 2px 0; font-size: 20px; font-weight: 800; }
-    p.sub { color: #64748b; font-size: 13px; margin: 0 0 14px 0; }
-
-    .user-card {
-      background: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 100%);
-      border: 1.5px solid #a7f3d0;
+    .user-pill {
+      background: #eff6ff;
+      border: 1.5px solid #bfdbfe;
       border-radius: 14px;
-      padding: 14px;
-      margin-bottom: 14px;
+      padding: 12px 14px;
       text-align: left;
+      margin-bottom: 14px;
     }
-    .user-card p { margin: 2px 0; font-size: 12px; color: #047857; font-weight: 700; }
-    .user-card strong { color: #064e3b; font-size: 17px; }
+    .user-pill .title { font-size: 11px; font-weight: 800; color: #1d4ed8; text-transform: uppercase; }
+    .user-pill .name { font-size: 17px; font-weight: 800; color: #0f172a; margin-top: 2px; }
+    .user-pill .phone { font-size: 12px; color: #64748b; }
 
-    .sync-status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 12px;
-    }
-    .sync-online { background: #dcfce7; color: #15803d; }
-    .sync-offline { background: #fef3c7; color: #b45309; }
-
-    /* In-App Live Status Badge */
+    /* Leave Status Badge */
     #leaveStatusBadge {
       display: none;
-      margin-top: 10px;
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-size: 12.5px;
-      font-weight: 800;
-      text-align: left;
-      line-height: 1.45;
-    }
-    .badge-pending { background: #fef3c7; border: 1.5px solid #f59e0b; color: #92400e; }
-    .badge-approved { background: #dcfce7; border: 1.5px solid #10b981; color: #166534; }
-    .badge-rejected { background: #fee2e2; border: 1.5px solid #ef4444; color: #991b1b; }
-
-    .timer-card {
-      display: none;
-      background: #0f172a;
-      color: #ffffff;
-      border-radius: 14px;
-      padding: 14px;
-      margin-bottom: 15px;
-      text-align: left;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.25);
-    }
-    .timer-title { font-size: 12px; color: #94a3b8; font-weight: 700; text-transform: uppercase; }
-    .timer-clock { font-size: 24px; font-weight: 900; color: #38bdf8; font-family: monospace; margin: 4px 0 8px 0; }
-    .progress-bar-bg { background: #334155; border-radius: 8px; height: 10px; width: 100%; overflow: hidden; }
-    .progress-bar-fill { background: linear-gradient(90deg, #10b981, #38bdf8); height: 100%; width: 0%; transition: width 1s linear; }
-    .timer-meta { display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; margin-top: 5px; }
-
-    .audit-box {
-      display: none;
-      background: #f8fafc;
-      border: 1.5px dashed #38bdf8;
+      padding: 10px 12px;
       border-radius: 12px;
-      padding: 10px;
-      margin-bottom: 12px;
+      font-size: 12.5px;
+      font-weight: 700;
+      margin-bottom: 14px;
       text-align: left;
+      line-height: 1.4;
     }
-    .audit-box label { font-size: 12px; margin: 0 0 4px 0; color: #0369a1; font-weight: 700; }
+    .badge-approved { background: #dcfce7; color: #15803d; border: 1.5px solid #86efac; }
+    .badge-rejected { background: #fee2e2; color: #991b1b; border: 1.5px solid #fca5a5; }
+    .badge-pending { background: #fef3c7; color: #92400e; border: 1.5px solid #fde047; }
 
-    label { display: block; text-align: left; font-weight: 800; margin: 10px 0 5px 0; color: #334155; font-size: 13px; }
+    /* Sunday Banner */
+    #sundayAlert {
+      display: none;
+      background: #fee2e2;
+      border: 1.5px solid #f87171;
+      border-radius: 12px;
+      padding: 12px;
+      color: #991b1b;
+      font-weight: 700;
+      font-size: 13.5px;
+      margin-bottom: 14px;
+    }
+
+    label { display: block; text-align: left; font-size: 13px; font-weight: 700; color: #334155; margin: 10px 0 4px 0; }
     select, input, textarea {
       width: 100%;
       padding: 12px 14px;
-      margin-bottom: 12px;
       border: 1.8px solid #cbd5e1;
       border-radius: 12px;
-      font-size: 15px;
-      box-sizing: border-box;
-      background: #ffffff;
-      color: #1e293b;
+      font-size: 14px;
+      margin-bottom: 10px;
+      font-family: inherit;
+      color: #0f172a;
+      background: #fff;
     }
+    select:focus, input:focus, textarea:focus { border-color: var(--primary-light); outline: none; }
 
-    .button-group { width: 100%; margin: 8px auto; display: flex; flex-direction: column; gap: 10px; }
+    .btn-stack { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
     .btn {
       width: 100%;
-      padding: 15px;
+      padding: 14px;
       border: none;
       border-radius: 14px;
       font-size: 15px;
       font-weight: 800;
-      color: white;
+      color: #fff;
       cursor: pointer;
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       gap: 8px;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
-      transition: transform 0.15s;
+      transition: transform 0.1s ease;
     }
-    .btn:active { transform: scale(0.97); }
+    .btn:active { transform: scale(0.98); }
     .btn:disabled { background: #94a3b8 !important; cursor: not-allowed; }
-    
-    .btn-in { background: linear-gradient(135deg, #10b981 0%, #047857 100%); }
-    .btn-out { background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%); }
-    .btn-break { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); }
-    .btn-primary { background: linear-gradient(135deg, #38bdf8 0%, #1d4ed8 100%); }
-    .btn-leave { background: linear-gradient(135deg, #d97706, #92400e); }
-    .btn-cal { background: linear-gradient(135deg, #64748b 0%, #334155 100%); }
+    .btn-clockin { background: linear-gradient(135deg, #10b981, #047857); }
+    .btn-clockout { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+    .btn-leave { background: linear-gradient(135deg, #f59e0b, #b45309); }
+    .btn-cal { background: #334155; }
+    .btn-login { background: var(--primary); }
 
-    #status { margin-top: 14px; font-weight: 700; font-size: 13.5px; padding: 10px; border-radius: 10px; line-height: 1.4; }
+    #statusMessage {
+      font-size: 13px;
+      font-weight: 700;
+      margin-top: 12px;
+      padding: 8px;
+      border-radius: 8px;
+      line-height: 1.4;
+    }
 
+    /* Modal Styling */
     .modal {
       display: none;
       position: fixed;
-      z-index: 10000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(15, 23, 42, 0.8);
-      backdrop-filter: blur(8px);
-      align-items: center;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
       justify-content: center;
+      align-items: center;
     }
-    .modal-content {
-      background: #ffffff;
+    .modal-card {
+      background: #fff;
       width: 90%;
-      max-width: 380px;
-      border-radius: 22px;
-      padding: 22px;
-      box-sizing: border-box;
+      max-width: 370px;
+      border-radius: 20px;
+      padding: 20px;
       text-align: left;
       max-height: 85vh;
       overflow-y: auto;
-      box-shadow: 0 30px 60px rgba(0,0,0,0.4);
     }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .modal-header h3 { margin: 0; font-size: 17px; color: #0f172a; font-weight: 800; }
-    .close-btn { font-size: 26px; cursor: pointer; color: #94a3b8; font-weight: 800; }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .modal-head h3 { font-size: 17px; font-weight: 800; color: #0f172a; }
+    .close-btn { font-size: 24px; cursor: pointer; color: #94a3b8; font-weight: 700; }
 
-    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-top: 10px; }
-    .cal-header { font-weight: 800; font-size: 11px; color: #64748b; padding: 4px 0; }
+    /* Calendar Grid */
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-top: 10px; }
+    .cal-hdr { font-size: 11px; font-weight: 800; color: #64748b; padding: 4px 0; }
     .cal-cell {
-      font-size: 12px;
       padding: 9px 0;
+      font-size: 12px;
+      font-weight: 700;
       border-radius: 8px;
       background: #f1f5f9;
-      color: #1e293b;
-      font-weight: 600;
       cursor: pointer;
     }
-    .cal-cell:active { transform: scale(0.92); }
-    .cal-present { background: #dcfce7; color: #15803d; font-weight: 800; }
-    .cal-leave { background: #fef3c7; color: #b45309; font-weight: 900; border: 1.5px solid #f59e0b; }
-    .cal-sunday { background: #fee2e2; color: #b91c1c; }
-
-    .bye-modal-content { text-align: center; background: white; padding: 28px 20px; border-radius: 24px; max-width: 320px; width: 85%; }
+    .cal-cell.present { background: #dcfce7; color: #166534; }
+    .cal-cell.leave { background: #fef3c7; color: #b45309; border: 1.5px solid #f59e0b; }
+    .cal-cell.sunday { background: #fee2e2; color: #991b1b; }
   </style>
 </head>
 <body>
 
-  <canvas id="ambientCanvas"></canvas>
-  <div class="rain-overlay" id="rainOverlay"></div>
-
-  <div class="top-action-header">
-    <button type="button" class="icon-btn-pill" id="muteToggleBtn" onclick="toggleAudioMute()">
-      <span id="muteIcon">🔊</span> <span id="muteLabel">Voice On</span>
-    </button>
-    <button type="button" class="icon-btn-pill" id="pwaInstallBtn" onclick="triggerPwaInstall()">
-      <span>📲</span> Install App
-    </button>
-    <button type="button" class="icon-btn-pill" onclick="enableDirectPhoneAlerts()">
-      <span>🔔</span> Phone Alerts
-    </button>
-  </div>
-
-  <div class="curtain-overlay" id="curtainOverlay">
-    <div class="curtain curtain-left"></div>
-    <div class="curtain curtain-right"></div>
-    <button type="button" class="royal-seal-btn" id="portalUnlockBtn" onclick="unlockPortalAndSpeak()">
-      <span>✨ 🌸</span> प्रवेश करें (Open) <span>🌸 ✨</span>
-    </button>
-  </div>
-
-  <div class="container">
+  <div class="app-card">
     <div class="logo-container">
-      <img src="logo.png" alt="Aryavarta Automation Logo" class="company-logo-img">
+      <img src="logo.png" alt="Aryavarta Automation" class="company-logo">
     </div>
 
     <h2>Aryavarta Automation</h2>
-    <p class="sub">Chikhali Head Office Portal</p>
+    <p class="sub">Head Office Attendance Portal</p>
 
-    <!-- Login Box -->
-    <div id="loginBox" style="display:none;">
-      <div style="background:#eff6ff;border:1.5px solid #bfdbfe;padding:12px;border-radius:12px;margin-bottom:14px;">
-        <p style="color:#1e40af;font-weight:bold;margin:0;font-size:13.5px;">👤 कर्मचारी पहचान (Login)</p>
-        <p style="color:#1e3a8a;font-size:12px;margin:3px 0 0 0;">कृपया अपना 10 अंकों का रजिस्टर्ड मोबाइल नंबर दर्ज करें।</p>
-      </div>
-      <label for="inputPhone">रजिस्टर्ड मोबाइल नंबर</label>
-      <input type="tel" id="inputPhone" placeholder="10-digit Mobile Number" maxlength="10">
-      <button type="button" class="btn btn-primary" onclick="handleManualLogin()">पोर्टल में प्रवेश करें 🚀</button>
+    <!-- First-Time Login Box -->
+    <div id="loginView" style="display: none;">
+      <label for="regPhone">अपना 10 अंकों का मोबाइल नंबर दर्ज करें:</label>
+      <input type="tel" id="regPhone" placeholder="Mobile Number" maxlength="10">
+      <button class="btn btn-login" onclick="verifyAndLogin()">पोर्टल शुरू करें 🚀</button>
     </div>
 
-    <!-- Active Punch Portal -->
-    <div id="punchForm" style="display:none;">
-      <div class="user-card">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <p>प्रमाणित कर्मचारी (Verified):</p>
-          <span id="networkPill" class="sync-status-pill sync-online">🟢 ऑनलाइन</span>
-        </div>
-        <strong id="displayEmpName">Loading...</strong>
-        <p id="displayEmpPhone" style="font-size:12px; margin-top:2px;"></p>
-        
-        <div id="leaveStatusBadge"></div>
+    <!-- Active Form View -->
+    <div id="attendanceView" style="display: none;">
+      <div class="user-pill">
+        <div class="title">प्रमाणित कर्मचारी (Verified)</div>
+        <div class="name" id="empDisplayName">लोड हो रहा है...</div>
+        <div class="phone" id="empDisplayPhone"></div>
       </div>
 
-      <div class="timer-card" id="timerCard">
-        <div class="timer-title">⏱️ Shift Duration (Active Duty)</div>
-        <div class="timer-clock" id="liveTimerText">00 hrs : 00 mins : 00 secs</div>
-        <div class="progress-bar-bg">
-          <div class="progress-bar-fill" id="timerProgressFill"></div>
-        </div>
-        <div class="timer-meta">
-          <span>Target: 8.5 Hours</span>
-          <span id="targetRemainingText">Calculating...</span>
-        </div>
-      </div>
+      <div id="leaveStatusBadge"></div>
+      <div id="sundayAlert">🔴 आज रविवार है (साप्ताहिक अवकाश)। क्लॉक-इन बंद है।</div>
 
-      <div id="punchControls">
-        <label for="workMode">कार्य असाइनमेंट मोड (Work Mode)</label>
-        <select id="workMode" onchange="toggleMode(this.value)">
-          <option value="Office">Office (Patil Nagar - 150m Lock)</option>
-          <option value="Site">Working from Site (Requires Project Name)</option>
-          <option value="WFH">Working from Home (Requires Reason)</option>
+      <div id="dutyControls">
+        <label for="workMode">कार्य मोड चुनें (Work Mode):</label>
+        <select id="workMode" onchange="handleModeChange(this.value)">
+          <option value="Office">Office (150m Geofenced)</option>
+          <option value="Site">Work from Site</option>
+          <option value="WFH">Work from Home (WFH)</option>
         </select>
 
-        <div class="audit-box" id="siteAuditBox">
-          <label for="siteNameInput">प्रोजेक्ट / साइट का नाम (Mandatory Site Details):</label>
-          <input type="text" id="siteNameInput" placeholder="उदा: Tata Motors Bhosari / Kirloskar Site">
+        <div id="siteBox" style="display: none;">
+          <label for="siteName">साइट / प्रोजेक्ट का नाम (Mandatory):</label>
+          <input type="text" id="siteName" placeholder="उदा: Tata Motors Bhosari">
         </div>
 
-        <div class="audit-box" id="wfhAuditBox">
-          <label for="wfhReasonInput">WFH का कारण (Reason for Home Working):</label>
-          <input type="text" id="wfhReasonInput" placeholder="उदा: Approved by Manager / Remote Testing">
+        <div id="wfhBox" style="display: none;">
+          <label for="wfhReason">WFH का कारण (Reason):</label>
+          <input type="text" id="wfhReason" placeholder="उदा: Manager Approved / Documentation">
         </div>
 
-        <div class="button-group">
-          <button type="button" class="btn btn-in" id="btnIn" style="display:none;" onclick="startAttendanceFlow('Clock In')">
-            <span>📥</span> Confirm Clock In
-          </button>
-          
-          <button type="button" class="btn btn-break" id="btnBreak" style="display:none;" onclick="toggleBreakDuty()">
-            <span id="breakBtnIcon">☕</span> <span id="breakBtnText">Start Break / Field Visit</span>
-          </button>
-
-          <button type="button" class="btn btn-out" id="btnOut" style="display:none;" onclick="startAttendanceFlow('Clock Out')">
-            <span>🚪</span> Confirm Clock Out
-          </button>
+        <div class="btn-stack" id="punchButtons">
+          <button class="btn btn-clockin" id="btnClockIn" onclick="handlePunch('Clock In')">📥 Confirm Clock In</button>
+          <button class="btn btn-clockout" id="btnClockOut" style="display: none;" onclick="handlePunch('Clock Out')">🚪 Confirm Clock Out</button>
         </div>
       </div>
 
-      <div id="status"></div>
+      <div id="statusMessage"></div>
 
-      <div class="button-group" style="margin-top:18px; border-top: 1.5px solid #f1f5f9; padding-top:14px;">
-        <button type="button" class="btn btn-leave" onclick="openLeaveModal()">📝 Apply Leave / Half Day</button>
-        <button type="button" class="btn btn-cal" onclick="openCalendarModal()">📅 My Attendance Calendar</button>
+      <div class="btn-stack" style="margin-top: 18px; border-top: 1.5px solid #f1f5f9; padding-top: 12px;">
+        <button class="btn btn-leave" onclick="openLeaveModal()">📝 Apply Leave / Half Day</button>
+        <button class="btn btn-cal" onclick="openCalendarModal()">📅 My Calendar</button>
       </div>
     </div>
   </div>
 
-  <!-- Leave Modal -->
+  <!-- Leave Application Modal -->
   <div id="leaveModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>छुट्टी आवेदन (Leave Request)</h3>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>छुट्टी आवेदन (Leave)</h3>
         <span class="close-btn" onclick="closeLeaveModal()">&times;</span>
       </div>
-      
-      <label for="leaveDuration">अवधि चुनें (Duration)</label>
-      <select id="leaveDuration" onchange="toggleDateRange(this.value)">
-        <option value="single">एक दिन की छुट्टी (Single Day)</option>
-        <option value="range">कई दिनों की छुट्टी (Date Range)</option>
+      <label>अवधि चुनें:</label>
+      <select id="leaveDuration" onchange="toggleLeaveDates(this.value)">
+        <option value="single">Single Day</option>
+        <option value="range">Date Range</option>
       </select>
 
-      <label for="leaveType">छुट्टी का प्रकार (Leave Type)</label>
+      <label>छुट्टी का प्रकार:</label>
       <select id="leaveType">
         <option value="Full Day Leave">Full Day Leave</option>
         <option value="Half Day Leave">Half Day Leave</option>
       </select>
 
-      <div id="singleDateBox">
-        <label for="leaveSingleDate">दिनांक (Date)</label>
+      <div id="singleDateSec">
+        <label>दिनांक (Date):</label>
         <input type="date" id="leaveSingleDate">
       </div>
 
-      <div id="rangeDateBox" style="display:none;">
-        <label for="leaveStartDate">प्रारंभ दिनांक (Start Date)</label>
+      <div id="rangeDateSec" style="display:none;">
+        <label>प्रारंभ दिनांक:</label>
         <input type="date" id="leaveStartDate">
-        <label for="leaveEndDate">अंतिम दिनांक (End Date)</label>
+        <label>अंतिम दिनांक:</label>
         <input type="date" id="leaveEndDate">
       </div>
 
-      <label for="leaveReason">छुट्टी का कारण (Specific Reason)</label>
-      <textarea id="leaveReason" rows="3" placeholder="यहाँ कारण लिखें..."></textarea>
+      <label>कारण (Specific Reason):</label>
+      <textarea id="leaveReason" rows="3" placeholder="यहाँ छुट्टी का कारण लिखें..."></textarea>
 
-      <button type="button" class="btn btn-leave" id="btnSubmitLeave" onclick="submitLeave()">आवेदन जमा करें ✨</button>
+      <button class="btn btn-leave" id="btnSubmitLeave" onclick="submitLeaveRequest()">आवेदन जमा करें 🚀</button>
     </div>
   </div>
 
   <!-- Calendar Modal -->
-  <div id="calModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 id="calMonthTitle">उपस्थिति इतिहास</h3>
+  <div id="calendarModal" class="modal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 id="calMonthTitle">उपस्थिति कैलेंडर</h3>
         <span class="close-btn" onclick="closeCalendarModal()">&times;</span>
       </div>
-      <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
-        <button class="btn btn-cal" style="width:45%;padding:8px;" onclick="prevMonth()">◀ पिछला</button>
-        <button class="btn btn-cal" style="width:45%;padding:8px;" onclick="nextMonth()">अगला ▶</button>
+      <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+        <button class="btn btn-cal" style="padding:6px 12px; width:45%;" onclick="changeMonth(-1)">◀ पिछला</button>
+        <button class="btn btn-cal" style="padding:6px 12px; width:45%;" onclick="changeMonth(1)">अगला ▶</button>
       </div>
-      <div class="calendar-grid" id="calendarBody"></div>
-      <div style="font-size:11px;margin-top:12px;color:#64748b;font-weight:600;">
-        🟢 उपस्थित | 🟡 छुट्टी (Approved Leave) | 🔴 रविवार
-      </div>
-    </div>
-  </div>
-
-  <!-- Shift Note Modal -->
-  <div id="dayDetailModal" class="modal">
-    <div class="modal-content" style="max-width:320px; text-align:center;">
-      <h3 id="detailDayTitle" style="color:#0f172a; margin-bottom:8px;">Shift Details</h3>
-      <div id="detailDayBody" style="background:#f8fafc; padding:14px; border-radius:12px; font-size:14px; font-weight:700; color:#1e293b; margin-bottom:14px; line-height:1.5;"></div>
-      <button type="button" class="btn btn-primary" onclick="closeDayDetailModal()">ठीक है (OK)</button>
-    </div>
-  </div>
-
-  <!-- Bye Modal -->
-  <div id="byeModal" class="modal">
-    <div class="bye-modal-content">
-      <h3 style="margin:12px 0 6px 0; color:#0f172a; font-size:19px; font-weight:800;" id="byeTitle">धन्यवाद!</h3>
-      <p style="color:#64748b; font-size:13.5px; margin:0;" id="byeMessage">उपस्थिति सफलतापूर्वक दर्ज कर ली गई है।</p>
-      <button class="btn btn-primary" style="margin-top:16px;" onclick="closeByeModal()">ठीक है (Close)</button>
+      <div class="cal-grid" id="calendarBody"></div>
+      <p style="font-size:11px; color:#64748b; font-weight:700; margin-top:10px;">
+        🟢 उपस्थित | 🟡 स्वीकृत अवकाश | 🔴 रविवार
+      </p>
     </div>
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwquZGro0VtZ-I4jegMaMiigBASs1yJ8WY50i_JkC8tofCK6o4oHPhgG3t3lF0c-IH2/exec";
-    const MANAGER_WHATSAPP = "919766037466";
+    // -------------------------------------------------------------
+    // CONFIGURATION
+    // -------------------------------------------------------------
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyAX7DXc4kJe197JTE23BbDCwOHJzFcXdb2WwItet4OW1ILEZJHVSDjmTkKaomQaQ51/exec";
+    const OFFICE_LAT = 18.6870094;
+    const OFFICE_LON = 73.8056477;
+    const MAX_METERS = 150.0;
 
     let currentEmp = { name: "", phone: "" };
     let calDate = new Date();
-    let currentVoice = null;
-    let isMuted = localStorage.getItem("aa_is_muted") === "true";
-    let deferredPrompt = null;
-    let clockInTimestamp = null;
-    let timerInterval = null;
-    let currentDutyState = "NEEDS_CLOCK_IN";
 
-    function triggerHaptic(type) {
-      if (!('vibrate' in navigator)) return;
-      if (type === 'tick') navigator.vibrate(20);
-      else if (type === 'triple') navigator.vibrate([20, 30, 20, 30, 20]);
-      else if (type === 'lock') navigator.vibrate(60);
-      else if (type === 'success') navigator.vibrate([80, 50, 120]);
-      else if (type === 'error') navigator.vibrate([150, 80, 150]);
-    }
-
-    function applySunAndWeatherTheme() {
-      const hour = new Date().getHours();
-      let skyGradient = "radial-gradient(circle at top, #1e1b4b, #0f172a 75%, #020617)";
-
-      if (hour >= 6 && hour < 9) {
-        skyGradient = "radial-gradient(circle at top, #b45309, #78350f 45%, #0f172a 90%)";
-      } else if (hour >= 9 && hour < 17) {
-        skyGradient = "radial-gradient(circle at top, #0284c7, #1e3a8a 60%, #0f172a 100%)";
-      } else if (hour >= 17 && hour < 19) {
-        skyGradient = "radial-gradient(circle at top, #86198f, #4c1d95 50%, #020617 100%)";
-      }
-      document.body.style.background = skyGradient;
-
-      fetch("https://api.open-meteo.com/v1/forecast?latitude=18.687&longitude=73.805&current=precipitation,rain")
-        .then(res => res.json())
-        .then(data => {
-          if (data.current && (data.current.rain > 0 || data.current.precipitation > 0)) {
-            document.getElementById("rainOverlay").style.display = "block";
-          }
-        }).catch(() => {});
-    }
-
-    // Particle Animation
-    const canvas = document.getElementById("ambientCanvas");
-    const ctx = canvas.getContext("2d");
-    let particles = [];
-
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener("resize", resizeCanvas);
-    resizeCanvas();
-
-    for (let i = 0; i < 26; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        r: Math.random() * 2 + 1,
-        dx: (Math.random() - 0.5) * 0.6,
-        dy: (Math.random() - 0.5) * 0.6,
-        alpha: Math.random() * 0.7 + 0.2
-      });
-    }
-
-    function renderFairyParticles() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach(p => {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(253, 224, 71, ${p.alpha})`;
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = "#fde047";
-        ctx.fill();
-
-        p.x += p.dx;
-        p.y += p.dy;
-        if (p.x < 0 || p.x > canvas.width) p.dx = -p.dx;
-        if (p.y < 0 || p.y > canvas.height) p.dy = -p.dy;
-      });
-      requestAnimationFrame(renderFairyParticles);
-    }
-    renderFairyParticles();
-
-    // Robust Fetch with 25-Second Cold-Start Tolerance
-    async function fetchWithTimeout(resource, options = {}, timeout = 25000) {
-      const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), timeout);
-      try {
-        const response = await fetch(resource, { ...options, signal: controller.signal });
-        clearTimeout(id);
-        return response;
-      } catch (error) {
-        clearTimeout(id);
-        throw error;
-      }
-    }
-
-    // IndexedDB Offline Queue
-    let db;
-    const dbRequest = indexedDB.open("AryavartaDB", 1);
-    dbRequest.onupgradeneeded = (e) => {
-      db = e.target.result;
-      if (!db.objectStoreNames.contains("punchQueue")) {
-        db.createObjectStore("punchQueue", { keyPath: "id", autoIncrement: true });
-      }
-    };
-    dbRequest.onsuccess = (e) => {
-      db = e.target.result;
-      updateSyncStatusUI();
-      flushIndexedDbQueue();
-    };
-
-    function updateSyncStatusUI() {
-      if (!db) return;
-      const tx = db.transaction("punchQueue", "readonly");
-      const req = tx.objectStore("punchQueue").count();
-      req.onsuccess = () => {
-        const count = req.result;
-        const pill = document.getElementById("networkPill");
-        if (!navigator.onLine) {
-          pill.className = "sync-status-pill sync-offline";
-          pill.innerHTML = `📡 ऑफ़लाइन (${count} सुरक्षित)`;
-        } else if (count > 0) {
-          pill.className = "sync-status-pill sync-offline";
-          pill.innerHTML = `🔄 सिंक हो रहा है (${count})`;
-        } else {
-          pill.className = "sync-status-pill sync-online";
-          pill.innerHTML = `🟢 ऑनलाइन`;
-        }
-      };
-    }
-
-    function saveToIndexedDb(payload) {
-      if (!db) return;
-      const tx = db.transaction("punchQueue", "readwrite");
-      tx.objectStore("punchQueue").add(payload);
-      tx.oncomplete = () => {
-        document.getElementById("btnIn").disabled = false;
-        document.getElementById("btnOut").disabled = false;
-        document.getElementById("status").style.color = "#d97706";
-        document.getElementById("status").innerHTML = "⚠️ नेटवर्क धीमा है: उपस्थिति फोन में सुरक्षित है।";
-        speakHindi("इंटरनेट कमजोर है। उपस्थिति सुरक्षित कर ली गई है।");
-        triggerHaptic('error');
-        updateSyncStatusUI();
-      };
-    }
-
-    function flushIndexedDbQueue() {
-      if (!db || !navigator.onLine) {
-        updateSyncStatusUI();
-        return;
-      }
-      const tx = db.transaction("punchQueue", "readwrite");
-      const store = tx.objectStore("punchQueue");
-      const getAllReq = store.getAll();
-
-      getAllReq.onsuccess = () => {
-        const records = getAllReq.result;
-        if (!records || records.length === 0) {
-          updateSyncStatusUI();
-          return;
-        }
-
-        records.forEach(rec => {
-          fetch(SCRIPT_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(rec)
-          }).then(() => {
-            const delTx = db.transaction("punchQueue", "readwrite");
-            delTx.objectStore("punchQueue").delete(rec.id);
-            delTx.oncomplete = updateSyncStatusUI;
-          }).catch(console.error);
-        });
-
-        document.getElementById("status").style.color = "#059669";
-        document.getElementById("status").innerHTML = "✅ सभी ऑफलाइन रिकॉर्ड सिंक हो चुके हैं!";
-      };
-    }
-
-    window.addEventListener('online', flushIndexedDbQueue);
-    window.addEventListener('offline', updateSyncStatusUI);
-    setInterval(flushIndexedDbQueue, 25000);
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(console.error);
-    }
-
-    async function enableDirectPhoneAlerts() {
-      triggerHaptic('tick');
-      if (!('Notification' in window)) return alert("❌ वेब नोटिफिकेशन समर्थित नहीं है।");
-      let perm = Notification.permission;
-      if (perm !== "granted") perm = await Notification.requestPermission();
-      if (perm !== "granted") return alert("⚠️ नोटिफिकेशन अनुमति अस्वीकृत है।");
-
-      try {
-        const reg = await navigator.serviceWorker.ready;
-        await reg.showNotification("आर्यावर्त अटेंडेंस अलर्ट सक्रिय! 🔔", {
-          body: "सुप्रभात! 10:01 AM और 6:01 PM पर अलर्ट सक्रिय हो चुके हैं।",
-          icon: "./logo.png",
-          badge: "./logo.png",
-          vibrate: [300, 100, 300],
-          tag: "attendance-active-test"
-        });
-        triggerHaptic('success');
-        alert("✅ फोन अलर्ट सक्रिय हो गया है!");
-      } catch (err) {
-        alert("⚠️ एरर: " + err.message);
-      }
-    }
-
-    function initVoice() {
-      if ('speechSynthesis' in window) {
-        let voices = window.speechSynthesis.getVoices();
-        currentVoice = voices.find(v => v.lang === 'hi-IN' || v.lang === 'hi_IN' || v.lang.startsWith('hi')) || null;
-      }
+    // -------------------------------------------------------------
+    // ROBOTIC HINDI VOICE
+    // -------------------------------------------------------------
+    function speakHindi(text) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'hi-IN';
+      utter.rate = 0.95;
+      const voices = window.speechSynthesis.getVoices();
+      const hindiVoice = voices.find(v => v.lang.includes('hi'));
+      if (hindiVoice) utter.voice = hindiVoice;
+      window.speechSynthesis.speak(utter);
     }
     if ('speechSynthesis' in window) {
-      window.speechSynthesis.onvoiceschanged = initVoice;
-      initVoice();
+      window.speechSynthesis.onvoiceschanged = () => {};
     }
 
-    function speakHindi(text) {
-      if (isMuted || !('speechSynthesis' in window)) return;
-      window.speechSynthesis.cancel();
-      let utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'hi-IN';
-      utterance.rate = 0.95;
-      if (!currentVoice) initVoice();
-      if (currentVoice) utterance.voice = currentVoice;
-      window.speechSynthesis.speak(utterance);
-    }
-
-    function toggleAudioMute() {
-      triggerHaptic('tick');
-      isMuted = !isMuted;
-      localStorage.setItem("aa_is_muted", isMuted);
-      document.getElementById("muteIcon").innerText = isMuted ? "🔇" : "🔊";
-      document.getElementById("muteLabel").innerText = isMuted ? "Muted" : "Voice On";
-      if (isMuted && 'speechSynthesis' in window) window.speechSynthesis.cancel();
-    }
-
-    function unlockPortalAndSpeak() {
-      triggerHaptic('triple');
-      document.getElementById("curtainOverlay").classList.add("curtain-open");
-      let savedName = localStorage.getItem("aa_emp_name") || currentEmp.name || "सहकर्मी";
-      
-      if (currentDutyState === "COMPLETED") {
-        speakHindi(`नमस्ते ${savedName} जी! आपकी आज की उपस्थिति पूरी हो चुकी है।`);
-      } else if (currentDutyState === "WORKING") {
-        speakHindi(`नमस्ते ${savedName} जी! आप अभी कार्यरत हैं। प्रस्थान के समय क्लॉक आउट करना न भूलें।`);
-      } else if (currentDutyState === "ON_BREAK") {
-        speakHindi(`नमस्ते ${savedName} जी! आप ब्रेक पर हैं।`);
-      } else {
-        let hr = new Date().getHours();
-        if (hr < 12) {
-          speakHindi(`सुप्रभात ${savedName} जी! कृपया क्लॉक इन करें।`);
-        } else {
-          speakHindi(`नमस्ते ${savedName} जी! आर्यावर्त पोर्टल में स्वागत है।`);
-        }
-      }
-
-      if (currentEmp.phone) refreshTodayStatus();
-    }
-
-    function startLiveShiftTimer(isoStartTime) {
-      if (!isoStartTime) return;
-      clockInTimestamp = new Date(isoStartTime).getTime();
-      document.getElementById("timerCard").style.display = "block";
-
-      if (timerInterval) clearInterval(timerInterval);
-
-      timerInterval = setInterval(() => {
-        let now = new Date().getTime();
-        let diffMs = Math.max(0, now - clockInTimestamp);
-
-        let totalSecs = Math.floor(diffMs / 1000);
-        let hrs = Math.floor(totalSecs / 3600);
-        let mins = Math.floor((totalSecs % 3600) / 60);
-        let secs = totalSecs % 60;
-
-        document.getElementById("liveTimerText").innerText = 
-          `${String(hrs).padStart(2, '0')} hrs : ${String(mins).padStart(2, '0')} mins : ${String(secs).padStart(2, '0')} secs`;
-
-        let targetMs = 8.5 * 3600 * 1000;
-        let pct = Math.min(100, (diffMs / targetMs) * 100);
-        document.getElementById("timerProgressFill").style.width = pct.toFixed(1) + "%";
-
-        let remainingMs = targetMs - diffMs;
-        if (remainingMs > 0) {
-          let remHrs = Math.floor(remainingMs / 3600000);
-          let remMins = Math.floor((remainingMs % 3600000) / 60000);
-          document.getElementById("targetRemainingText").innerText = `${remHrs}h ${remMins}m remaining`;
-        } else {
-          document.getElementById("targetRemainingText").innerText = "Overtime Active ⭐";
-        }
-      }, 1000);
-    }
-
-    function stopLiveShiftTimer() {
-      if (timerInterval) clearInterval(timerInterval);
-      document.getElementById("timerCard").style.display = "none";
-    }
-
-    // Apply UI state based on duty status
-    function applyDutyStateToUI(st, clockInTime) {
-      currentDutyState = st;
-      let btnIn = document.getElementById("btnIn");
-      let btnOut = document.getElementById("btnOut");
-      let btnBreak = document.getElementById("btnBreak");
-      let statusDiv = document.getElementById("status");
-
-      if (st === "NEEDS_CLOCK_IN") {
-        btnIn.style.display = "flex";
-        btnOut.style.display = "none";
-        btnBreak.style.display = "none";
-        stopLiveShiftTimer();
-        statusDiv.innerHTML = "";
-      } else if (st === "WORKING") {
-        btnIn.style.display = "none";
-        btnOut.style.display = "flex";
-        btnBreak.style.display = "flex";
-        document.getElementById("breakBtnIcon").innerText = "☕";
-        document.getElementById("breakBtnText").innerText = "Start Break / Field Visit";
-        statusDiv.style.color = "#2563eb";
-        statusDiv.innerHTML = "ℹ️ आप कार्यरत हैं (Active Duty)।";
-        if (clockInTime) startLiveShiftTimer(clockInTime);
-      } else if (st === "ON_BREAK") {
-        btnIn.style.display = "none";
-        btnOut.style.display = "none";
-        btnBreak.style.display = "flex";
-        document.getElementById("breakBtnIcon").innerText = "▶️";
-        document.getElementById("breakBtnText").innerText = "Resume Duty (End Break)";
-        statusDiv.style.color = "#d97706";
-        statusDiv.innerHTML = "⏸️ आप ब्रेक / फील्ड विजिट पर हैं।";
-      } else if (st === "COMPLETED") {
-        btnIn.style.display = "none";
-        btnOut.style.display = "none";
-        btnBreak.style.display = "none";
-        stopLiveShiftTimer();
-        statusDiv.style.color = "#059669";
-        statusDiv.innerHTML = "✅ आज की उपस्थिति पूर्ण हो चुकी है।";
-      }
-    }
-
-    // App Startup with Optimistic Local Duty State Hydration
+    // -------------------------------------------------------------
+    // INITIALIZATION & DIRECTORY LOOKUP
+    // -------------------------------------------------------------
     window.onload = function() {
-      applySunAndWeatherTheme();
-      initVoice();
-      let todayStr = new Date().toISOString().split('T')[0];
+      const today = new Date();
+      const isSunday = today.getDay() === 0;
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryPhone = urlParams.get('p') || urlParams.get('phone');
+      const savedPhone = queryPhone ? queryPhone.replace(/\D/g, '').slice(-10) : localStorage.getItem("aa_user_phone");
+
+      const todayStr = today.toISOString().split('T')[0];
       document.getElementById("leaveSingleDate").value = todayStr;
       document.getElementById("leaveStartDate").value = todayStr;
       document.getElementById("leaveEndDate").value = todayStr;
 
-      const urlParams = new URLSearchParams(window.location.search);
-      let directPhone = urlParams.get('p') || urlParams.get('phone');
-      let savedPhone = directPhone ? directPhone.replace(/\D/g, '').slice(-10) : localStorage.getItem("aa_emp_phone");
-      let savedName = localStorage.getItem("aa_emp_name");
-
       if (savedPhone && savedPhone.length === 10) {
-        currentEmp = { name: savedName || "Employee", phone: savedPhone };
-        document.getElementById("loginBox").style.display = "none";
-        document.getElementById("punchForm").style.display = "block";
-        document.getElementById("displayEmpName").innerText = savedName || "Loading...";
-        document.getElementById("displayEmpPhone").innerText = "📱 +91 " + savedPhone;
-
-        // Restore cached badge
-        let cachedBadgeHtml = localStorage.getItem("aa_cached_badge_html");
-        let cachedBadgeClass = localStorage.getItem("aa_cached_badge_class");
-        let badgeElem = document.getElementById("leaveStatusBadge");
-        if (cachedBadgeHtml) {
-          badgeElem.innerHTML = cachedBadgeHtml;
-          badgeElem.className = cachedBadgeClass || "badge-pending";
-          badgeElem.style.display = "block";
-        }
-
-        // Restore cached local duty state if clocked in today
-        let cachedDutyDate = localStorage.getItem("aa_duty_date");
-        let cachedDutyState = localStorage.getItem("aa_duty_state");
-        let cachedClockInTime = localStorage.getItem("aa_clock_in_time");
-        if (cachedDutyDate === todayStr && cachedDutyState) {
-          applyDutyStateToUI(cachedDutyState, cachedClockInTime);
-        }
-
-        fetchWithTimeout(`${SCRIPT_URL}?action=authDevice&phone=${savedPhone}`, {}, 7000)
-          .then(res => res.json())
-          .then(data => {
-            if (data.success) {
-              currentEmp.name = data.name;
-              localStorage.setItem("aa_emp_name", data.name);
-              document.getElementById("displayEmpName").innerText = data.name;
-              refreshTodayStatus();
-            }
-          }).catch(() => refreshTodayStatus());
+        loadEmployeeSession(savedPhone, isSunday);
       } else {
-        document.getElementById("loginBox").style.display = "block";
-        document.getElementById("punchForm").style.display = "none";
+        document.getElementById("loginView").style.display = "block";
       }
     };
 
-    function handleManualLogin() {
-      triggerHaptic('tick');
-      let phone = document.getElementById("inputPhone").value.trim().replace(/\D/g, '').slice(-10);
-      if (phone.length !== 10) return alert("कृपया 10 अंकों का मोबाइल नंबर दर्ज करें।");
+    function verifyAndLogin() {
+      const phone = document.getElementById("regPhone").value.replace(/\D/g, '').slice(-10);
+      if (phone.length !== 10) return alert("कृपया 10 अंकों का वैध मोबाइल नंबर दर्ज करें।");
 
-      document.getElementById("status").innerHTML = "🔄 सर्वर से कनेक्ट हो रहा है, कृपया प्रतीक्षा करें...";
-      
-      fetchWithTimeout(`${SCRIPT_URL}?action=authDevice&phone=${phone}`, {}, 25000)
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            triggerHaptic('success');
-            localStorage.setItem("aa_emp_phone", phone);
-            localStorage.setItem("aa_emp_name", data.name);
-            currentEmp = { name: data.name, phone: phone };
-
-            document.getElementById("loginBox").style.display = "none";
-            document.getElementById("punchForm").style.display = "block";
-            document.getElementById("displayEmpName").innerText = data.name;
-            document.getElementById("displayEmpPhone").innerText = "📱 +91 " + phone;
-            refreshTodayStatus();
-          } else {
-            triggerHaptic('error');
-            alert("⚠️ " + (data.message || data.error || "पहचान विफल।"));
-          }
-        }).catch(err => {
-          triggerHaptic('error');
-          document.getElementById("status").innerHTML = "";
-          if (err.name === 'AbortError') {
-            alert("⏳ सर्वर शुरू होने में समय ले रहा है। कृपया 5 सेकंड बाद पुनः 'पोर्टल में प्रवेश करें' दबाएं।");
-          } else {
-            alert("⚠️ सर्वर कनेक्शन त्रुटि: " + err.message + "\n\n(कृपया सुनिश्चित करें कि Apps Script में 'Who has access: Anyone' सेट है।)");
-          }
-        });
-    }
-
-    function toggleMode(val) {
-      triggerHaptic('tick');
-      document.getElementById("siteAuditBox").style.display = (val === "Site") ? "block" : "none";
-      document.getElementById("wfhAuditBox").style.display = (val === "WFH") ? "block" : "none";
-    }
-
-    // Fetch server status and synchronize UI
-    function refreshTodayStatus() {
-      if (!currentEmp.phone && !currentEmp.name) return;
-      let todayStr = new Date().toISOString().split('T')[0];
-
-      fetchWithTimeout(`${SCRIPT_URL}?action=checkStatus&phone=${currentEmp.phone}&name=${encodeURIComponent(currentEmp.name)}`, {}, 7000)
-        .then(res => res.json())
+      showMessage("प्रमाणीकरण हो रहा है...", "#2563eb");
+      fetch(`${SCRIPT_URL}?action=verifyEmployee&phone=${phone}`)
+        .then(r => r.json())
         .then(res => {
-          applyDutyStateToUI(res.status, res.clockInTime);
-          localStorage.setItem("aa_duty_date", todayStr);
-          localStorage.setItem("aa_duty_state", res.status);
-          if (res.clockInTime) localStorage.setItem("aa_clock_in_time", res.clockInTime);
-
-          // Update Status Badge
-          let badge = document.getElementById("leaveStatusBadge");
-          if (res.latestLeave && res.latestLeave.dates) {
-            badge.style.display = "block";
-            let st = (res.latestLeave.status || "").toLowerCase();
-            let dates = res.latestLeave.dates;
-
-            if (st === "approved") {
-              badge.className = "badge-approved";
-              badge.innerHTML = `🟢 Leave Request for ${dates} has been APPROVED by Sumeet Singh`;
-            } else if (st === "rejected") {
-              badge.className = "badge-rejected";
-              badge.innerHTML = `🔴 Leave Request for ${dates} was REJECTED by Manager`;
-            } else {
-              badge.className = "badge-pending";
-              badge.innerHTML = `⏳ Leave Request for ${dates} is PENDING Manager Approval`;
-            }
-
-            localStorage.setItem("aa_cached_badge_html", badge.innerHTML);
-            localStorage.setItem("aa_cached_badge_class", badge.className);
+          if (res.success) {
+            localStorage.setItem("aa_user_phone", phone);
+            localStorage.setItem("aa_user_name", res.employee.name);
+            loadEmployeeSession(phone, new Date().getDay() === 0);
           } else {
-            badge.style.display = "none";
-            localStorage.removeItem("aa_cached_badge_html");
-            localStorage.removeItem("aa_cached_badge_class");
+            alert(res.message || "कर्मचारी निर्देशिका में यह नंबर दर्ज नहीं है।");
+            document.getElementById("statusMessage").innerHTML = "";
           }
-        }).catch(console.error);
+        })
+        .catch(() => alert("सर्वर से संपर्क नहीं हो सका।"));
     }
 
-    function toggleBreakDuty() {
-      triggerHaptic('tick');
-      if (currentDutyState === "WORKING") {
-        let reason = prompt("ब्रेक या फील्ड विजिट का उद्देश्य दर्ज करें:", "Lunch Break");
-        if (!reason) return;
-        startAttendanceFlow("Start Break (" + reason + ")");
-      } else if (currentDutyState === "ON_BREAK") {
-        startAttendanceFlow("End Break");
-      }
-    }
+    function loadEmployeeSession(phone, isSunday) {
+      document.getElementById("loginView").style.display = "none";
+      document.getElementById("attendanceView").style.display = "block";
 
-    function startAttendanceFlow(type) {
-      triggerHaptic('tick');
-      let mode = document.getElementById("workMode").value;
-      let siteVal = document.getElementById("siteNameInput").value.trim();
-      let wfhVal = document.getElementById("wfhReasonInput").value.trim();
-      let statusDiv = document.getElementById("status");
-      let btnIn = document.getElementById("btnIn");
-      let btnOut = document.getElementById("btnOut");
+      const cachedName = localStorage.getItem("aa_user_name") || "कर्मचारी";
+      currentEmp = { name: cachedName, phone: phone };
 
-      if (mode === "Site" && !siteVal) {
-        triggerHaptic('error');
-        alert("⚠️ कृपया साइट का नाम दर्ज करें।");
-        return document.getElementById("siteNameInput").focus();
-      }
-      if (mode === "WFH" && !wfhVal) {
-        triggerHaptic('error');
-        alert("⚠️ कृपया WFH का कारण दर्ज करें।");
-        return document.getElementById("wfhReasonInput").focus();
-      }
+      document.getElementById("empDisplayName").innerText = currentEmp.name;
+      document.getElementById("empDisplayPhone").innerText = "+91 " + phone;
 
-      btnIn.disabled = true;
-      btnOut.disabled = true;
-      statusDiv.style.color = "#d97706";
-      statusDiv.innerHTML = "🛰️ जीपीएस स्थान सत्यापित किया जा रहा है...";
-      speakHindi("स्थान सत्यापित हो रहा है, कृपया प्रतीक्षा करें।");
-
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          triggerHaptic('lock');
-          executePunch(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, mode, type, siteVal, wfhVal);
-        },
-        () => {
-          navigator.geolocation.getCurrentPosition(
-            pos => {
-              triggerHaptic('lock');
-              executePunch(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, mode, type, siteVal, wfhVal);
-            },
-            () => {
-              if (mode === "Office") {
-                triggerHaptic('error');
-                btnIn.disabled = false;
-                btnOut.disabled = false;
-                statusDiv.style.color = "#dc2626";
-                statusDiv.innerHTML = "❌ जीपीएस सिग्नल नहीं मिला। कृपया लोकेशन ऑन करें।";
-              } else {
-                executePunch(null, null, null, mode, type, siteVal, wfhVal);
-              }
-            },
-            { enableHighAccuracy: false, timeout: 5000, maximumAge: 30000 }
-          );
-        },
-        { enableHighAccuracy: true, timeout: 7000, maximumAge: 30000 }
-      );
-    }
-
-    function executePunch(lat, lon, acc, mode, type, siteVal, wfhVal) {
-      let punchTimestamp = new Date().toISOString();
-      let todayStr = punchTimestamp.split('T')[0];
-
-      let payload = {
-        name: currentEmp.name,
-        phone: currentEmp.phone,
-        mode: mode,
-        siteDetails: siteVal,
-        wfhReason: wfhVal,
-        lat: lat,
-        lon: lon,
-        accuracy: acc,
-        forceType: type,
-        clientTimestamp: punchTimestamp
-      };
-
-      // Immediate Optimistic UI Update
-      if (type === "Clock In") {
-        applyDutyStateToUI("WORKING", punchTimestamp);
-        localStorage.setItem("aa_duty_date", todayStr);
-        localStorage.setItem("aa_duty_state", "WORKING");
-        localStorage.setItem("aa_clock_in_time", punchTimestamp);
-      } else if (type === "Clock Out") {
-        applyDutyStateToUI("COMPLETED", null);
-        localStorage.setItem("aa_duty_date", todayStr);
-        localStorage.setItem("aa_duty_state", "COMPLETED");
-      }
-
-      if (!navigator.onLine) {
-        saveToIndexedDb(payload);
+      if (isSunday) {
+        document.getElementById("sundayAlert").style.display = "block";
+        document.getElementById("dutyControls").style.display = "none";
+        speakHindi(`नमस्ते ${currentEmp.name} जी! आज रविवार का साप्ताहिक अवकाश है।`);
         return;
       }
 
-      fetchWithTimeout(SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      }, 7000)
-      .then(() => {
-        triggerHaptic('success');
-        document.getElementById("btnIn").disabled = false;
-        document.getElementById("btnOut").disabled = false;
-        showByeAnimation(`${type} सफल!`, "आपकी उपस्थिति दर्ज हो चुकी है। धन्यवाद!");
-        
-        if (type === "Clock In") {
-          speakHindi(`धन्यवाद ${currentEmp.name} जी, आपका क्लॉक इन सफल रहा।`);
-        } else if (type === "Clock Out") {
-          speakHindi(`धन्यवाद ${currentEmp.name} जी, आपका क्लॉक आउट दर्ज हो चुका है। शुभ संध्या!`);
-        } else {
-          speakHindi("आपकी उपस्थिति दर्ज हो चुकी है।");
-        }
-        
-        setTimeout(refreshTodayStatus, 2000);
-      })
-      .catch(() => saveToIndexedDb(payload));
+      // Check current duty status
+      fetch(`${SCRIPT_URL}?action=checkStatus&phone=${phone}`)
+        .then(r => r.json())
+        .then(res => {
+          syncStatusUI(res.status, res.latestLeave);
+        })
+        .catch(() => syncStatusUI("NEEDS_CLOCK_IN", null));
     }
 
-    function openLeaveModal() { triggerHaptic('tick'); document.getElementById("leaveModal").style.display = "flex"; }
-    function closeLeaveModal() { triggerHaptic('tick'); document.getElementById("leaveModal").style.display = "none"; }
-    function toggleDateRange(val) {
-      triggerHaptic('tick');
-      document.getElementById("singleDateBox").style.display = (val === "range") ? "none" : "block";
-      document.getElementById("rangeDateBox").style.display = (val === "range") ? "block" : "none";
-    }
+    function syncStatusUI(status, leaveInfo) {
+      const btnIn = document.getElementById("btnClockIn");
+      const btnOut = document.getElementById("btnClockOut");
 
-    function submitLeave() {
-      let duration = document.getElementById("leaveDuration").value;
-      let lType = document.getElementById("leaveType").value;
-      let sDate = duration === "single" ? document.getElementById("leaveSingleDate").value : document.getElementById("leaveStartDate").value;
-      let eDate = duration === "single" ? sDate : document.getElementById("leaveEndDate").value;
-      let reason = document.getElementById("leaveReason").value.trim();
-
-      if (!sDate || !eDate || !reason) {
-        triggerHaptic('error');
-        return alert("तारीख और कारण दोनों दर्ज करें।");
+      if (status === "WORKING") {
+        btnIn.style.display = "none";
+        btnOut.style.display = "block";
+        showMessage("ℹ️ आप कार्यरत हैं (Active Duty)।", "#2563eb");
+        speakHindi(`नमस्ते ${currentEmp.name} जी! आप अभी कार्यरत हैं। काम समाप्त होने पर क्लॉक आउट करें।`);
+      } else if (status === "COMPLETED") {
+        btnIn.style.display = "none";
+        btnOut.style.display = "none";
+        showMessage("✅ आज की उपस्थिति पूर्ण हो चुकी है।", "#059669");
+        speakHindi(`नमस्ते ${currentEmp.name} जी! आपकी आज की उपस्थिति दर्ज हो चुकी है।`);
+      } else {
+        btnIn.style.display = "block";
+        btnOut.style.display = "none";
+        const hr = new Date().getHours();
+        const greet = hr < 12 ? "सुप्रभात" : "नमस्ते";
+        speakHindi(`${greet} ${currentEmp.name} जी! आर्यावर्त पोर्टल में स्वागत है, कृपया उपस्थिति दर्ज करें।`);
       }
 
-      let btn = document.getElementById("btnSubmitLeave");
+      // Display leave status badge
+      const badge = document.getElementById("leaveStatusBadge");
+      if (leaveInfo && leaveInfo.status) {
+        badge.style.display = "block";
+        const st = leaveInfo.status.toLowerCase();
+        const dRange = leaveInfo.startDate === leaveInfo.endDate ? leaveInfo.startDate : `${leaveInfo.startDate} to ${leaveInfo.endDate}`;
+        if (st === "approved") {
+          badge.className = "badge-approved";
+          badge.innerHTML = `🟢 ${dRange} की छुट्टी स्वीकृत (Approved) हो चुकी है।`;
+        } else if (st === "rejected") {
+          badge.className = "badge-rejected";
+          badge.innerHTML = `🔴 ${dRange} की छुट्टी अस्वीकृत (Rejected) कर दी गई है।`;
+        } else {
+          badge.className = "badge-pending";
+          badge.innerHTML = `⏳ ${dRange} की छुट्टी अनुमोदन के लिए लंबित (Pending) है।`;
+        }
+      }
+    }
+
+    function handleModeChange(val) {
+      document.getElementById("siteBox").style.display = (val === "Site") ? "block" : "none";
+      document.getElementById("wfhBox").style.display = (val === "WFH") ? "block" : "none";
+    }
+
+    // -------------------------------------------------------------
+    // GEOFENCE & PUNCH LOGIC
+    // -------------------------------------------------------------
+    function calcDistanceMeters(lat1, lon1, lat2, lon2) {
+      const R = 6371000;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+    }
+
+    function handlePunch(punchType) {
+      const mode = document.getElementById("workMode").value;
+      const siteVal = document.getElementById("siteName").value.trim();
+      const wfhVal = document.getElementById("wfhReason").value.trim();
+
+      if (mode === "Site" && !siteVal) {
+        alert("कृपया साइट का नाम दर्ज करें।");
+        return document.getElementById("siteName").focus();
+      }
+      if (mode === "WFH" && !wfhVal) {
+        alert("कृपया WFH का कारण दर्ज करें।");
+        return document.getElementById("wfhReason").focus();
+      }
+
+      showMessage("🛰️ GPS लोकेशन जांची जा रही है...", "#d97706");
+      speakHindi("स्थान सत्यापित हो रहा है, कृपया प्रतीक्षा करें।");
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+
+          if (mode === "Office") {
+            const dist = calcDistanceMeters(lat, lon, OFFICE_LAT, OFFICE_LON);
+            if (dist > MAX_METERS) {
+              showMessage(`❌ ऑफिस से दूरी: ${Math.round(dist)}m (150m सीमा पार)`, "#dc2626");
+              speakHindi("आप ऑफिस सीमा से बाहर हैं। उपस्थिति दर्ज नहीं हो सकी।");
+              return;
+            }
+          }
+
+          sendPunchPayload(punchType, mode, lat, lon, mode === "Site" ? siteVal : wfhVal);
+        },
+        () => {
+          if (mode === "Office") {
+            showMessage("❌ लोकेशन अनुमति नहीं मिली। Office मोड के लिए GPS ऑन करें।", "#dc2626");
+          } else {
+            sendPunchPayload(punchType, mode, null, null, mode === "Site" ? siteVal : wfhVal);
+          }
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    }
+
+    function sendPunchPayload(punchType, mode, lat, lon, detail) {
+      showMessage("सर्वर पर उपस्थिति दर्ज हो रही है...", "#2563eb");
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          phone: currentEmp.phone,
+          punchType: punchType,
+          mode: mode,
+          lat: lat,
+          lon: lon,
+          detail: detail
+        })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.status === "success") {
+          showMessage(`✅ ${punchType} सफल!`, "#059669");
+          speakHindi(`धन्यवाद ${currentEmp.name} जी, आपका ${punchType === "Clock In" ? "क्लॉक इन" : "क्लॉक आउट"} सफल रहा।`);
+          setTimeout(() => location.reload(), 1800);
+        } else {
+          showMessage(res.message || "त्रुटि उत्पन्न हुई।", "#dc2626");
+        }
+      })
+      .catch(() => showMessage("सर्वर त्रुटि: पुनः प्रयास करें।", "#dc2626"));
+    }
+
+    // -------------------------------------------------------------
+    // LEAVE MANAGEMENT
+    // -------------------------------------------------------------
+    function openLeaveModal() { document.getElementById("leaveModal").style.display = "flex"; }
+    function closeLeaveModal() { document.getElementById("leaveModal").style.display = "none"; }
+    function toggleLeaveDates(val) {
+      document.getElementById("singleDateSec").style.display = (val === "single") ? "block" : "none";
+      document.getElementById("rangeDateSec").style.display = (val === "range") ? "block" : "none";
+    }
+
+    function submitLeaveRequest() {
+      const duration = document.getElementById("leaveDuration").value;
+      const sDate = duration === "single" ? document.getElementById("leaveSingleDate").value : document.getElementById("leaveStartDate").value;
+      const eDate = duration === "single" ? sDate : document.getElementById("leaveEndDate").value;
+      const reason = document.getElementById("leaveReason").value.trim();
+      const lType = document.getElementById("leaveType").value;
+
+      if (!sDate || !eDate || !reason) return alert("कृपया दिनांक और कारण दोनों दर्ज करें।");
+
+      const btn = document.getElementById("btnSubmitLeave");
       btn.disabled = true;
       btn.innerText = "जमा हो रहा है...";
 
-      fetchWithTimeout(SCRIPT_URL, {
+      fetch(SCRIPT_URL, {
         method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           type: "Leave",
-          name: currentEmp.name,
           phone: currentEmp.phone,
           leaveType: lType,
           startDate: sDate,
           endDate: eDate,
           reason: reason
         })
-      }, 8000).then(() => {
-        triggerHaptic('success');
+      })
+      .then(r => r.json())
+      .then(res => {
         btn.disabled = false;
-        btn.innerText = "आवेदन जमा करें ✨";
+        btn.innerText = "आवेदन जमा करें 🚀";
         closeLeaveModal();
-
-        let msg = `*Aryavarta Leave Request*%0A*Employee:* ${currentEmp.name}%0A*Type:* ${lType}%0A*Dates:* ${sDate} to ${eDate}%0A*Reason:* ${reason}`;
-        let waUrl = `https://wa.me/${MANAGER_WHATSAPP}?text=${msg}`;
-
-        speakHindi("अवकाश आवेदन दर्ज हो चुका है।");
-        if (confirm("✅ अवकाश आवेदन जमा हो चुका है!\n\nक्या आप मैनेजर सुमीत सिंह जी को व्हाट्सएप पर भी सूचित करना चाहते हैं?")) {
-          window.open(waUrl, '_blank');
+        if (res.status === "success") {
+          speakHindi("अवकाश आवेदन प्रबंधक को भेज दिया गया है।");
+          alert("✅ आवेदन प्रबंधक सुमीत सिंह जी को भेज दिया गया है।");
+          location.reload();
+        } else {
+          alert("आवेदन विफल: " + res.message);
         }
-
-        setTimeout(refreshTodayStatus, 1500);
-      }).catch(() => {
-        triggerHaptic('error');
+      })
+      .catch(() => {
         btn.disabled = false;
-        btn.innerText = "आवेदन जमा करें ✨";
-        alert("नेटवर्क त्रुटि: आवेदन जमा नहीं हो सका।");
+        btn.innerText = "आवेदन जमा करें 🚀";
+        alert("नेटवर्क त्रुटि: आवेदन जमा नहीं हुआ।");
       });
     }
 
-    function openCalendarModal() { triggerHaptic('tick'); document.getElementById("calModal").style.display = "flex"; renderCalendar(); }
-    function closeCalendarModal() { triggerHaptic('tick'); document.getElementById("calModal").style.display = "none"; }
-    function prevMonth() { triggerHaptic('tick'); calDate.setMonth(calDate.getMonth() - 1); renderCalendar(); }
-    function nextMonth() { triggerHaptic('tick'); calDate.setMonth(calDate.getMonth() + 1); renderCalendar(); }
+    // -------------------------------------------------------------
+    // CALENDAR VIEW
+    // -------------------------------------------------------------
+    function openCalendarModal() {
+      document.getElementById("calendarModal").style.display = "flex";
+      renderCalendar();
+    }
+    function closeCalendarModal() { document.getElementById("calendarModal").style.display = "none"; }
+    function changeMonth(delta) { calDate.setMonth(calDate.getMonth() + delta); renderCalendar(); }
 
     function renderCalendar() {
-      let year = calDate.getFullYear();
-      let month = calDate.getMonth();
+      const year = calDate.getFullYear();
+      const month = calDate.getMonth();
       const months = ["जनवरी","फरवरी","मार्च","अप्रैल","मई","जून","जुलाई","अगस्त","सितंबर","अक्टूबर","नवंबर","दिसंबर"];
-      document.getElementById("calMonthTitle").innerText = months[month] + " " + year;
+      document.getElementById("calMonthTitle").innerText = `${months[month]} ${year}`;
 
-      let body = document.getElementById("calendarBody");
-      body.innerHTML = "<div class='cal-header'>रवि</div><div class='cal-header'>सोम</div><div class='cal-header'>मंगल</div><div class='cal-header'>बुध</div><div class='cal-header'>गुरु</div><div class='cal-header'>शुक्र</div><div class='cal-header'>शनि</div>";
+      const grid = document.getElementById("calendarBody");
+      grid.innerHTML = "<div class='cal-hdr'>रवि</div><div class='cal-hdr'>सोम</div><div class='cal-hdr'>मंगल</div><div class='cal-hdr'>बुध</div><div class='cal-hdr'>गुरु</div><div class='cal-hdr'>शुक्र</div><div class='cal-hdr'>शनि</div>";
 
-      fetchWithTimeout(`${SCRIPT_URL}?action=getCalendar&phone=${currentEmp.phone}&name=${encodeURIComponent(currentEmp.name)}&month=${month + 1}&year=${year}`, {}, 8000)
-        .then(res => res.json())
+      fetch(`${SCRIPT_URL}?action=getCalendar&phone=${currentEmp.phone}&month=${month + 1}&year=${year}`)
+        .then(r => r.json())
         .then(data => {
-          let history = data.history || {};
-          let firstDay = new Date(year, month, 1).getDay();
-          let totalDays = new Date(year, month + 1, 0).getDate();
+          const hist = data.history || {};
+          const firstDay = new Date(year, month, 1).getDay();
+          const totalDays = new Date(year, month + 1, 0).getDate();
 
-          for (let i = 0; i < firstDay; i++) body.innerHTML += "<div></div>";
+          for (let i = 0; i < firstDay; i++) grid.innerHTML += "<div></div>";
 
           for (let d = 1; d <= totalDays; d++) {
-            let dateKey = year + "-" + String(month + 1).padStart(2, '0') + "-" + String(d).padStart(2, '0');
-            let isSunday = new Date(year, month, d).getDay() === 0;
-            let entry = history[dateKey];
-            let cellClass = "cal-cell";
-            let shiftNote = "";
+            const dKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const isSun = new Date(year, month, d).getDay() === 0;
+            let cls = "cal-cell";
 
-            if (isSunday) {
-              cellClass += " cal-sunday";
-              shiftNote = "Sunday (Weekly Off)";
+            if (isSun) cls += " sunday";
+            if (hist[dKey]) {
+              if (hist[dKey].isLeave) cls += " leave";
+              else cls += " present";
             }
 
-            if (entry) {
-              if (entry.isLeave) {
-                cellClass += " cal-leave";
-                shiftNote = entry.note || "Full Day Leave (Approved)";
-              } else {
-                cellClass += " cal-present";
-                shiftNote = entry.punches.join("<br>");
-              }
-            } else if (!isSunday) {
-              shiftNote = "No Record / Absent";
-            }
-
-            let cellElem = document.createElement("div");
-            cellElem.className = cellClass;
-            cellElem.innerText = d;
-            cellElem.onclick = () => {
-              triggerHaptic('tick');
-              openDayDetailModal(dateKey, shiftNote);
+            const cell = document.createElement("div");
+            cell.className = cls;
+            cell.innerText = d;
+            cell.onclick = () => {
+              if (hist[dKey]) alert(hist[dKey].isLeave ? "स्वीकृत छुट्टी (Approved Leave)" : hist[dKey].punches.join("\n"));
+              else if (isSun) alert("रविवार (Sunday Weekly Off)");
+              else alert("कोई रिकॉर्ड नहीं (Absent)");
             };
-            body.appendChild(cellElem);
+            grid.appendChild(cell);
           }
-        }).catch(() => {
-          body.innerHTML += "<p style='grid-column: span 7; color: #dc2626; font-size: 12px; margin-top: 10px;'>ऑफ़लाइन: कैलेंडर लोड नहीं हो सका।</p>";
         });
     }
 
-    function openDayDetailModal(dateStr, noteHtml) {
-      document.getElementById("detailDayTitle").innerText = "📅 " + dateStr;
-      document.getElementById("detailDayBody").innerHTML = noteHtml;
-      document.getElementById("dayDetailModal").style.display = "flex";
-    }
-
-    function closeDayDetailModal() {
-      triggerHaptic('tick');
-      document.getElementById("dayDetailModal").style.display = "none";
-    }
-
-    function showByeAnimation(title, message) {
-      document.getElementById("byeTitle").innerText = title;
-      document.getElementById("byeMessage").innerText = message;
-      document.getElementById("byeModal").style.display = "flex";
-    }
-    function closeByeModal() {
-      triggerHaptic('tick');
-      document.getElementById("byeModal").style.display = "none";
+    function showMessage(msg, color) {
+      const el = document.getElementById("statusMessage");
+      el.innerText = msg;
+      el.style.color = color;
+      el.style.background = color + "15";
     }
   </script>
 </body>
