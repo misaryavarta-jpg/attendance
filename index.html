@@ -457,34 +457,59 @@
         return document.getElementById("wfhReason").focus();
       }
 
-      showMessage("🛰️ GPS लोकेशन जांची जा रही है...", "#d97706");
+      showMessage("🛰️ GPS स्थान सत्यापित किया जा रहा है...", "#d97706");
       speakHindi("स्थान सत्यापित हो रहा है, कृपया प्रतीक्षा करें।");
 
+      const targetDetail = (mode === "Site") ? siteVal : (mode === "WFH" ? wfhVal : "Office Regular");
+
+      // Stage 1: Try High-Accuracy Hardware GPS (12s timeout)
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
-
-          if (mode === "Office") {
-            const dist = calcDistanceMeters(lat, lon, OFFICE_LAT, OFFICE_LON);
-            if (dist > MAX_METERS) {
-              showMessage(`❌ ऑफिस से दूरी: ${Math.round(dist)}m (150m सीमा पार)`, "#dc2626");
-              speakHindi("आप ऑफिस सीमा से बाहर हैं। उपस्थिति दर्ज नहीं हो सकी।");
-              return;
-            }
+          verifyAndSendCoordinates(pos, punchType, mode, targetDetail);
+        },
+        (err) => {
+          // If User specifically Denied permission (Error Code 1)
+          if (err.code === 1) {
+            showMessage("❌ क्रोम में लोकेशन ब्लॉक है! URL बार में बाएँ तरफ 🔒/🎛️ आइकन दबाकर Location को Allow करें।", "#dc2626");
+            speakHindi("क्रोम ब्राउज़र में लोकेशन अनुमति बंद है। कृपया अनुमति दें।");
+            return;
           }
 
-          sendPunchPayload(punchType, mode, lat, lon, mode === "Site" ? siteVal : wfhVal);
+          // Stage 2: Fallback to Cellular/Wi-Fi positioning (Indoor Office Friendly)
+          navigator.geolocation.getCurrentPosition(
+            (posFallback) => {
+              verifyAndSendCoordinates(posFallback, punchType, mode, targetDetail);
+            },
+            (errFinal) => {
+              if (mode === "Office") {
+                showMessage("❌ जीपीएस सिग्नल नहीं मिला। कृपया खुली जगह में जाएं या फोन रीस्टार्ट करें।", "#dc2626");
+                speakHindi("जीपीएस सिग्नल नहीं मिला। Office मोड के लिए स्थान अनिवार्य है।");
+              } else {
+                // Allow Site/WFH without hardware lock if device GPS fails
+                sendPunchPayload(punchType, mode, null, null, targetDetail);
+              }
+            },
+            { enableHighAccuracy: false, timeout: 8000, maximumAge: 30000 }
+          );
         },
-        () => {
-          if (mode === "Office") {
-            showMessage("❌ लोकेशन अनुमति नहीं मिली। Office मोड के लिए GPS ऑन करें।", "#dc2626");
-          } else {
-            sendPunchPayload(punchType, mode, null, null, mode === "Site" ? siteVal : wfhVal);
-          }
-        },
-        { enableHighAccuracy: true, timeout: 8000 }
+        { enableHighAccuracy: true, timeout: 12000, maximumAge: 10000 }
       );
+    }
+
+    function verifyAndSendCoordinates(pos, punchType, mode, detail) {
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+
+      if (mode === "Office") {
+        const dist = calcDistanceMeters(lat, lon, OFFICE_LAT, OFFICE_LON);
+        if (dist > MAX_METERS) {
+          showMessage(`❌ ऑफिस से दूरी: ${Math.round(dist)}m (150m सीमा पार)`, "#dc2626");
+          speakHindi("आप ऑफिस सीमा से बाहर हैं। उपस्थिति दर्ज नहीं हो सकी।");
+          return;
+        }
+      }
+
+      sendPunchPayload(punchType, mode, lat, lon, detail);
     }
 
     function sendPunchPayload(punchType, mode, lat, lon, detail) {
