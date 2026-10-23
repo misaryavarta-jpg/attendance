@@ -54,7 +54,7 @@
     .user-pill .name { font-size: 17px; font-weight: 800; color: #0f172a; margin-top: 2px; }
     .user-pill .phone { font-size: 12px; color: #64748b; }
 
-    /* In-App Live Leave Status Badge */
+    /* 1. In-App Live Status Badge (Right Below Employee Name) */
     #leaveStatusBadge {
       display: none;
       padding: 10px 12px;
@@ -68,6 +68,19 @@
     .badge-approved { background: #dcfce7; color: #15803d; border: 1.5px solid #86efac; }
     .badge-rejected { background: #fee2e2; color: #991b1b; border: 1.5px solid #fca5a5; }
     .badge-pending { background: #fef3c7; color: #92400e; border: 1.5px solid #fde047; }
+
+    /* Live Shift Timer Card */
+    #shiftTimerBox {
+      display: none;
+      background: #0f172a;
+      color: #fff;
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+      text-align: left;
+    }
+    #shiftTimerBox .lbl { font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; }
+    #shiftTimerBox .val { font-size: 20px; font-weight: 900; color: #38bdf8; font-family: monospace; margin-top: 2px; }
 
     /* Sunday Banner */
     #sundayAlert {
@@ -193,8 +206,13 @@
         <div class="title">प्रमाणित कर्मचारी (Verified)</div>
         <div class="name" id="empDisplayName">लोड हो रहा है...</div>
         <div class="phone" id="empDisplayPhone"></div>
-        <!-- Live Leave Status Badge Right Below Name -->
         <div id="leaveStatusBadge"></div>
+      </div>
+
+      <!-- Live Shift Timer -->
+      <div id="shiftTimerBox">
+        <div class="lbl">⏱️ Active Shift Duration (Target: 8.5h)</div>
+        <div class="val" id="shiftTimerText">00h : 00m : 00s</div>
       </div>
 
       <div id="sundayAlert">🔴 आज रविवार है (साप्ताहिक अवकाश)। क्लॉक-इन बंद है।</div>
@@ -289,9 +307,6 @@
   </div>
 
   <script>
-    // -------------------------------------------------------------
-    // CONFIGURATION & SERVICE WORKER
-    // -------------------------------------------------------------
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyAX7DXc4kJe197JTE23BbDCwOHJzFcXdb2WwItet4OW1ILEZJHVSDjmTkKaomQaQ51/exec";
     const OFFICE_LAT = 18.6870094;
     const OFFICE_LON = 73.8056477;
@@ -300,14 +315,12 @@
     let currentEmp = { name: "", phone: "" };
     let calDate = new Date();
     let isSubmittingPunch = false;
+    let shiftTimerInterval = null;
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(console.error);
     }
 
-    // -------------------------------------------------------------
-    // ROBOTIC HINDI VOICE
-    // -------------------------------------------------------------
     function speakHindi(text) {
       if (!('speechSynthesis' in window)) return;
       window.speechSynthesis.cancel();
@@ -323,9 +336,27 @@
       window.speechSynthesis.onvoiceschanged = () => {};
     }
 
-    // -------------------------------------------------------------
-    // INITIALIZATION & DIRECTORY LOOKUP
-    // -------------------------------------------------------------
+    function startShiftTimer(isoTime) {
+      if (!isoTime) return;
+      const startMs = new Date(isoTime).getTime();
+      if (isNaN(startMs)) return;
+      document.getElementById("shiftTimerBox").style.display = "block";
+      if (shiftTimerInterval) clearInterval(shiftTimerInterval);
+      shiftTimerInterval = setInterval(() => {
+        const diff = Math.max(0, Date.now() - startMs);
+        const totSecs = Math.floor(diff / 1000);
+        const h = String(Math.floor(totSecs / 3600)).padStart(2, '0');
+        const m = String(Math.floor((totSecs % 3600) / 60)).padStart(2, '0');
+        const s = String(totSecs % 60).padStart(2, '0');
+        document.getElementById("shiftTimerText").innerText = `${h}h : ${m}m : ${s}s`;
+      }, 1000);
+    }
+
+    function stopShiftTimer() {
+      if (shiftTimerInterval) clearInterval(shiftTimerInterval);
+      document.getElementById("shiftTimerBox").style.display = "none";
+    }
+
     window.onload = function() {
       const today = new Date();
       const isSunday = today.getDay() === 0;
@@ -383,7 +414,6 @@
       document.getElementById("empDisplayName").innerText = currentEmp.name;
       document.getElementById("empDisplayPhone").innerText = "+91 " + phone;
 
-      // Render cached badge immediately while fetching fresh status
       const cachedBadgeHtml = localStorage.getItem("aa_badge_html");
       const cachedBadgeCls = localStorage.getItem("aa_badge_cls");
       if (cachedBadgeHtml) {
@@ -399,7 +429,6 @@
         speakHindi(`नमस्ते ${currentEmp.name} जी! आज रविवार का साप्ताहिक अवकाश है।`);
       }
 
-      // Check current duty status & latest leave request
       fetch(`${SCRIPT_URL}?action=checkStatus&phone=${phone}&name=${encodeURIComponent(currentEmp.name)}`)
         .then(r => r.json())
         .then(res => {
@@ -408,12 +437,12 @@
             localStorage.setItem("aa_user_name", res.employeeName);
             document.getElementById("empDisplayName").innerText = res.employeeName;
           }
-          syncStatusUI(res.status, res.latestLeave, isSunday);
+          syncStatusUI(res.status, res.latestLeave, res.clockInTime, isSunday);
         })
-        .catch(() => syncStatusUI("NEEDS_CLOCK_IN", null, isSunday));
+        .catch(() => syncStatusUI("NEEDS_CLOCK_IN", null, null, isSunday));
     }
 
-    function syncStatusUI(status, leaveInfo, isSunday) {
+    function syncStatusUI(status, leaveInfo, clockInTime, isSunday) {
       const btnIn = document.getElementById("btnClockIn");
       const btnOut = document.getElementById("btnClockOut");
 
@@ -421,23 +450,26 @@
         if (status === "WORKING" || status === "ON_BREAK") {
           btnIn.style.display = "none";
           btnOut.style.display = "flex";
-          showMessage("ℹ️ आप कार्यरत हैं (Active Duty)।", "#2563eb");
+          if (clockInTime) startShiftTimer(clockInTime);
+          showMessage("ℹ️ आप कार्यरत हैं (Active Duty)। शाम को प्रस्थान के समय Clock Out अवश्य करें।", "#2563eb");
           speakHindi(`नमस्ते ${currentEmp.name} जी! आप अभी कार्यरत हैं। काम समाप्त होने पर क्लॉक आउट करें।`);
         } else if (status === "COMPLETED") {
           btnIn.style.display = "none";
           btnOut.style.display = "none";
+          stopShiftTimer();
           showMessage("✅ आज की उपस्थिति पूर्ण हो चुकी है।", "#059669");
           speakHindi(`नमस्ते ${currentEmp.name} जी! आपकी आज की उपस्थिति दर्ज हो चुकी है।`);
         } else {
           btnIn.style.display = "flex";
           btnOut.style.display = "none";
+          stopShiftTimer();
           const hr = new Date().getHours();
           const greet = hr < 12 ? "सुप्रभात" : "नमस्ते";
           speakHindi(`${greet} ${currentEmp.name} जी! आर्यावर्त पोर्टल में स्वागत है, कृपया उपस्थिति दर्ज करें।`);
         }
       }
 
-      // 1. In-App Live Status Badge right below employee name
+      // Live Status Badge right below name
       const badge = document.getElementById("leaveStatusBadge");
       if (leaveInfo && leaveInfo.status) {
         badge.style.display = "block";
@@ -467,9 +499,6 @@
       document.getElementById("wfhBox").style.display = (val === "WFH") ? "block" : "none";
     }
 
-    // -------------------------------------------------------------
-    // GEOFENCE & PUNCH LOGIC (WITH DUPLICATE-CLICK LOCK)
-    // -------------------------------------------------------------
     function calcDistanceMeters(lat1, lon1, lat2, lon2) {
       const R = 6371000;
       const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -508,7 +537,6 @@
 
       const targetDetail = (mode === "Site") ? siteVal : (mode === "WFH" ? wfhVal : "Office Regular");
 
-      // Stage 1: Try High-Accuracy Hardware GPS (12s timeout)
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           verifyAndSendCoordinates(pos, punchType, mode, targetDetail);
@@ -521,7 +549,6 @@
             return;
           }
 
-          // Stage 2: Fallback to Cellular/Wi-Fi positioning (Indoor Office Friendly)
           navigator.geolocation.getCurrentPosition(
             (posFallback) => {
               verifyAndSendCoordinates(posFallback, punchType, mode, targetDetail);
@@ -591,9 +618,6 @@
       });
     }
 
-    // -------------------------------------------------------------
-    // LEAVE MANAGEMENT
-    // -------------------------------------------------------------
     function openLeaveModal() { document.getElementById("leaveModal").style.display = "flex"; }
     function closeLeaveModal() { document.getElementById("leaveModal").style.display = "none"; }
     function toggleLeaveDates(val) {
@@ -646,9 +670,6 @@
       });
     }
 
-    // -------------------------------------------------------------
-    // CALENDAR VIEW
-    // -------------------------------------------------------------
     function openCalendarModal() {
       document.getElementById("calendarModal").style.display = "flex";
       renderCalendar();
