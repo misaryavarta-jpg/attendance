@@ -24,15 +24,15 @@
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      padding: 14px 10px 30px 10px;
+      padding: 12px 10px 30px 10px;
       color: #1e293b;
     }
     .app-card {
       background: var(--card-bg);
       width: 100%;
-      max-width: 420px;
+      max-width: 425px;
       border-radius: 24px;
-      padding: 18px 16px 22px 16px;
+      padding: 16px 16px 22px 16px;
       box-shadow: 0 20px 45px rgba(0,0,0,0.45);
       text-align: center;
       position: relative;
@@ -61,10 +61,23 @@
     .gps-wait { background: #fef3c7; color: #92400e; border-color: #fde047; }
     .gps-far { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
 
-    .logo-container { width: 100%; margin-bottom: 6px; }
-    .company-logo { width: 100%; max-width: 195px; height: auto; object-fit: contain; }
+    /* Live Geofence Radar Strip */
+    .radar-strip {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 6px 10px;
+      margin-bottom: 10px;
+      text-align: left;
+    }
+    .radar-top { display: flex; justify-content: space-between; font-size: 10.5px; font-weight: 700; color: #475569; margin-bottom: 4px; }
+    .radar-bar-bg { background: #e2e8f0; height: 5px; border-radius: 4px; overflow: hidden; }
+    .radar-bar-fill { height: 100%; width: 0%; background: #10b981; transition: width 0.4s ease, background 0.4s ease; }
+
+    .logo-container { width: 100%; margin-bottom: 4px; }
+    .company-logo { width: 100%; max-width: 190px; height: auto; object-fit: contain; }
     h2 { font-size: 19.5px; font-weight: 800; color: #0f172a; }
-    p.sub { font-size: 12px; color: #64748b; margin-bottom: 12px; font-weight: 600; }
+    p.sub { font-size: 12px; color: #64748b; margin-bottom: 10px; font-weight: 600; }
 
     .user-pill {
       background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
@@ -118,6 +131,7 @@
     }
     #shiftTimerBox .lbl { font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; display: flex; justify-content: space-between; }
     #shiftTimerBox .val { font-size: 21px; font-weight: 900; color: #38bdf8; font-family: monospace; margin: 4px 0 6px 0; }
+    #shiftTimerBox .target-end { font-size: 11px; color: #a7f3d0; font-weight: 700; margin-top: 5px; display: flex; justify-content: space-between; }
     .prog-bg { background: #334155; height: 7px; border-radius: 6px; overflow: hidden; }
     .prog-fill { background: linear-gradient(90deg, #10b981, #38bdf8); height: 100%; width: 0%; transition: width 0.5s ease; }
 
@@ -212,11 +226,11 @@
     .modal-card {
       background: #fff;
       width: 93%;
-      max-width: 395px;
+      max-width: 400px;
       border-radius: 22px;
       padding: 18px;
       text-align: left;
-      max-height: 88vh;
+      max-height: 89vh;
       overflow-y: auto;
     }
     .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -274,7 +288,7 @@
     }
 
     /* Sumeet Singh Exclusive Manager Panel Styles */
-    .admin-section-title { font-size: 12px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; margin: 12px 0 6px 0; }
+    .admin-section-title { font-size: 11.5px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; margin: 12px 0 6px 0; }
     .admin-list-item {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
@@ -295,6 +309,8 @@
       color: #fff;
       cursor: pointer;
       margin-left: 4px;
+      text-decoration: none;
+      display: inline-block;
     }
   </style>
 </head>
@@ -304,6 +320,17 @@
     <div class="top-bar">
       <span id="gpsStatusPill" class="pill-mini gps-wait" onclick="preWarmGPS(true)">🛰️ GPS तैयार हो रहा है...</span>
       <button type="button" id="muteBtn" class="pill-mini" onclick="toggleMute()">🔊 Voice On</button>
+    </div>
+
+    <!-- Live Geofence Radar Meter -->
+    <div class="radar-strip" id="geofenceRadarBox">
+      <div class="radar-top">
+        <span id="radarDistText">📍 HO Geofence Lock (150m Limit)</span>
+        <span id="radarAccText">Accuracy: --</span>
+      </div>
+      <div class="radar-bar-bg">
+        <div class="radar-bar-fill" id="radarBarFill"></div>
+      </div>
     </div>
 
     <div class="logo-container">
@@ -336,7 +363,7 @@
         <div id="leaveStatusBadge"></div>
       </div>
 
-      <!-- Live Shift Timer -->
+      <!-- Live Shift Timer & Target Completion Calculator -->
       <div id="shiftTimerBox">
         <div class="lbl">
           <span>⏱️ Active Shift Duration</span>
@@ -344,6 +371,10 @@
         </div>
         <div class="val" id="shiftTimerText">00h : 00m : 00s</div>
         <div class="prog-bg"><div class="prog-fill" id="shiftProgFill"></div></div>
+        <div class="target-end">
+          <span id="shiftClockInLabel">🕒 In: --</span>
+          <span id="shiftTargetEndLabel">🎯 Target End: --</span>
+        </div>
       </div>
 
       <!-- Today's Verified Punches Timeline -->
@@ -380,7 +411,7 @@
 
       <div class="btn-stack" style="margin-top: 15px; border-top: 1.5px solid #f1f5f9; padding-top: 12px;">
         <button class="btn btn-leave" onclick="openLeaveModal()">📝 Apply Leave / Half Day</button>
-        <button class="btn btn-cal" onclick="openCalendarModal()">📅 My Attendance Calendar</button>
+        <button class="btn btn-cal" onclick="openCalendarModal()">📅 My Attendance Calendar & Passbook</button>
         <!-- Strictly visible ONLY to Manager Sumeet Singh (9766037466) -->
         <button class="btn btn-manager" id="btnManagerPanel" style="display: none;" onclick="openManagerModal()">👑 Manager Sumeet Singh Approval Center</button>
       </div>
@@ -450,7 +481,11 @@
       <div class="cal-grid" id="calendarBody"></div>
       <div id="calDayDetailBox"></div>
 
-      <p style="font-size:10.5px; color:#64748b; font-weight:700; margin-top:10px; text-align:center;">
+      <button type="button" class="btn btn-login" style="margin-top:10px; padding:10px; font-size:13px;" onclick="downloadMonthlyPassbookSlip()">
+        🖨️ Download / Print Monthly Passbook Slip
+      </button>
+
+      <p style="font-size:10.5px; color:#64748b; font-weight:700; margin-top:8px; text-align:center;">
         🟢 उपस्थित | 🟡 छुट्टी (Approved Leave) | 🟣 त्यौहार | 🔴 रविवार
       </p>
     </div>
@@ -467,11 +502,18 @@
         🔒 केवल मैनेजर <b>Sumeet Singh</b> छुट्टी स्वीकृत या अस्वीकृत कर सकते हैं।
       </p>
 
+      <button type="button" class="btn btn-clockin" id="btnSyncSheetsMgr" style="padding:9px; font-size:12.5px; margin-bottom:10px;" onclick="triggerSheetRepairAsManager()">
+        🔧 Sync, Deduplicate & Repair All 10 Sheets Now
+      </button>
+
       <div class="admin-section-title">📋 Pending Leave Requests (Sumeet Sir Only)</div>
       <div id="managerPendingLeaves">लोड हो रहा है...</div>
 
       <div class="admin-section-title">🏢 Today's Live Floor Attendance</div>
       <div id="managerFloorList">लोड हो रहा है...</div>
+
+      <div class="admin-section-title">⚠️ Unmarked Staff Today (1-Tap WhatsApp Ping)</div>
+      <div id="managerMissingList">लोड हो रहा है...</div>
     </div>
   </div>
 
@@ -491,12 +533,12 @@
     let shiftTimerInterval = null;
     let isMuted = localStorage.getItem("aa_muted") === "true";
 
-    let warmGPS = { lat: null, lon: null, ts: 0 };
+    let warmGPS = { lat: null, lon: null, acc: null, ts: 0 };
     let gpsWatchId = null;
 
     let calendarCache = {};
     try {
-      calendarCache = JSON.parse(localStorage.getItem("aa_cal_cache_v4") || "{}");
+      calendarCache = JSON.parse(localStorage.getItem("aa_cal_cache_v5") || "{}");
     } catch (e) { calendarCache = {}; }
 
     if ('serviceWorker' in navigator) {
@@ -541,7 +583,6 @@
           if (attempt < retries) {
             await new Promise(r => setTimeout(r, 900 * attempt));
           } else {
-            // Final fallback: if write action (logPunch / submitLeave), fire no-cors so data still reaches Google Sheet!
             if (paramsObj.action === "logPunch" || paramsObj.action === "submitLeave") {
               try {
                 await fetch(targetUrl, { method: "GET", mode: "no-cors" });
@@ -585,7 +626,7 @@
     }
 
     // -------------------------------------------------------------
-    // PRE-WARMED BACKGROUND GPS ENGINE
+    // PRE-WARMED BACKGROUND GPS & LIVE GEOFENCE RADAR
     // -------------------------------------------------------------
     function preWarmGPS(manualTap = false) {
       if (!('geolocation' in navigator)) return;
@@ -620,15 +661,26 @@
     }
 
     function updateWarmGPS(pos) {
-      warmGPS = { lat: pos.coords.latitude, lon: pos.coords.longitude, ts: Date.now() };
+      const acc = Math.round(pos.coords.accuracy || 0);
+      warmGPS = { lat: pos.coords.latitude, lon: pos.coords.longitude, acc: acc, ts: Date.now() };
       const dist = Math.round(calcDistanceMeters(warmGPS.lat, warmGPS.lon, OFFICE_LAT, OFFICE_LON));
       const pill = document.getElementById("gpsStatusPill");
+      const radarFill = document.getElementById("radarBarFill");
+
+      document.getElementById("radarAccText").innerText = `GPS Accuracy: ±${acc}m`;
+      const ratio = Math.min(100, (dist / MAX_METERS) * 100);
+      radarFill.style.width = `${ratio}%`;
+
       if (dist <= MAX_METERS) {
         pill.className = "pill-mini gps-ready";
         pill.innerText = `📍 ऑफिस दूरी: ${dist}m (GPS तैयार ✅)`;
+        document.getElementById("radarDistText").innerText = `✅ Inside HO Zone (${dist}m / 150m)`;
+        radarFill.style.background = "#10b981";
       } else {
         pill.className = "pill-mini gps-far";
         pill.innerText = `📍 ऑफिस से ${dist}m दूर`;
+        document.getElementById("radarDistText").innerText = `⚠️ Outside HO 150m Zone (${dist}m away)`;
+        radarFill.style.background = "#ef4444";
       }
     }
 
@@ -640,13 +692,27 @@
       try { q = JSON.parse(localStorage.getItem("aa_offline_queue") || "[]"); } catch (e) {}
       q.push(paramsObj);
       localStorage.setItem("aa_offline_queue", JSON.stringify(q));
+      updateQueueBadge();
+    }
+
+    function updateQueueBadge() {
+      let q = [];
+      try { q = JSON.parse(localStorage.getItem("aa_offline_queue") || "[]"); } catch (e) {}
+      const syncEl = document.getElementById("syncIndicator");
+      if (q.length > 0) {
+        syncEl.style.color = "#d97706";
+        syncEl.innerText = `📦 ${q.length} Queued`;
+      } else {
+        syncEl.style.color = "#059669";
+        syncEl.innerText = "⚡ Instant Ready";
+      }
     }
 
     async function flushOfflineQueue() {
       if (!navigator.onLine) return;
       let q = [];
       try { q = JSON.parse(localStorage.getItem("aa_offline_queue") || "[]"); } catch (e) {}
-      if (!q.length) return;
+      if (!q.length) { updateQueueBadge(); return; }
 
       localStorage.removeItem("aa_offline_queue");
       for (const item of q) {
@@ -656,11 +722,12 @@
           queueOfflineAction(item);
         }
       }
+      updateQueueBadge();
     }
     window.addEventListener("online", flushOfflineQueue);
 
     // -------------------------------------------------------------
-    // LIVE SHIFT TIMER
+    // LIVE SHIFT TIMER & TARGET COMPLETION CALCULATOR
     // -------------------------------------------------------------
     function startShiftTimer(isoTime) {
       if (!isoTime) return;
@@ -668,6 +735,12 @@
       if (isNaN(startMs)) return;
       document.getElementById("shiftTimerBox").style.display = "block";
       if (shiftTimerInterval) clearInterval(shiftTimerInterval);
+
+      const inDate = new Date(startMs);
+      const targetEndDate = new Date(startMs + 8.5 * 3600 * 1000);
+      const fmtTime = (d) => d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+      document.getElementById("shiftClockInLabel").innerText = `🕒 In: ${fmtTime(inDate)}`;
+      document.getElementById("shiftTargetEndLabel").innerText = `🎯 8.5h Target: ${fmtTime(targetEndDate)}`;
 
       const updateTick = () => {
         const diff = Math.max(0, Date.now() - startMs);
@@ -797,7 +870,7 @@
         buildCalendarDOM(calDate.getFullYear(), calDate.getMonth(), calendarCache[curKey]);
       }
 
-      // 4. SINGLE UNIFIED BACKGROUND SYNC (Zero False Errors)
+      // 4. SINGLE UNIFIED BACKGROUND SYNC
       document.getElementById("syncIndicator").innerText = "🔄 Syncing...";
       ultraReliableApiCall({
         action: "checkStatus",
@@ -807,7 +880,7 @@
         year: calDate.getFullYear()
       }, 3)
         .then(res => {
-          document.getElementById("syncIndicator").innerText = "⚡ Instant Ready";
+          updateQueueBadge();
           if (res.employeeName) {
             currentEmp.name = res.employeeName;
             localStorage.setItem("aa_user_name", res.employeeName);
@@ -826,10 +899,9 @@
               history: res.calendarHistory,
               summary: res.monthSummary || null
             };
-            localStorage.setItem("aa_cal_cache_v4", JSON.stringify(calendarCache));
+            localStorage.setItem("aa_cal_cache_v5", JSON.stringify(calendarCache));
             buildCalendarDOM(calDate.getFullYear(), calDate.getMonth(), calendarCache[curKey]);
 
-            // Show Today's Verified Punch Timeline on Main Card
             const todayEntry = res.calendarHistory[todayIST];
             const tlBox = document.getElementById("todayTimelineBox");
             if (todayEntry && todayEntry.punches && todayEntry.punches.length > 0) {
@@ -1041,7 +1113,6 @@
       const nowIso = new Date().toISOString();
       const todayIST = getISTDateString();
 
-      // Instant Optimistic UI Transition
       if (punchType === "Clock In" || punchType === "End Break") {
         localStorage.setItem("aa_duty_date", todayIST);
         localStorage.setItem("aa_duty_status", "WORKING");
@@ -1153,7 +1224,7 @@
     }
 
     // -------------------------------------------------------------
-    // 0ms INSTANT CALENDAR & PASSBOOK ENGINE
+    // 0ms INSTANT CALENDAR & PRINTABLE PASSBOOK ENGINE
     // -------------------------------------------------------------
     function openCalendarModal() {
       triggerHaptic(15);
@@ -1211,7 +1282,7 @@
             history: data.history || {},
             summary: data.monthSummary || null
           };
-          localStorage.setItem("aa_cal_cache_v4", JSON.stringify(calendarCache));
+          localStorage.setItem("aa_cal_cache_v5", JSON.stringify(calendarCache));
           if (updateUI && calDate.getFullYear() === year && calDate.getMonth() === month) {
             buildCalendarDOM(year, month, calendarCache[key]);
           }
@@ -1304,6 +1375,47 @@
       }
     }
 
+    // Generate Official Printable Monthly Attendance & Payroll Passbook Slip
+    function downloadMonthlyPassbookSlip() {
+      triggerHaptic(20);
+      const year = calDate.getFullYear();
+      const month = calDate.getMonth();
+      const key = `${year}-${month + 1}`;
+      const entry = calendarCache[key] || { history: {}, summary: {} };
+      const hist = entry.history || {};
+      const title = document.getElementById("calMonthTitle").innerText;
+
+      let rowsHtml = "";
+      const totalDays = new Date(year, month + 1, 0).getDate();
+      for (let d = 1; d <= totalDays; d++) {
+        const dKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const isSun = new Date(year, month, d).getDay() === 0;
+        const info = hist[dKey];
+        let statusStr = isSun ? "Sunday (Weekly Off)" : "Absent / Unmarked";
+        if (info) {
+          if (info.isHoliday) statusStr = info.note || "Holiday";
+          else if (info.isLeave) statusStr = info.note || "Full Day Leave (Approved)";
+          else statusStr = info.punches.join(" | ");
+        }
+        rowsHtml += `<tr><td style="padding:6px 10px;border:1px solid #cbd5e1;">${dKey}</td><td style="padding:6px 10px;border:1px solid #cbd5e1;">${statusStr}</td></tr>`;
+      }
+
+      const w = window.open("", "_blank");
+      if (!w) return alert("कृपया पॉप-अप अनुमति (Pop-up) ऑन करें।");
+      w.document.write(`
+        <html><head><title>Attendance Passbook - ${currentEmp.name}</title>
+        <style>body{font-family:Arial,sans-serif;padding:24px;color:#0f172a;} table{width:100%;border-collapse:collapse;margin-top:14px;font-size:12px;} th{background:#1e3a8a;color:#fff;padding:8px;text-align:left;}</style>
+        </head><body>
+        <h2 style="color:#1e3a8a;margin:0;">Aryavarta Automation - Head Office Chikhali</h2>
+        <p style="margin:4px 0 12px 0;font-size:13px;color:#475569;">Official Monthly Attendance & Payroll Passbook (${title})</p>
+        <p style="font-size:13px;"><b>Employee:</b> ${currentEmp.name} (+91 ${currentEmp.phone}) &nbsp;|&nbsp; <b>Present:</b> ${document.getElementById("kpiPresent").innerText} &nbsp;|&nbsp; <b>Payable:</b> ${document.getElementById("kpiPayable").innerText} &nbsp;|&nbsp; <b>Hours:</b> ${document.getElementById("kpiHours").innerText} &nbsp;|&nbsp; <b>Leaves:</b> ${document.getElementById("kpiLeave").innerText}</p>
+        <table><thead><tr><th>Date</th><th>Shift / Attendance Record</th></tr></thead><tbody>${rowsHtml}</tbody></table>
+        <script>window.onload = function(){ window.print(); }<\/script>
+        </body></html>
+      `);
+      w.document.close();
+    }
+
     // -------------------------------------------------------------
     // EXCLUSIVE MANAGER SUMEET SINGH APPROVAL CENTER
     // -------------------------------------------------------------
@@ -1329,6 +1441,7 @@
     function loadManagerOverview() {
       document.getElementById("managerPendingLeaves").innerHTML = "🔄 लोड हो रहा है...";
       document.getElementById("managerFloorList").innerHTML = "🔄 लोड हो रहा है...";
+      document.getElementById("managerMissingList").innerHTML = "🔄 लोड हो रहा है...";
 
       ultraReliableApiCall({
         action: "getAdminOverview",
@@ -1383,6 +1496,23 @@
               fBox.appendChild(item);
             });
           }
+
+          const mBox = document.getElementById("managerMissingList");
+          if (!res.missingList || res.missingList.length === 0) {
+            mBox.innerHTML = "<div class='admin-list-item'>🎉 सभी कर्मचारियों की उपस्थिति दर्ज हो चुकी है!</div>";
+          } else {
+            mBox.innerHTML = "";
+            res.missingList.forEach(mEmp => {
+              const waMsg = encodeURIComponent(`नमस्ते ${mEmp.name} जी, आपकी आज की आर्यावर्त उपस्थिति (Clock-In) अभी तक दर्ज नहीं हुई है। कृपया पोर्टल खोलकर उपस्थिति दर्ज करें: https://misaryavarta-jpg.github.io/attendance/`);
+              const item = document.createElement("div");
+              item.className = "admin-list-item";
+              item.innerHTML = `
+                <div><b>${mEmp.name}</b><br><span style="color:#64748b;font-size:11px;">📱 +91 ${mEmp.phone}</span></div>
+                <a class="mini-act-btn" style="background:#10b981;" href="https://wa.me/91${mEmp.phone}?text=${waMsg}" target="_blank">💬 WhatsApp Ping</a>
+              `;
+              mBox.appendChild(item);
+            });
+          }
         })
         .catch(() => {
           document.getElementById("managerPendingLeaves").innerHTML = "⚠️ पुनः लोड करने के लिए पैनल दोबारा खोलें।";
@@ -1411,6 +1541,25 @@
           loadManagerOverview();
         })
         .catch(() => alert("सर्वर अपडेट हो रहा है, कृपया 2 सेकंड प्रतीक्षा करें।"));
+    }
+
+    function triggerSheetRepairAsManager() {
+      triggerHaptic(30);
+      const btn = document.getElementById("btnSyncSheetsMgr");
+      btn.disabled = true;
+      btn.innerText = "🔄 सभी 10 शीट्स सिंक हो रही हैं...";
+
+      ultraReliableApiCall({ action: "repairSheets" }, 2)
+        .then(res => {
+          btn.disabled = false;
+          btn.innerText = "✅ All 10 Sheets Repaired & Synced!";
+          alert("✅ " + (res.message || "सभी 10 Google Sheet टैब्स सफलतापूर्वक अपडेट हो चुके हैं!"));
+          loadManagerOverview();
+        })
+        .catch(() => {
+          btn.disabled = false;
+          btn.innerText = "🔧 Sync, Deduplicate & Repair All 10 Sheets Now";
+        });
     }
 
     function showMessage(msg, color) {
