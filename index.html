@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e3a8a">
   <title>Aryavarta Attendance</title>
   <style>
     :root {
@@ -52,14 +54,14 @@
     .user-pill .name { font-size: 17px; font-weight: 800; color: #0f172a; margin-top: 2px; }
     .user-pill .phone { font-size: 12px; color: #64748b; }
 
-    /* Leave Status Badge */
+    /* In-App Live Leave Status Badge */
     #leaveStatusBadge {
       display: none;
       padding: 10px 12px;
-      border-radius: 12px;
+      border-radius: 10px;
       font-size: 12.5px;
       font-weight: 700;
-      margin-bottom: 14px;
+      margin-top: 10px;
       text-align: left;
       line-height: 1.4;
     }
@@ -111,7 +113,7 @@
       transition: transform 0.1s ease;
     }
     .btn:active { transform: scale(0.98); }
-    .btn:disabled { background: #94a3b8 !important; cursor: not-allowed; }
+    .btn:disabled { background: #94a3b8 !important; cursor: not-allowed; opacity: 0.75; }
     .btn-clockin { background: linear-gradient(135deg, #10b981, #047857); }
     .btn-clockout { background: linear-gradient(135deg, #ef4444, #b91c1c); }
     .btn-leave { background: linear-gradient(135deg, #f59e0b, #b45309); }
@@ -182,7 +184,7 @@
     <div id="loginView" style="display: none;">
       <label for="regPhone">अपना 10 अंकों का मोबाइल नंबर दर्ज करें:</label>
       <input type="tel" id="regPhone" placeholder="Mobile Number" maxlength="10">
-      <button class="btn btn-login" onclick="verifyAndLogin()">पोर्टल शुरू करें 🚀</button>
+      <button class="btn btn-login" id="btnLogin" onclick="verifyAndLogin()">पोर्टल शुरू करें 🚀</button>
     </div>
 
     <!-- Active Form View -->
@@ -191,9 +193,10 @@
         <div class="title">प्रमाणित कर्मचारी (Verified)</div>
         <div class="name" id="empDisplayName">लोड हो रहा है...</div>
         <div class="phone" id="empDisplayPhone"></div>
+        <!-- Live Leave Status Badge Right Below Name -->
+        <div id="leaveStatusBadge"></div>
       </div>
 
-      <div id="leaveStatusBadge"></div>
       <div id="sundayAlert">🔴 आज रविवार है (साप्ताहिक अवकाश)। क्लॉक-इन बंद है।</div>
 
       <div id="dutyControls">
@@ -224,7 +227,7 @@
 
       <div class="btn-stack" style="margin-top: 18px; border-top: 1.5px solid #f1f5f9; padding-top: 12px;">
         <button class="btn btn-leave" onclick="openLeaveModal()">📝 Apply Leave / Half Day</button>
-        <button class="btn btn-cal" onclick="openCalendarModal()">📅 My Calendar</button>
+        <button class="btn btn-cal" onclick="openCalendarModal()">📅 My Attendance Calendar</button>
       </div>
     </div>
   </div>
@@ -280,14 +283,14 @@
       </div>
       <div class="cal-grid" id="calendarBody"></div>
       <p style="font-size:11px; color:#64748b; font-weight:700; margin-top:10px;">
-        🟢 उपस्थित | 🟡 स्वीकृत अवकाश | 🔴 रविवार
+        🟢 उपस्थित | 🟡 छुट्टी / Approved Leave | 🔴 रविवार
       </p>
     </div>
   </div>
 
   <script>
     // -------------------------------------------------------------
-    // CONFIGURATION
+    // CONFIGURATION & SERVICE WORKER
     // -------------------------------------------------------------
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyAX7DXc4kJe197JTE23BbDCwOHJzFcXdb2WwItet4OW1ILEZJHVSDjmTkKaomQaQ51/exec";
     const OFFICE_LAT = 18.6870094;
@@ -296,6 +299,11 @@
 
     let currentEmp = { name: "", phone: "" };
     let calDate = new Date();
+    let isSubmittingPunch = false;
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(console.error);
+    }
 
     // -------------------------------------------------------------
     // ROBOTIC HINDI VOICE
@@ -342,10 +350,14 @@
       const phone = document.getElementById("regPhone").value.replace(/\D/g, '').slice(-10);
       if (phone.length !== 10) return alert("कृपया 10 अंकों का वैध मोबाइल नंबर दर्ज करें।");
 
+      const btn = document.getElementById("btnLogin");
+      btn.disabled = true;
       showMessage("प्रमाणीकरण हो रहा है...", "#2563eb");
+
       fetch(`${SCRIPT_URL}?action=verifyEmployee&phone=${phone}`)
         .then(r => r.json())
         .then(res => {
+          btn.disabled = false;
           if (res.success) {
             localStorage.setItem("aa_user_phone", phone);
             localStorage.setItem("aa_user_name", res.employee.name);
@@ -355,7 +367,10 @@
             document.getElementById("statusMessage").innerHTML = "";
           }
         })
-        .catch(() => alert("सर्वर से संपर्क नहीं हो सका।"));
+        .catch(() => {
+          btn.disabled = false;
+          alert("सर्वर से संपर्क नहीं हो सका। कृपया पुनः प्रयास करें।");
+        });
     }
 
     function loadEmployeeSession(phone, isSunday) {
@@ -368,60 +383,82 @@
       document.getElementById("empDisplayName").innerText = currentEmp.name;
       document.getElementById("empDisplayPhone").innerText = "+91 " + phone;
 
+      // Render cached badge immediately while fetching fresh status
+      const cachedBadgeHtml = localStorage.getItem("aa_badge_html");
+      const cachedBadgeCls = localStorage.getItem("aa_badge_cls");
+      if (cachedBadgeHtml) {
+        const badge = document.getElementById("leaveStatusBadge");
+        badge.style.display = "block";
+        badge.className = cachedBadgeCls || "badge-pending";
+        badge.innerHTML = cachedBadgeHtml;
+      }
+
       if (isSunday) {
         document.getElementById("sundayAlert").style.display = "block";
         document.getElementById("dutyControls").style.display = "none";
         speakHindi(`नमस्ते ${currentEmp.name} जी! आज रविवार का साप्ताहिक अवकाश है।`);
-        return;
       }
 
-      // Check current duty status
-      fetch(`${SCRIPT_URL}?action=checkStatus&phone=${phone}`)
+      // Check current duty status & latest leave request
+      fetch(`${SCRIPT_URL}?action=checkStatus&phone=${phone}&name=${encodeURIComponent(currentEmp.name)}`)
         .then(r => r.json())
         .then(res => {
-          syncStatusUI(res.status, res.latestLeave);
+          if (res.employeeName) {
+            currentEmp.name = res.employeeName;
+            localStorage.setItem("aa_user_name", res.employeeName);
+            document.getElementById("empDisplayName").innerText = res.employeeName;
+          }
+          syncStatusUI(res.status, res.latestLeave, isSunday);
         })
-        .catch(() => syncStatusUI("NEEDS_CLOCK_IN", null));
+        .catch(() => syncStatusUI("NEEDS_CLOCK_IN", null, isSunday));
     }
 
-    function syncStatusUI(status, leaveInfo) {
+    function syncStatusUI(status, leaveInfo, isSunday) {
       const btnIn = document.getElementById("btnClockIn");
       const btnOut = document.getElementById("btnClockOut");
 
-      if (status === "WORKING") {
-        btnIn.style.display = "none";
-        btnOut.style.display = "block";
-        showMessage("ℹ️ आप कार्यरत हैं (Active Duty)।", "#2563eb");
-        speakHindi(`नमस्ते ${currentEmp.name} जी! आप अभी कार्यरत हैं। काम समाप्त होने पर क्लॉक आउट करें।`);
-      } else if (status === "COMPLETED") {
-        btnIn.style.display = "none";
-        btnOut.style.display = "none";
-        showMessage("✅ आज की उपस्थिति पूर्ण हो चुकी है।", "#059669");
-        speakHindi(`नमस्ते ${currentEmp.name} जी! आपकी आज की उपस्थिति दर्ज हो चुकी है।`);
-      } else {
-        btnIn.style.display = "block";
-        btnOut.style.display = "none";
-        const hr = new Date().getHours();
-        const greet = hr < 12 ? "सुप्रभात" : "नमस्ते";
-        speakHindi(`${greet} ${currentEmp.name} जी! आर्यावर्त पोर्टल में स्वागत है, कृपया उपस्थिति दर्ज करें।`);
+      if (!isSunday) {
+        if (status === "WORKING" || status === "ON_BREAK") {
+          btnIn.style.display = "none";
+          btnOut.style.display = "flex";
+          showMessage("ℹ️ आप कार्यरत हैं (Active Duty)।", "#2563eb");
+          speakHindi(`नमस्ते ${currentEmp.name} जी! आप अभी कार्यरत हैं। काम समाप्त होने पर क्लॉक आउट करें।`);
+        } else if (status === "COMPLETED") {
+          btnIn.style.display = "none";
+          btnOut.style.display = "none";
+          showMessage("✅ आज की उपस्थिति पूर्ण हो चुकी है।", "#059669");
+          speakHindi(`नमस्ते ${currentEmp.name} जी! आपकी आज की उपस्थिति दर्ज हो चुकी है।`);
+        } else {
+          btnIn.style.display = "flex";
+          btnOut.style.display = "none";
+          const hr = new Date().getHours();
+          const greet = hr < 12 ? "सुप्रभात" : "नमस्ते";
+          speakHindi(`${greet} ${currentEmp.name} जी! आर्यावर्त पोर्टल में स्वागत है, कृपया उपस्थिति दर्ज करें।`);
+        }
       }
 
-      // Display leave status badge
+      // 1. In-App Live Status Badge right below employee name
       const badge = document.getElementById("leaveStatusBadge");
       if (leaveInfo && leaveInfo.status) {
         badge.style.display = "block";
         const st = leaveInfo.status.toLowerCase();
-        const dRange = leaveInfo.startDate === leaveInfo.endDate ? leaveInfo.startDate : `${leaveInfo.startDate} to ${leaveInfo.endDate}`;
-        if (st === "approved") {
+        const dRange = leaveInfo.dates || (leaveInfo.startDate === leaveInfo.endDate ? leaveInfo.startDate : `${leaveInfo.startDate} to ${leaveInfo.endDate}`);
+
+        if (st.includes("approved")) {
           badge.className = "badge-approved";
-          badge.innerHTML = `🟢 ${dRange} की छुट्टी स्वीकृत (Approved) हो चुकी है।`;
-        } else if (st === "rejected") {
+          badge.innerHTML = `🟢 Leave Request for <b>${dRange}</b> has been APPROVED by Sumeet Singh`;
+        } else if (st.includes("rejected")) {
           badge.className = "badge-rejected";
-          badge.innerHTML = `🔴 ${dRange} की छुट्टी अस्वीकृत (Rejected) कर दी गई है।`;
+          badge.innerHTML = `🔴 Leave Request for <b>${dRange}</b> was REJECTED by Manager`;
         } else {
           badge.className = "badge-pending";
-          badge.innerHTML = `⏳ ${dRange} की छुट्टी अनुमोदन के लिए लंबित (Pending) है।`;
+          badge.innerHTML = `⏳ Leave Request for <b>${dRange}</b> is PENDING Manager Approval`;
         }
+        localStorage.setItem("aa_badge_html", badge.innerHTML);
+        localStorage.setItem("aa_badge_cls", badge.className);
+      } else {
+        badge.style.display = "none";
+        localStorage.removeItem("aa_badge_html");
       }
     }
 
@@ -431,7 +468,7 @@
     }
 
     // -------------------------------------------------------------
-    // GEOFENCE & PUNCH LOGIC
+    // GEOFENCE & PUNCH LOGIC (WITH DUPLICATE-CLICK LOCK)
     // -------------------------------------------------------------
     function calcDistanceMeters(lat1, lon1, lat2, lon2) {
       const R = 6371000;
@@ -443,7 +480,15 @@
       return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
     }
 
+    function setPunchButtonsDisabled(disabled) {
+      isSubmittingPunch = disabled;
+      document.getElementById("btnClockIn").disabled = disabled;
+      document.getElementById("btnClockOut").disabled = disabled;
+    }
+
     function handlePunch(punchType) {
+      if (isSubmittingPunch) return;
+
       const mode = document.getElementById("workMode").value;
       const siteVal = document.getElementById("siteName").value.trim();
       const wfhVal = document.getElementById("wfhReason").value.trim();
@@ -457,6 +502,7 @@
         return document.getElementById("wfhReason").focus();
       }
 
+      setPunchButtonsDisabled(true);
       showMessage("🛰️ GPS स्थान सत्यापित किया जा रहा है...", "#d97706");
       speakHindi("स्थान सत्यापित हो रहा है, कृपया प्रतीक्षा करें।");
 
@@ -468,8 +514,8 @@
           verifyAndSendCoordinates(pos, punchType, mode, targetDetail);
         },
         (err) => {
-          // If User specifically Denied permission (Error Code 1)
           if (err.code === 1) {
+            setPunchButtonsDisabled(false);
             showMessage("❌ क्रोम में लोकेशन ब्लॉक है! URL बार में बाएँ तरफ 🔒/🎛️ आइकन दबाकर Location को Allow करें।", "#dc2626");
             speakHindi("क्रोम ब्राउज़र में लोकेशन अनुमति बंद है। कृपया अनुमति दें।");
             return;
@@ -480,12 +526,12 @@
             (posFallback) => {
               verifyAndSendCoordinates(posFallback, punchType, mode, targetDetail);
             },
-            (errFinal) => {
+            () => {
               if (mode === "Office") {
-                showMessage("❌ जीपीएस सिग्नल नहीं मिला। कृपया खुली जगह में जाएं या फोन रीस्टार्ट करें।", "#dc2626");
+                setPunchButtonsDisabled(false);
+                showMessage("❌ जीपीएस सिग्नल नहीं मिला। कृपया खुली जगह में जाएं या फोन का Location ऑन करें।", "#dc2626");
                 speakHindi("जीपीएस सिग्नल नहीं मिला। Office मोड के लिए स्थान अनिवार्य है।");
               } else {
-                // Allow Site/WFH without hardware lock if device GPS fails
                 sendPunchPayload(punchType, mode, null, null, targetDetail);
               }
             },
@@ -503,6 +549,7 @@
       if (mode === "Office") {
         const dist = calcDistanceMeters(lat, lon, OFFICE_LAT, OFFICE_LON);
         if (dist > MAX_METERS) {
+          setPunchButtonsDisabled(false);
           showMessage(`❌ ऑफिस से दूरी: ${Math.round(dist)}m (150m सीमा पार)`, "#dc2626");
           speakHindi("आप ऑफिस सीमा से बाहर हैं। उपस्थिति दर्ज नहीं हो सकी।");
           return;
@@ -518,11 +565,13 @@
         method: "POST",
         body: JSON.stringify({
           phone: currentEmp.phone,
+          name: currentEmp.name,
           punchType: punchType,
           mode: mode,
           lat: lat,
           lon: lon,
-          detail: detail
+          detail: detail,
+          clientTimestamp: new Date().toISOString()
         })
       })
       .then(r => r.json())
@@ -530,12 +579,16 @@
         if (res.status === "success") {
           showMessage(`✅ ${punchType} सफल!`, "#059669");
           speakHindi(`धन्यवाद ${currentEmp.name} जी, आपका ${punchType === "Clock In" ? "क्लॉक इन" : "क्लॉक आउट"} सफल रहा।`);
-          setTimeout(() => location.reload(), 1800);
+          setTimeout(() => location.reload(), 1600);
         } else {
+          setPunchButtonsDisabled(false);
           showMessage(res.message || "त्रुटि उत्पन्न हुई।", "#dc2626");
         }
       })
-      .catch(() => showMessage("सर्वर त्रुटि: पुनः प्रयास करें।", "#dc2626"));
+      .catch(() => {
+        setPunchButtonsDisabled(false);
+        showMessage("सर्वर त्रुटि: कृपया पुनः प्रयास करें।", "#dc2626");
+      });
     }
 
     // -------------------------------------------------------------
@@ -566,6 +619,7 @@
         body: JSON.stringify({
           type: "Leave",
           phone: currentEmp.phone,
+          name: currentEmp.name,
           leaveType: lType,
           startDate: sDate,
           endDate: eDate,
@@ -611,7 +665,7 @@
       const grid = document.getElementById("calendarBody");
       grid.innerHTML = "<div class='cal-hdr'>रवि</div><div class='cal-hdr'>सोम</div><div class='cal-hdr'>मंगल</div><div class='cal-hdr'>बुध</div><div class='cal-hdr'>गुरु</div><div class='cal-hdr'>शुक्र</div><div class='cal-hdr'>शनि</div>";
 
-      fetch(`${SCRIPT_URL}?action=getCalendar&phone=${currentEmp.phone}&month=${month + 1}&year=${year}`)
+      fetch(`${SCRIPT_URL}?action=getCalendar&phone=${currentEmp.phone}&name=${encodeURIComponent(currentEmp.name)}&month=${month + 1}&year=${year}`)
         .then(r => r.json())
         .then(data => {
           const hist = data.history || {};
@@ -635,9 +689,13 @@
             cell.className = cls;
             cell.innerText = d;
             cell.onclick = () => {
-              if (hist[dKey]) alert(hist[dKey].isLeave ? "स्वीकृत छुट्टी (Approved Leave)" : hist[dKey].punches.join("\n"));
-              else if (isSun) alert("रविवार (Sunday Weekly Off)");
-              else alert("कोई रिकॉर्ड नहीं (Absent)");
+              if (hist[dKey]) {
+                alert(hist[dKey].isLeave ? (hist[dKey].note || "Full Day Leave (Approved)") : hist[dKey].punches.join("\n"));
+              } else if (isSun) {
+                alert("Sunday (Weekly Off)");
+              } else {
+                alert("No Record / Absent");
+              }
             };
             grid.appendChild(cell);
           }
