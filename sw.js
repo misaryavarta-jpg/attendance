@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aryavarta-cache-v4';
+const CACHE_NAME = 'aryavarta-cache-v5';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -25,7 +25,6 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Network-First with Instant Offline Fallback
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   if (event.request.url.includes('script.google.com')) return;
