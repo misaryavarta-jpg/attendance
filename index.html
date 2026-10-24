@@ -117,6 +117,7 @@
     .badge-approved { background: #dcfce7; color: #15803d; border: 1.5px solid #86efac; }
     .badge-rejected { background: #fee2e2; color: #991b1b; border: 1.5px solid #fca5a5; }
     .badge-pending { background: #fef3c7; color: #92400e; border: 1.5px solid #fde047; }
+    .badge-progress { background: #e0f2fe; color: #0369a1; border: 1.5px solid #7dd3fc; }
 
     /* Upcoming Holiday Banner */
     #holidayBanner {
@@ -249,6 +250,7 @@
     .btn-break { background: linear-gradient(135deg, #f59e0b, #b45309); }
     .btn-leave { background: linear-gradient(135deg, #d97706, #92400e); font-size: 13px; padding: 12px 8px; }
     .btn-reg { background: linear-gradient(135deg, #0284c7, #0369a1); font-size: 13px; padding: 12px 8px; }
+    .btn-issue { background: linear-gradient(135deg, #7c3aed, #4c1d95); font-size: 13.5px; padding: 12px 10px; }
     .btn-cal { background: #334155; font-size: 14px; padding: 13px 10px; }
     .btn-manager { background: linear-gradient(135deg, #1e3a8a, #0f172a); border: 1.5px solid #fde047; }
     .btn-login { background: var(--primary); }
@@ -277,11 +279,11 @@
     .modal-card {
       background: #fff;
       width: 93%;
-      max-width: 405px;
+      max-width: 415px;
       border-radius: 22px;
       padding: 18px;
       text-align: left;
-      max-height: 89vh;
+      max-height: 90vh;
       overflow-y: auto;
     }
     .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -338,7 +340,7 @@
       display: none;
     }
 
-    /* Sumeet Singh Exclusive Manager Panel Styles */
+    /* Sumeet Singh Exclusive Manager Panel & Issue Cards */
     .admin-section-title { font-size: 11.5px; font-weight: 800; color: #1e3a8a; text-transform: uppercase; margin: 12px 0 6px 0; }
     .admin-list-item {
       background: #f8fafc;
@@ -350,6 +352,34 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 6px;
+    }
+    .issue-card-item {
+      background: #f8fafc;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .privacy-banner {
+      background: #f5f3ff;
+      border: 1.5px solid #c4b5fd;
+      color: #4c1d95;
+      border-radius: 11px;
+      padding: 8px 11px;
+      font-size: 11.5px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      line-height: 1.35;
+    }
+    .file-box {
+      background: #f8fafc;
+      border: 1.8px dashed #94a3b8;
+      border-radius: 12px;
+      padding: 9px 11px;
+      margin-bottom: 8px;
     }
     .mini-act-btn {
       border: none;
@@ -410,9 +440,10 @@
           <button type="button" class="switch-user-btn" onclick="switchEmployeeAccount()">🔄 बदलें</button>
         </div>
         <div class="phone" id="empDisplayPhone"></div>
-        <!-- 1. In-App Live Status Badges Right Below Employee Name -->
+        <!-- In-App Live Status Badges Right Below Employee Name -->
         <div id="leaveStatusBadge" class="status-badge-item"></div>
         <div id="regStatusBadge" class="status-badge-item"></div>
+        <div id="issueStatusBadge" class="status-badge-item"></div>
       </div>
 
       <!-- Upcoming Official Company Holiday Banner -->
@@ -467,7 +498,7 @@
           </div>
           <div class="voice-input-row">
             <input type="text" id="dailyWorkNote" placeholder="आज किए गए कार्य लिखें या 🎙️ दबाकर बोलें..." style="margin-bottom:0;">
-            <button type="button" class="mic-btn" id="voiceDictateBtn" onclick="startWorkVoiceDictation()" title="Speak Work Summary">🎙️</button>
+            <button type="button" class="mic-btn" id="voiceDictateBtn" onclick="startVoiceDictation('dailyWorkNote', 'voiceDictateBtn')" title="Speak Work Summary">🎙️</button>
           </div>
         </div>
 
@@ -480,12 +511,13 @@
 
       <div id="statusMessage"></div>
 
-      <!-- Pure Attendance & Leave Self-Service Action Grid -->
+      <!-- Self-Service Action Grid -->
       <div class="btn-stack" style="margin-top: 15px; border-top: 1.5px solid #f1f5f9; padding-top: 12px;">
         <div class="btn-grid-2">
           <button class="btn btn-leave" onclick="openLeaveModal()">📝 Apply Leave</button>
           <button class="btn btn-reg" onclick="openRegModal()">🛠️ Missed Punch</button>
         </div>
+        <button class="btn btn-issue" onclick="openIssueModal()">🛡️ Raise Issue / Problem & Solution (Confidential)</button>
         <button class="btn btn-cal" onclick="openCalendarModal()">📅 My Attendance Calendar & Passbook</button>
         <!-- Strictly visible ONLY to Manager Sumeet Singh (9766037466) -->
         <button class="btn btn-manager" id="btnManagerPanel" style="display: none;" onclick="openManagerModal()">👑 Manager Sumeet Singh Approval Center</button>
@@ -501,7 +533,6 @@
         <span class="close-btn" onclick="closeLeaveModal()">&times;</span>
       </div>
 
-      <!-- Live Annual Leave Quota & Balance Wallet -->
       <div class="cal-kpi-bar" style="margin-bottom:8px;">
         <div class="cal-kpi"><div class="v" id="lvQuotaTotal">18d</div><div class="k">🏖️ वार्षिक कोटा</div></div>
         <div class="cal-kpi"><div class="v" id="lvQuotaUsed">0d</div><div class="k">✅ प्रयुक्त (Used)</div></div>
@@ -577,7 +608,67 @@
     </div>
   </div>
 
-  <!-- 3. Instant Calendar, Scorecard & Monthly Passbook Modal -->
+  <!-- 3. Confidential Complaint / Issue & Solution Portal Modal (Sumeet Sir Only) -->
+  <div id="issueModal" class="modal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>🛡️ समस्या एवं समाधान पोर्टल</h3>
+        <span class="close-btn" onclick="closeIssueModal()">&times;</span>
+      </div>
+
+      <div class="privacy-banner">
+        🔒 <b>100% गोपनीय (Strictly Private):</b> आपकी समस्या, फोटो/फाइल और सुझाया गया समाधान केवल मैनेजर <b>Sumeet Singh</b> जी देख सकते हैं। अन्य कोई कर्मचारी इसे नहीं देख सकता।
+      </div>
+
+      <div class="btn-grid-2">
+        <div>
+          <label>श्रेणी (Category):</label>
+          <select id="issueCategory">
+            <option value="Panel Shop / Tool Issue">⚡ Panel / Tool Issue</option>
+            <option value="Site / Project Bottleneck">🚚 Site / Project Issue</option>
+            <option value="Drawing / BOM / Material">📐 Drawing / Material</option>
+            <option value="Safety / Store / QC">🦺 Safety / Store / QC</option>
+            <option value="Office / HR / Attendance">🏢 Office / HR / Admin</option>
+            <option value="General Problem / Idea">💡 Other / Suggestion</option>
+          </select>
+        </div>
+        <div>
+          <label>प्राथमिकता (Urgency):</label>
+          <select id="issuePriority">
+            <option value="Normal">🟡 Normal</option>
+            <option value="High Priority">🟠 High Priority</option>
+            <option value="Critical / Work Blocked">🔴 Critical / Urgent</option>
+          </select>
+        </div>
+      </div>
+
+      <label>⚠️ समस्या का विस्तृत विवरण (Describe the Problem):</label>
+      <div class="voice-input-row" style="margin-bottom:6px;">
+        <textarea id="issueProblemText" rows="2" placeholder="आपको क्या समस्या आ रही है? लिखें या 🎙️ दबाकर बोलें..." style="margin-bottom:0;"></textarea>
+        <button type="button" class="mic-btn" id="micIssueProbBtn" onclick="startVoiceDictation('issueProblemText', 'micIssueProbBtn')">🎙️</button>
+      </div>
+
+      <label>💡 आपका सुझाया गया समाधान (Your Suggested Solution for Sumeet Sir):</label>
+      <div class="voice-input-row" style="margin-bottom:6px;">
+        <textarea id="issueSolutionText" rows="2" placeholder="आपके अनुसार इस समस्या को कैसे हल किया जा सकता है? (Optional पर उपयोगी)..." style="margin-bottom:0;"></textarea>
+        <button type="button" class="mic-btn" id="micIssueSolBtn" onclick="startVoiceDictation('issueSolutionText', 'micIssueSolBtn')">🎙️</button>
+      </div>
+
+      <label>📎 प्रमाण फोटो या फाइल जोड़ें (Evidence Photo / PDF / File - Optional):</label>
+      <div class="file-box">
+        <input type="file" id="issueEvidenceFile" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" style="margin-bottom:4px; border:none; padding:2px; font-size:12.5px;" onchange="handleIssueFileSelect(this)">
+        <div id="issueFilePreviewText" style="font-size:11px; color:#059669; font-weight:700; display:none;"></div>
+      </div>
+
+      <button class="btn btn-issue" id="btnSubmitIssue" style="font-size:14.5px; padding:13px;" onclick="submitConfidentialIssue()">🔒 Sumeet Sir को गोपनीय रूप से भेजें 🚀</button>
+
+      <!-- Employee's Own Private Issue History -->
+      <div class="admin-section-title" style="margin-top:14px;">📂 My Submitted Issues (Only Visible to You)</div>
+      <div id="myPrivateIssuesList" style="font-size:12px; color:#64748b;">कोई रिकॉर्ड नहीं है।</div>
+    </div>
+  </div>
+
+  <!-- 4. Instant Calendar, Scorecard & Monthly Passbook Modal -->
   <div id="calendarModal" class="modal">
     <div class="modal-card">
       <div class="modal-head">
@@ -585,7 +676,6 @@
         <span class="close-btn" onclick="closeCalendarModal()">&times;</span>
       </div>
 
-      <!-- 6-Metric Monthly Passbook & Scorecard Grid -->
       <div class="cal-kpi-bar">
         <div class="cal-kpi"><div class="v" id="kpiPresent">-</div><div class="k">🟢 उपस्थित</div></div>
         <div class="cal-kpi"><div class="v" id="kpiPayable">-</div><div class="k">💰 देय दिन</div></div>
@@ -618,7 +708,7 @@
     </div>
   </div>
 
-  <!-- 4. Exclusive Manager Sumeet Singh Approval & Floor Modal -->
+  <!-- 5. Exclusive Manager Sumeet Singh Approval & Floor Modal -->
   <div id="managerModal" class="modal">
     <div class="modal-card">
       <div class="modal-head">
@@ -626,23 +716,26 @@
         <span class="close-btn" onclick="closeManagerModal()">&times;</span>
       </div>
       <p style="font-size:11.5px; color:#475569; margin-bottom:8px;">
-        🔒 केवल मैनेजर <b>Sumeet Singh</b> छुट्टी और पंच सुधार अनुरोध स्वीकृत या अस्वीकृत कर सकते हैं।
+        🔒 केवल मैनेजर <b>Sumeet Singh</b> छुट्टी, पंच सुधार और कर्मचारियों की गोपनीय समस्याएं (Issues) देख एवं स्वीकृत कर सकते हैं।
       </p>
 
       <button type="button" class="btn btn-clockin" id="btnSyncSheetsMgr" style="padding:9px; font-size:12.5px; margin-bottom:10px;" onclick="triggerSheetRepairAsManager()">
-        🔧 Sync, Deduplicate & Repair All 10 Sheets Now
+        🔧 Sync, Deduplicate & Repair All 11 Sheets Now
       </button>
 
-      <div class="admin-section-title">📋 1. Pending Leave Requests (Sumeet Sir Only)</div>
+      <div class="admin-section-title">🛡️ 1. Confidential Employee Issues & Solutions (Sumeet Sir Only)</div>
+      <div id="managerPendingIssues">लोड हो रहा है...</div>
+
+      <div class="admin-section-title">📋 2. Pending Leave Requests (Sumeet Sir Only)</div>
       <div id="managerPendingLeaves">लोड हो रहा है...</div>
 
-      <div class="admin-section-title">🛠️ 2. Pending Missed-Punch Regularizations</div>
+      <div class="admin-section-title">🛠️ 3. Pending Missed-Punch Regularizations</div>
       <div id="managerPendingRegs">लोड हो रहा है...</div>
 
-      <div class="admin-section-title">🏢 3. Today's Live Floor Attendance</div>
+      <div class="admin-section-title">🏢 4. Today's Live Floor Attendance</div>
       <div id="managerFloorList">लोड हो रहा है...</div>
 
-      <div class="admin-section-title">⚠️ 4. Unmarked Staff Today (1-Tap WhatsApp Ping)</div>
+      <div class="admin-section-title">⚠️ 5. Unmarked Staff Today (1-Tap WhatsApp Ping)</div>
       <div id="managerMissingList">लोड हो रहा है...</div>
     </div>
   </div>
@@ -653,7 +746,7 @@
     const OFFICE_LON = 73.8056477;
     const MAX_METERS = 150.0;
 
-    // STRICTLY Sumeet Singh ONLY for Approvals
+    // STRICTLY Sumeet Singh ONLY for Approvals & Confidential Issues
     const SUMEET_SINGH_PHONE = "9766037466";
 
     let currentEmp = { name: "", phone: "" };
@@ -666,6 +759,10 @@
 
     let warmGPS = { lat: null, lon: null, acc: null, ts: 0 };
     let gpsWatchId = null;
+
+    // Selected Evidence File State for Confidential Issue Portal
+    let preparedIssueFile = { base64: "", mimeType: "", fileName: "" };
+    let myIssuesCache = [];
 
     let calendarCache = {};
     try {
@@ -689,7 +786,7 @@
     }
 
     // -------------------------------------------------------------
-    // ZERO-ERROR MULTI-RETRY NETWORK ENGINE (CORS-FREE GET + FALLBACK)
+    // ZERO-ERROR MULTI-RETRY NETWORK ENGINE (GET + POST FOR FILES)
     // -------------------------------------------------------------
     async function ultraReliableApiCall(paramsObj, retries = 3) {
       const qs = Object.keys(paramsObj)
@@ -721,6 +818,28 @@
                 return { status: "success", shiftDuration: "Synced" };
               } catch (e2) {}
             }
+            throw err;
+          }
+        }
+      }
+    }
+
+    async function ultraReliablePostCall(payloadObj, retries = 2) {
+      for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+          const response = await fetch(SCRIPT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payloadObj),
+            redirect: "follow"
+          });
+          if (response.ok) {
+            return await response.json();
+          }
+        } catch (err) {
+          if (attempt < retries) {
+            await new Promise(r => setTimeout(r, 1000 * attempt));
+          } else {
             throw err;
           }
         }
@@ -767,21 +886,22 @@
       }
     }
 
-    // Voice-to-Text Dictation for Shift Work Summary
-    function startWorkVoiceDictation() {
+    // Universal Voice-to-Text Dictation for Work Summary & Issue Portal
+    function startVoiceDictation(targetInputId, btnId) {
       const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRec) {
-        return alert("आपके ब्राउज़र में वॉइस डिक्टेशन उपलब्ध नहीं है। कृपया ऊपर दिए गए चिप्स (Chips) पर टैप करें।");
+        return alert("आपके ब्राउज़र में वॉइस डिक्टेशन उपलब्ध नहीं है। कृपया कीबोर्ड से टाइप करें।");
       }
       triggerHaptic(25);
       const rec = new SpeechRec();
       rec.lang = 'hi-IN';
       rec.interimResults = false;
-      const btn = document.getElementById("voiceDictateBtn");
+      const btn = document.getElementById(btnId);
       btn.innerText = "🔴";
       rec.onresult = (e) => {
         const transcript = e.results[0][0].transcript;
-        appendWorkChip(transcript);
+        const field = document.getElementById(targetInputId);
+        field.value = field.value.trim() ? (field.value.trim() + " " + transcript) : transcript;
         btn.innerText = "🎙️";
       };
       rec.onerror = () => { btn.innerText = "🎙️"; };
@@ -1061,15 +1181,17 @@
           renderDutyButtons(res.status, res.clockInTime, isSunday, true);
           renderLeaveBadge(res.latestLeave);
           renderRegBadge(res.latestReg);
+          renderIssueBadge(res.latestIssue);
 
-          // Update Leave Quota Wallet
+          myIssuesCache = res.myIssues || [];
+          renderMyPrivateIssuesList();
+
           if (res.leaveWallet) {
             document.getElementById("lvQuotaTotal").innerText = `${res.leaveWallet.quota}d`;
             document.getElementById("lvQuotaUsed").innerText = `${res.leaveWallet.used}d`;
             document.getElementById("lvQuotaRem").innerText = `${res.leaveWallet.remaining}d`;
           }
 
-          // Update Upcoming Company Holiday Banner
           const holBanner = document.getElementById("holidayBanner");
           if (res.nextHoliday && res.nextHoliday.name) {
             holBanner.style.display = "block";
@@ -1203,6 +1325,27 @@
       }
     }
 
+    function renderIssueBadge(issueInfo) {
+      const badge = document.getElementById("issueStatusBadge");
+      if (!issueInfo || !issueInfo.status) {
+        badge.style.display = "none";
+        return;
+      }
+      badge.style.display = "block";
+      const st = issueInfo.status.toLowerCase();
+      const remText = issueInfo.remarks ? `<br><span style="font-weight:600;">💬 Sumeet Sir: "${issueInfo.remarks}"</span>` : "";
+      if (st.includes("resolved")) {
+        badge.className = "status-badge-item badge-approved";
+        badge.innerHTML = `🛡️ Confidential Issue (<b>${issueInfo.category}</b>) marked <b>RESOLVED</b> by Sumeet Singh${remText}`;
+      } else if (st.includes("progress")) {
+        badge.className = "status-badge-item badge-progress";
+        badge.innerHTML = `🔍 Confidential Issue (<b>${issueInfo.category}</b>) is <b>IN PROGRESS</b> by Sumeet Singh${remText}`;
+      } else {
+        badge.className = "status-badge-item badge-pending";
+        badge.innerHTML = `🔒 Confidential Issue (<b>${issueInfo.category}</b>) sent privately to Sumeet Singh (Pending Review)`;
+      }
+    }
+
     function handleModeChange(val) {
       document.getElementById("siteBox").style.display = (val === "Site") ? "block" : "none";
       document.getElementById("wfhBox").style.display = (val === "WFH") ? "block" : "none";
@@ -1243,7 +1386,6 @@
       if (isSubmittingPunch) return;
       triggerHaptic(30);
 
-      // Smart Half-Day (<4.5h) Accidental Clock-Out Guard
       if (punchType === "Clock Out" && activeShiftStartMs > 0) {
         const elapsedHrs = (Date.now() - activeShiftStartMs) / 3600000;
         if (elapsedHrs < 4.5) {
@@ -1497,7 +1639,182 @@
     }
 
     // -------------------------------------------------------------
-    // 3. 0ms INSTANT CALENDAR, SCORECARD & EXPORT ENGINE
+    // 3. CONFIDENTIAL COMPLAINT / ISSUE & SOLUTION PORTAL (SUMEET SIR ONLY)
+    // -------------------------------------------------------------
+    function openIssueModal() {
+      triggerHaptic(15);
+      document.getElementById("issueModal").style.display = "flex";
+      renderMyPrivateIssuesList();
+    }
+
+    function closeIssueModal() {
+      document.getElementById("issueModal").style.display = "none";
+    }
+
+    function handleIssueFileSelect(inputEl) {
+      const previewEl = document.getElementById("issueFilePreviewText");
+      const file = inputEl.files && inputEl.files[0];
+      if (!file) {
+        preparedIssueFile = { base64: "", mimeType: "", fileName: "" };
+        previewEl.style.display = "none";
+        return;
+      }
+
+      if (file.size > 4.5 * 1024 * 1024) {
+        alert("⚠️ फाइल का आकार 4.5 MB से कम होना चाहिए।");
+        inputEl.value = "";
+        return;
+      }
+
+      previewEl.style.display = "block";
+      previewEl.innerText = "⏳ फाइल तैयार की जा रही है...";
+
+      // Auto-compress images via Canvas for fast upload on mobile network
+      if (file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.createElement("canvas");
+            const maxDim = 1280;
+            let w = img.width;
+            let h = img.height;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+              else { w = Math.round((w * maxDim) / h); h = maxDim; }
+            }
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, w, h);
+            const dataUrl = canvas.toDataURL("image/jpeg", 0.78);
+            preparedIssueFile = {
+              base64: dataUrl.split(",")[1],
+              mimeType: "image/jpeg",
+              fileName: file.name.replace(/\.[^/.]+$/, "") + ".jpg"
+            };
+            previewEl.innerText = `✅ फोटो तैयार: ${preparedIssueFile.fileName}`;
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      } else {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preparedIssueFile = {
+            base64: e.target.result.split(",")[1],
+            mimeType: file.type || "application/octet-stream",
+            fileName: file.name
+          };
+          previewEl.innerText = `✅ फाइल तैयार: ${file.name}`;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    async function submitConfidentialIssue() {
+      const cat = document.getElementById("issueCategory").value;
+      const prio = document.getElementById("issuePriority").value;
+      const prob = document.getElementById("issueProblemText").value.trim();
+      const sol = document.getElementById("issueSolutionText").value.trim() || "कोई विशेष सुझाव नहीं (Awaiting Sumeet Sir's guidance)";
+
+      if (!prob) {
+        alert("कृपया अपनी समस्या या शिकायत का विवरण लिखें।");
+        return document.getElementById("issueProblemText").focus();
+      }
+
+      const btn = document.getElementById("btnSubmitIssue");
+      btn.disabled = true;
+      btn.innerText = "🔒 Sumeet Sir को भेजा जा रहा है...";
+
+      const payload = {
+        action: "submitIssue",
+        phone: currentEmp.phone,
+        name: currentEmp.name,
+        category: cat,
+        priority: prio,
+        problem: prob,
+        solution: sol,
+        fileBase64: preparedIssueFile.base64 || "",
+        fileMimeType: preparedIssueFile.mimeType || "",
+        fileName: preparedIssueFile.fileName || ""
+      };
+
+      try {
+        let res;
+        if (payload.fileBase64) {
+          res = await ultraReliablePostCall(payload, 2);
+        } else {
+          res = await ultraReliableApiCall(payload, 3);
+        }
+
+        btn.disabled = false;
+        btn.innerText = "🔒 Sumeet Sir को गोपनीय रूप से भेजें 🚀";
+
+        const newTicket = {
+          id: (res && res.issueId) || ("ISS-" + Date.now().toString().slice(-4)),
+          date: getISTDateString(),
+          category: cat,
+          priority: prio,
+          problem: prob,
+          solution: sol,
+          fileUrl: (res && res.fileUrl) || "",
+          status: "Pending",
+          remarks: ""
+        };
+
+        myIssuesCache.unshift(newTicket);
+        renderIssueBadge(newTicket);
+        renderMyPrivateIssuesList();
+
+        // Reset inputs
+        document.getElementById("issueProblemText").value = "";
+        document.getElementById("issueSolutionText").value = "";
+        document.getElementById("issueEvidenceFile").value = "";
+        document.getElementById("issueFilePreviewText").style.display = "none";
+        preparedIssueFile = { base64: "", mimeType: "", fileName: "" };
+
+        closeIssueModal();
+        triggerHaptic([60, 40, 100]);
+        speakHindi("आपकी समस्या और समाधान गोपनीय रूप से प्रबंधक सुमीत सिंह जी को भेज दिया गया है।");
+        showMessage("🔒 आपकी समस्या व समाधान गोपनीय रूप से केवल मैनेजर Sumeet Singh जी को भेज दिया गया है।", "#059669");
+      } catch (err) {
+        btn.disabled = false;
+        btn.innerText = "🔒 Sumeet Sir को गोपनीय रूप से भेजें 🚀";
+        alert("⚠️ नेटवर्क धीमा है। कृपया पुनः प्रयास करें।");
+      }
+    }
+
+    function renderMyPrivateIssuesList() {
+      const box = document.getElementById("myPrivateIssuesList");
+      if (!myIssuesCache || myIssuesCache.length === 0) {
+        box.innerHTML = "<div class='admin-list-item'>✅ आपने अभी तक कोई समस्या दर्ज नहीं की है।</div>";
+        return;
+      }
+      box.innerHTML = "";
+      myIssuesCache.forEach(item => {
+        const stLower = (item.status || "Pending").toLowerCase();
+        const stColor = stLower.includes("resolved") ? "#059669" : (stLower.includes("progress") ? "#0284c7" : "#d97706");
+        const evLink = item.fileUrl ? `<a href="${item.fileUrl}" target="_blank" style="color:#2563eb;font-weight:800;text-decoration:none;">📎 View Uploaded Evidence</a><br>` : "";
+        const mgrReply = item.remarks ? `<div style="margin-top:4px;padding:6px 8px;background:#eff6ff;border-left:3px solid #1d4ed8;border-radius:6px;color:#1e3a8a;font-weight:700;">👑 Sumeet Sir Remark: ${item.remarks}</div>` : "";
+        const card = document.createElement("div");
+        card.className = "issue-card-item";
+        card.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <b>${item.category} <span style="font-size:10.5px;color:#64748b;">(${item.date})</span></b>
+            <span style="font-weight:800;color:${stColor};">${item.status}</span>
+          </div>
+          <div style="color:#334155;"><b>⚠️ Problem:</b> ${item.problem}</div>
+          <div style="color:#047857;"><b>💡 Suggested Solution:</b> ${item.solution}</div>
+          ${evLink}
+          ${mgrReply}
+        `;
+        box.appendChild(card);
+      });
+    }
+
+    // -------------------------------------------------------------
+    // 4. 0ms INSTANT CALENDAR, SCORECARD & EXPORT ENGINE
     // -------------------------------------------------------------
     function openCalendarModal() {
       triggerHaptic(15);
@@ -1721,7 +2038,7 @@
     }
 
     // -------------------------------------------------------------
-    // 4. EXCLUSIVE MANAGER SUMEET SINGH COMMAND CENTER
+    // 5. EXCLUSIVE MANAGER SUMEET SINGH COMMAND CENTER
     // -------------------------------------------------------------
     function openManagerModal() {
       if (currentEmp.phone !== SUMEET_SINGH_PHONE) {
@@ -1743,6 +2060,7 @@
     }
 
     function loadManagerOverview() {
+      document.getElementById("managerPendingIssues").innerHTML = "🔄 लोड हो रहा है...";
       document.getElementById("managerPendingLeaves").innerHTML = "🔄 लोड हो रहा है...";
       document.getElementById("managerPendingRegs").innerHTML = "🔄 लोड हो रहा है...";
       document.getElementById("managerFloorList").innerHTML = "🔄 लोड हो रहा है...";
@@ -1760,7 +2078,36 @@
             return alert("🔒 अमान्य Manager PIN! केवल Sumeet Singh जी ही अनुमोदन कर सकते हैं।");
           }
 
-          // 1. Leaves
+          // 1. Confidential Employee Issues & Solutions
+          const iBox = document.getElementById("managerPendingIssues");
+          if (!res.pendingIssues || res.pendingIssues.length === 0) {
+            iBox.innerHTML = "<div class='admin-list-item'>✅ कोई लंबित कर्मचारी समस्या (Issue) नहीं है।</div>";
+          } else {
+            iBox.innerHTML = "";
+            res.pendingIssues.forEach(iss => {
+              const card = document.createElement("div");
+              card.className = "issue-card-item";
+              const prioColor = iss.priority.includes("Critical") ? "#dc2626" : (iss.priority.includes("High") ? "#d97706" : "#475569");
+              const fileHtml = iss.fileUrl ? `<div style="margin:5px 0;"><a href="${iss.fileUrl}" target="_blank" class="mini-act-btn" style="background:#2563eb;margin-left:0;">📎 View Evidence Photo / File</a></div>` : "";
+              card.innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                  <b>👤 ${iss.name} <span style="font-size:11px;color:#64748b;">(${iss.date})</span></b>
+                  <span style="font-size:11px;font-weight:800;color:${prioColor};">${iss.priority}</span>
+                </div>
+                <div style="font-size:11px;font-weight:800;color:#4c1d95;margin-bottom:3px;">📂 ${iss.category} (${iss.status})</div>
+                <div style="color:#0f172a;margin-bottom:3px;"><b>⚠️ Problem:</b> ${iss.problem}</div>
+                <div style="color:#047857;margin-bottom:4px;"><b>💡 Employee's Suggested Solution:</b> ${iss.solution}</div>
+                ${fileHtml}
+                <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:6px;">
+                  <button class="mini-act-btn" style="background:#0284c7;" onclick="decideIssueAsSumeet('${iss.id}', 'In Progress')">🔍 In Progress</button>
+                  <button class="mini-act-btn" style="background:#059669;" onclick="decideIssueAsSumeet('${iss.id}', 'Resolved')">✅ Mark Resolved</button>
+                </div>
+              `;
+              iBox.appendChild(card);
+            });
+          }
+
+          // 2. Leaves
           const pBox = document.getElementById("managerPendingLeaves");
           if (!res.pendingLeaves || res.pendingLeaves.length === 0) {
             pBox.innerHTML = "<div class='admin-list-item'>✅ कोई लंबित छुट्टी आवेदन नहीं है।</div>";
@@ -1783,7 +2130,7 @@
             });
           }
 
-          // 2. Missed-Punch Regularizations
+          // 3. Missed-Punch Regularizations
           const rBox = document.getElementById("managerPendingRegs");
           if (!res.pendingRegs || res.pendingRegs.length === 0) {
             rBox.innerHTML = "<div class='admin-list-item'>✅ कोई लंबित पंच सुधार अनुरोध नहीं है।</div>";
@@ -1806,7 +2153,7 @@
             });
           }
 
-          // 3. Live Floor
+          // 4. Live Floor
           const fBox = document.getElementById("managerFloorList");
           if (!res.floorList || res.floorList.length === 0) {
             fBox.innerHTML = "<div class='admin-list-item'>⚪ आज अभी तक कोई पंच दर्ज नहीं हुआ है।</div>";
@@ -1827,7 +2174,7 @@
             });
           }
 
-          // 4. Missing Staff WhatsApp Ping
+          // 5. Missing Staff WhatsApp Ping
           const mBox = document.getElementById("managerMissingList");
           if (!res.missingList || res.missingList.length === 0) {
             mBox.innerHTML = "<div class='admin-list-item'>🎉 सभी कर्मचारियों की उपस्थिति दर्ज हो चुकी है!</div>";
@@ -1848,6 +2195,34 @@
         .catch(() => {
           document.getElementById("managerPendingLeaves").innerHTML = "⚠️ पुनः लोड करने के लिए पैनल दोबारा खोलें।";
         });
+    }
+
+    function decideIssueAsSumeet(issueId, newStatus) {
+      if (currentEmp.phone !== SUMEET_SINGH_PHONE) {
+        return alert("🔒 केवल Sumeet Singh जी ही कार्रवाई कर सकते हैं।");
+      }
+      const note = prompt(`👑 Sumeet Sir: कर्मचारी के लिए कोई टिप्पणी या समाधान नोट लिखें (${newStatus}):`, newStatus === "Resolved" ? "समस्या का समाधान कर दिया गया है।" : "इस विषय पर कार्यवाही शुरू कर दी गई है।");
+      if (note === null) return;
+
+      triggerHaptic(30);
+      ultraReliableApiCall({
+        action: "issueDecision",
+        itemId: issueId,
+        decision: newStatus,
+        remarks: note.trim(),
+        managerPhone: currentEmp.phone,
+        pin: localStorage.getItem("aa_mgr_pin") || "",
+        format: "json"
+      }, 3)
+        .then(res => {
+          if (res && res.status === "unauthorized") {
+            localStorage.removeItem("aa_mgr_pin");
+            return alert("🔒 अमान्य Manager PIN!");
+          }
+          alert(`✅ Issue ${issueId} updated to ${newStatus.toUpperCase()}!`);
+          loadManagerOverview();
+        })
+        .catch(() => alert("सर्वर अपडेट हो रहा है, कृपया 2 सेकंड प्रतीक्षा करें।"));
     }
 
     function decideItemAsSumeet(actionName, itemId, decision) {
@@ -1879,18 +2254,18 @@
       triggerHaptic(30);
       const btn = document.getElementById("btnSyncSheetsMgr");
       btn.disabled = true;
-      btn.innerText = "🔄 सभी 10 शीट्स सिंक हो रही हैं...";
+      btn.innerText = "🔄 सभी 11 शीट्स सिंक हो रही हैं...";
 
       ultraReliableApiCall({ action: "repairSheets" }, 2)
         .then(res => {
           btn.disabled = false;
-          btn.innerText = "✅ All 10 Sheets Repaired & Synced!";
+          btn.innerText = "✅ All 11 Sheets Repaired & Synced!";
           alert("✅ " + (res.message || "सभी Google Sheet टैब्स सफलतापूर्वक अपडेट हो चुके हैं!"));
           loadManagerOverview();
         })
         .catch(() => {
           btn.disabled = false;
-          btn.innerText = "🔧 Sync, Deduplicate & Repair All 10 Sheets Now";
+          btn.innerText = "🔧 Sync, Deduplicate & Repair All 11 Sheets Now";
         });
     }
 
