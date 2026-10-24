@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1e3a8a">
-  <title>Aryavarta Attendance & Field Portal</title>
+  <title>Aryavarta Attendance Portal</title>
   <style>
     :root {
       --primary: #1e3a8a;
@@ -118,6 +118,20 @@
     .badge-rejected { background: #fee2e2; color: #991b1b; border: 1.5px solid #fca5a5; }
     .badge-pending { background: #fef3c7; color: #92400e; border: 1.5px solid #fde047; }
 
+    /* Upcoming Holiday Banner */
+    #holidayBanner {
+      display: none;
+      background: #f3e8ff;
+      border: 1.5px solid #d8b4fe;
+      color: #6b21a8;
+      border-radius: 11px;
+      padding: 7px 12px;
+      font-size: 11.5px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      text-align: left;
+    }
+
     /* Live Shift Timer Card */
     #shiftTimerBox {
       display: none;
@@ -157,6 +171,18 @@
       cursor: pointer;
     }
     .task-chip:active { transform: scale(0.95); }
+    .voice-input-row { display: flex; gap: 6px; align-items: center; }
+    .mic-btn {
+      background: #eff6ff;
+      border: 1.5px solid #93c5fd;
+      color: #1d4ed8;
+      border-radius: 10px;
+      padding: 9px 11px;
+      font-size: 14px;
+      cursor: pointer;
+      flex-shrink: 0;
+      font-weight: 800;
+    }
 
     /* Today's Live Punch Timeline Pill */
     #todayTimelineBox {
@@ -223,8 +249,7 @@
     .btn-break { background: linear-gradient(135deg, #f59e0b, #b45309); }
     .btn-leave { background: linear-gradient(135deg, #d97706, #92400e); font-size: 13px; padding: 12px 8px; }
     .btn-reg { background: linear-gradient(135deg, #0284c7, #0369a1); font-size: 13px; padding: 12px 8px; }
-    .btn-exp { background: linear-gradient(135deg, #7c3aed, #5b21b6); font-size: 13px; padding: 12px 8px; }
-    .btn-cal { background: #334155; font-size: 13px; padding: 12px 8px; }
+    .btn-cal { background: #334155; font-size: 14px; padding: 13px 10px; }
     .btn-manager { background: linear-gradient(135deg, #1e3a8a, #0f172a); border: 1.5px solid #fde047; }
     .btn-login { background: var(--primary); }
 
@@ -263,7 +288,7 @@
     .modal-head h3 { font-size: 16.5px; font-weight: 800; color: #0f172a; }
     .close-btn { font-size: 24px; cursor: pointer; color: #94a3b8; font-weight: 700; line-height: 1; }
 
-    /* Calendar Monthly Passbook Bar */
+    /* Leave Wallet Strip & Calendar Monthly Passbook Bar */
     .cal-kpi-bar {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -364,7 +389,7 @@
     </div>
 
     <h2>Aryavarta Automation</h2>
-    <p class="sub">Chikhali Head Office & Field Workforce Portal</p>
+    <p class="sub">Chikhali Head Office Attendance Portal</p>
 
     <!-- First-Time Login Box -->
     <div id="loginView" style="display: none;">
@@ -389,6 +414,9 @@
         <div id="leaveStatusBadge" class="status-badge-item"></div>
         <div id="regStatusBadge" class="status-badge-item"></div>
       </div>
+
+      <!-- Upcoming Official Company Holiday Banner -->
+      <div id="holidayBanner"></div>
 
       <!-- Live Shift Timer & Target Completion Calculator -->
       <div id="shiftTimerBox">
@@ -427,7 +455,7 @@
           <input type="text" id="wfhReason" placeholder="उदा: Manager Approved / Documentation">
         </div>
 
-        <!-- Daily Work Summary on Clock-Out -->
+        <!-- Daily Work Summary + Voice Dictation on Clock-Out -->
         <div id="workSummaryBox">
           <label for="dailyWorkNote" style="margin-top:0;">📋 आज का कार्य विवरण (Shift Work Summary - Optional):</label>
           <div class="chip-row">
@@ -437,7 +465,10 @@
             <span class="task-chip" onclick="appendWorkChip('Site Commissioning')">🚚 Site Service</span>
             <span class="task-chip" onclick="appendWorkChip('MIS / Quotations / Follow-up')">📊 MIS/Quotes</span>
           </div>
-          <input type="text" id="dailyWorkNote" placeholder="आज किए गए मुख्य कार्य लिखें..." style="margin-bottom:0;">
+          <div class="voice-input-row">
+            <input type="text" id="dailyWorkNote" placeholder="आज किए गए कार्य लिखें या 🎙️ दबाकर बोलें..." style="margin-bottom:0;">
+            <button type="button" class="mic-btn" id="voiceDictateBtn" onclick="startWorkVoiceDictation()" title="Speak Work Summary">🎙️</button>
+          </div>
         </div>
 
         <div class="btn-stack" id="punchButtons">
@@ -449,29 +480,34 @@
 
       <div id="statusMessage"></div>
 
-      <!-- Employee Self-Service Action Grid -->
+      <!-- Pure Attendance & Leave Self-Service Action Grid -->
       <div class="btn-stack" style="margin-top: 15px; border-top: 1.5px solid #f1f5f9; padding-top: 12px;">
         <div class="btn-grid-2">
           <button class="btn btn-leave" onclick="openLeaveModal()">📝 Apply Leave</button>
           <button class="btn btn-reg" onclick="openRegModal()">🛠️ Missed Punch</button>
         </div>
-        <div class="btn-grid-2">
-          <button class="btn btn-exp" onclick="openExpenseModal()">🧾 Site TA/DA</button>
-          <button class="btn btn-cal" onclick="openCalendarModal()">📅 My Passbook</button>
-        </div>
+        <button class="btn btn-cal" onclick="openCalendarModal()">📅 My Attendance Calendar & Passbook</button>
         <!-- Strictly visible ONLY to Manager Sumeet Singh (9766037466) -->
         <button class="btn btn-manager" id="btnManagerPanel" style="display: none;" onclick="openManagerModal()">👑 Manager Sumeet Singh Approval Center</button>
       </div>
     </div>
   </div>
 
-  <!-- 1. Leave Application Modal -->
+  <!-- 1. Leave Application Modal (With Live Leave Balance Wallet) -->
   <div id="leaveModal" class="modal">
     <div class="modal-card">
       <div class="modal-head">
         <h3>📝 छुट्टी आवेदन (Leave Request)</h3>
         <span class="close-btn" onclick="closeLeaveModal()">&times;</span>
       </div>
+
+      <!-- Live Annual Leave Quota & Balance Wallet -->
+      <div class="cal-kpi-bar" style="margin-bottom:8px;">
+        <div class="cal-kpi"><div class="v" id="lvQuotaTotal">18d</div><div class="k">🏖️ वार्षिक कोटा</div></div>
+        <div class="cal-kpi"><div class="v" id="lvQuotaUsed">0d</div><div class="k">✅ प्रयुक्त (Used)</div></div>
+        <div class="cal-kpi"><div class="v" id="lvQuotaRem" style="color:#059669;">18d</div><div class="k">🟢 शेष (Balance)</div></div>
+      </div>
+
       <label>अवधि चुनें (Duration):</label>
       <select id="leaveDuration" onchange="toggleLeaveDates(this.value)">
         <option value="single">Single Day (एक दिन)</option>
@@ -511,7 +547,7 @@
         <span class="close-btn" onclick="closeRegModal()">&times;</span>
       </div>
       <p style="font-size:11.5px; color:#475569; margin-bottom:8px;">
-        यदि आप Clock-In या Clock-Out करना भूल गए थे, तो वास्तविक समय दर्ज करें (मैनेजर Sumeet Singh द्वारा अनुमोदन हेतु):
+        यदि आप Clock-In या Clock-Out करना भूल गए थे, तो वास्तविक समय दर्ज करें (केवल मैनेजर Sumeet Singh द्वारा अनुमोदन हेतु):
       </p>
       <label>दिनांक (Shift Date):</label>
       <input type="date" id="regDate">
@@ -541,43 +577,7 @@
     </div>
   </div>
 
-  <!-- 3. Site Visit Expense / TA-DA Logger Modal -->
-  <div id="expenseModal" class="modal">
-    <div class="modal-card">
-      <div class="modal-head">
-        <h3>🧾 Site Expense / TA-DA Claim</h3>
-        <span class="close-btn" onclick="closeExpenseModal()">&times;</span>
-      </div>
-      <label>दिनांक (Expense Date):</label>
-      <input type="date" id="expDate">
-
-      <label>प्रोजेक्ट / क्लाइंट साइट का नाम (Site Name):</label>
-      <input type="text" id="expSite" placeholder="उदा: Tata Motors Bhosari / Kirloskar Site">
-
-      <div class="btn-grid-2">
-        <div>
-          <label>मद (Category):</label>
-          <select id="expCategory">
-            <option value="Travel / Auto / Fuel">Travel / Fuel</option>
-            <option value="Food / Daily Allowance">Food / DA</option>
-            <option value="Site Material / Hardware">Site Material</option>
-            <option value="Lodging / Stay">Lodging</option>
-          </select>
-        </div>
-        <div>
-          <label>राशि (Amount ₹):</label>
-          <input type="number" id="expAmount" placeholder="₹ उदा: 350">
-        </div>
-      </div>
-
-      <label>विवरण (km / Bill Note):</label>
-      <textarea id="expNotes" rows="2" placeholder="उदा: Chikhali HO से Tata Motors साइट आने-जाने का किराया..."></textarea>
-
-      <button class="btn btn-exp" id="btnSubmitExp" style="font-size:14.5px; padding:13px;" onclick="submitExpenseClaim()">TA/DA क्लेम जमा करें 🚀</button>
-    </div>
-  </div>
-
-  <!-- 4. Instant Calendar, Scorecard & Monthly Passbook Modal -->
+  <!-- 3. Instant Calendar, Scorecard & Monthly Passbook Modal -->
   <div id="calendarModal" class="modal">
     <div class="modal-card">
       <div class="modal-head">
@@ -618,7 +618,7 @@
     </div>
   </div>
 
-  <!-- 5. Exclusive Manager Sumeet Singh Approval & Floor Modal -->
+  <!-- 4. Exclusive Manager Sumeet Singh Approval & Floor Modal -->
   <div id="managerModal" class="modal">
     <div class="modal-card">
       <div class="modal-head">
@@ -626,26 +626,23 @@
         <span class="close-btn" onclick="closeManagerModal()">&times;</span>
       </div>
       <p style="font-size:11.5px; color:#475569; margin-bottom:8px;">
-        🔒 केवल मैनेजर <b>Sumeet Singh</b> छुट्टी, पंच सुधार और साइट खर्च स्वीकृत कर सकते हैं।
+        🔒 केवल मैनेजर <b>Sumeet Singh</b> छुट्टी और पंच सुधार अनुरोध स्वीकृत या अस्वीकृत कर सकते हैं।
       </p>
 
       <button type="button" class="btn btn-clockin" id="btnSyncSheetsMgr" style="padding:9px; font-size:12.5px; margin-bottom:10px;" onclick="triggerSheetRepairAsManager()">
-        🔧 Sync, Deduplicate & Repair All Sheets Now
+        🔧 Sync, Deduplicate & Repair All 10 Sheets Now
       </button>
 
-      <div class="admin-section-title">📋 1. Pending Leave Requests</div>
+      <div class="admin-section-title">📋 1. Pending Leave Requests (Sumeet Sir Only)</div>
       <div id="managerPendingLeaves">लोड हो रहा है...</div>
 
       <div class="admin-section-title">🛠️ 2. Pending Missed-Punch Regularizations</div>
       <div id="managerPendingRegs">लोड हो रहा है...</div>
 
-      <div class="admin-section-title">🧾 3. Pending Site Expense / TA-DA Claims</div>
-      <div id="managerPendingExpenses">लोड हो रहा है...</div>
-
-      <div class="admin-section-title">🏢 4. Today's Live Floor Attendance</div>
+      <div class="admin-section-title">🏢 3. Today's Live Floor Attendance</div>
       <div id="managerFloorList">लोड हो रहा है...</div>
 
-      <div class="admin-section-title">⚠️ 5. Unmarked Staff Today (1-Tap WhatsApp Ping)</div>
+      <div class="admin-section-title">⚠️ 4. Unmarked Staff Today (1-Tap WhatsApp Ping)</div>
       <div id="managerMissingList">लोड हो रहा है...</div>
     </div>
   </div>
@@ -664,6 +661,7 @@
     let calDate = new Date();
     let isSubmittingPunch = false;
     let shiftTimerInterval = null;
+    let activeShiftStartMs = 0;
     let isMuted = localStorage.getItem("aa_muted") === "true";
 
     let warmGPS = { lat: null, lon: null, acc: null, ts: 0 };
@@ -671,7 +669,7 @@
 
     let calendarCache = {};
     try {
-      calendarCache = JSON.parse(localStorage.getItem("aa_cal_cache_v6") || "{}");
+      calendarCache = JSON.parse(localStorage.getItem("aa_cal_cache_v7") || "{}");
     } catch (e) { calendarCache = {}; }
 
     if ('serviceWorker' in navigator) {
@@ -716,7 +714,7 @@
           if (attempt < retries) {
             await new Promise(r => setTimeout(r, 900 * attempt));
           } else {
-            const writeActions = ["logPunch", "submitLeave", "submitRegularization", "submitExpense"];
+            const writeActions = ["logPunch", "submitLeave", "submitRegularization"];
             if (writeActions.includes(paramsObj.action)) {
               try {
                 await fetch(targetUrl, { method: "GET", mode: "no-cors" });
@@ -767,6 +765,28 @@
       } else if (!input.value.includes(text)) {
         input.value = input.value.trim() + ", " + text;
       }
+    }
+
+    // Voice-to-Text Dictation for Shift Work Summary
+    function startWorkVoiceDictation() {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) {
+        return alert("आपके ब्राउज़र में वॉइस डिक्टेशन उपलब्ध नहीं है। कृपया ऊपर दिए गए चिप्स (Chips) पर टैप करें।");
+      }
+      triggerHaptic(25);
+      const rec = new SpeechRec();
+      rec.lang = 'hi-IN';
+      rec.interimResults = false;
+      const btn = document.getElementById("voiceDictateBtn");
+      btn.innerText = "🔴";
+      rec.onresult = (e) => {
+        const transcript = e.results[0][0].transcript;
+        appendWorkChip(transcript);
+        btn.innerText = "🎙️";
+      };
+      rec.onerror = () => { btn.innerText = "🎙️"; };
+      rec.onend = () => { btn.innerText = "🎙️"; };
+      rec.start();
     }
 
     // -------------------------------------------------------------
@@ -877,6 +897,7 @@
       if (!isoTime) return;
       const startMs = new Date(isoTime).getTime();
       if (isNaN(startMs)) return;
+      activeShiftStartMs = startMs;
       document.getElementById("shiftTimerBox").style.display = "block";
       if (shiftTimerInterval) clearInterval(shiftTimerInterval);
 
@@ -912,6 +933,7 @@
     }
 
     function stopShiftTimer() {
+      activeShiftStartMs = 0;
       if (shiftTimerInterval) clearInterval(shiftTimerInterval);
       document.getElementById("shiftTimerBox").style.display = "none";
     }
@@ -931,7 +953,6 @@
       document.getElementById("leaveStartDate").value = todayIST;
       document.getElementById("leaveEndDate").value = todayIST;
       document.getElementById("regDate").value = todayIST;
-      document.getElementById("expDate").value = todayIST;
 
       const urlParams = new URLSearchParams(window.location.search);
       const queryPhone = urlParams.get('p') || urlParams.get('phone');
@@ -1041,12 +1062,28 @@
           renderLeaveBadge(res.latestLeave);
           renderRegBadge(res.latestReg);
 
+          // Update Leave Quota Wallet
+          if (res.leaveWallet) {
+            document.getElementById("lvQuotaTotal").innerText = `${res.leaveWallet.quota}d`;
+            document.getElementById("lvQuotaUsed").innerText = `${res.leaveWallet.used}d`;
+            document.getElementById("lvQuotaRem").innerText = `${res.leaveWallet.remaining}d`;
+          }
+
+          // Update Upcoming Company Holiday Banner
+          const holBanner = document.getElementById("holidayBanner");
+          if (res.nextHoliday && res.nextHoliday.name) {
+            holBanner.style.display = "block";
+            holBanner.innerHTML = `🎉 आगामी कंपनी अवकाश: <b>${res.nextHoliday.name}</b> (${res.nextHoliday.date})`;
+          } else {
+            holBanner.style.display = "none";
+          }
+
           if (res.calendarHistory) {
             calendarCache[curKey] = {
               history: res.calendarHistory,
               summary: res.monthSummary || null
             };
-            localStorage.setItem("aa_cal_cache_v6", JSON.stringify(calendarCache));
+            localStorage.setItem("aa_cal_cache_v7", JSON.stringify(calendarCache));
             buildCalendarDOM(calDate.getFullYear(), calDate.getMonth(), calendarCache[curKey]);
 
             const todayEntry = res.calendarHistory[todayIST];
@@ -1183,7 +1220,7 @@
     }
 
     // -------------------------------------------------------------
-    // FAST PUNCH ENGINE (PRE-WARMED GPS + ZERO NETWORK ERROR)
+    // FAST PUNCH ENGINE (WITH HALF-DAY <4.5h ACCIDENTAL CLOCK-OUT GUARD)
     // -------------------------------------------------------------
     function calcDistanceMeters(lat1, lon1, lat2, lon2) {
       const R = 6371000;
@@ -1205,6 +1242,15 @@
     function handlePunch(punchType) {
       if (isSubmittingPunch) return;
       triggerHaptic(30);
+
+      // Smart Half-Day (<4.5h) Accidental Clock-Out Guard
+      if (punchType === "Clock Out" && activeShiftStartMs > 0) {
+        const elapsedHrs = (Date.now() - activeShiftStartMs) / 3600000;
+        if (elapsedHrs < 4.5) {
+          const confirmEarly = confirm(`⚠️ सावधान: अभी आपकी शिफ्ट के केवल ${elapsedHrs.toFixed(2)} घंटे हुए हैं।\n\n4.5 घंटे से पहले Clock Out करने पर Half-Day (आधा दिन) गिना जाता है।\n\nक्या आप फिर भी अभी Clock Out करना चाहते हैं?`);
+          if (!confirmEarly) return;
+        }
+      }
 
       const mode = document.getElementById("workMode").value;
       const siteVal = document.getElementById("siteName").value.trim();
@@ -1451,58 +1497,7 @@
     }
 
     // -------------------------------------------------------------
-    // 3. SITE EXPENSE / TA-DA CLAIM SUBMISSION
-    // -------------------------------------------------------------
-    function openExpenseModal() { triggerHaptic(15); document.getElementById("expenseModal").style.display = "flex"; }
-    function closeExpenseModal() { document.getElementById("expenseModal").style.display = "none"; }
-
-    async function submitExpenseClaim() {
-      const eDate = document.getElementById("expDate").value;
-      const eSite = document.getElementById("expSite").value.trim();
-      const eCat = document.getElementById("expCategory").value;
-      const eAmt = document.getElementById("expAmount").value.trim();
-      const eNotes = document.getElementById("expNotes").value.trim();
-
-      if (!eDate || !eSite || !eAmt) {
-        return alert("कृपया दिनांक, साइट का नाम और राशि (₹) दर्ज करें।");
-      }
-
-      const btn = document.getElementById("btnSubmitExp");
-      btn.disabled = true;
-      btn.innerText = "जमा हो रहा है...";
-
-      const params = {
-        action: "submitExpense",
-        phone: currentEmp.phone,
-        name: currentEmp.name,
-        expDate: eDate,
-        siteName: eSite,
-        category: eCat,
-        amount: eAmt,
-        notes: eNotes || "Site Visit Expense"
-      };
-
-      try {
-        await ultraReliableApiCall(params, 3);
-        btn.disabled = false;
-        btn.innerText = "TA/DA क्लेम जमा करें 🚀";
-        closeExpenseModal();
-        document.getElementById("expAmount").value = "";
-        document.getElementById("expNotes").value = "";
-        triggerHaptic([60, 40, 100]);
-        speakHindi("साइट खर्च क्लेम दर्ज हो चुका है।");
-        showMessage(`✅ ₹${eAmt} (${eSite}) TA/DA क्लेम मैनेजर Sumeet Singh जी के अनुमोदन हेतु दर्ज हो गया है!`, "#059669");
-      } catch (err) {
-        btn.disabled = false;
-        btn.innerText = "TA/DA क्लेम जमा करें 🚀";
-        closeExpenseModal();
-        queueOfflineAction(params);
-        showMessage(`✅ ₹${eAmt} TA/DA क्लेम सुरक्षित कर लिया गया है!`, "#059669");
-      }
-    }
-
-    // -------------------------------------------------------------
-    // 4. 0ms INSTANT CALENDAR, SCORECARD & EXPORT ENGINE
+    // 3. 0ms INSTANT CALENDAR, SCORECARD & EXPORT ENGINE
     // -------------------------------------------------------------
     function openCalendarModal() {
       triggerHaptic(15);
@@ -1560,7 +1555,7 @@
             history: data.history || {},
             summary: data.monthSummary || null
           };
-          localStorage.setItem("aa_cal_cache_v6", JSON.stringify(calendarCache));
+          localStorage.setItem("aa_cal_cache_v7", JSON.stringify(calendarCache));
           if (updateUI && calDate.getFullYear() === year && calDate.getMonth() === month) {
             buildCalendarDOM(year, month, calendarCache[key]);
           }
@@ -1726,7 +1721,7 @@
     }
 
     // -------------------------------------------------------------
-    // 5. EXCLUSIVE MANAGER SUMEET SINGH COMMAND CENTER
+    // 4. EXCLUSIVE MANAGER SUMEET SINGH COMMAND CENTER
     // -------------------------------------------------------------
     function openManagerModal() {
       if (currentEmp.phone !== SUMEET_SINGH_PHONE) {
@@ -1750,7 +1745,6 @@
     function loadManagerOverview() {
       document.getElementById("managerPendingLeaves").innerHTML = "🔄 लोड हो रहा है...";
       document.getElementById("managerPendingRegs").innerHTML = "🔄 लोड हो रहा है...";
-      document.getElementById("managerPendingExpenses").innerHTML = "🔄 लोड हो रहा है...";
       document.getElementById("managerFloorList").innerHTML = "🔄 लोड हो रहा है...";
       document.getElementById("managerMissingList").innerHTML = "🔄 लोड हो रहा है...";
 
@@ -1781,8 +1775,8 @@
                   <span style="color:#64748b;">📅 ${lv.dates} | ${lv.reason}</span>
                 </div>
                 <div style="display:flex;">
-                  <button class="mini-act-btn" style="background:#059669;" onclick="decideLeaveAsSumeet('${lv.id}', 'Approved')">Approve</button>
-                  <button class="mini-act-btn" style="background:#dc2626;" onclick="decideLeaveAsSumeet('${lv.id}', 'Rejected')">Reject</button>
+                  <button class="mini-act-btn" style="background:#059669;" onclick="decideItemAsSumeet('managerDecision', '${lv.id}', 'Approved')">Approve</button>
+                  <button class="mini-act-btn" style="background:#dc2626;" onclick="decideItemAsSumeet('managerDecision', '${lv.id}', 'Rejected')">Reject</button>
                 </div>
               `;
               pBox.appendChild(item);
@@ -1812,30 +1806,7 @@
             });
           }
 
-          // 3. Site Expense Claims
-          const eBox = document.getElementById("managerPendingExpenses");
-          if (!res.pendingExpenses || res.pendingExpenses.length === 0) {
-            eBox.innerHTML = "<div class='admin-list-item'>✅ कोई लंबित साइट खर्च क्लेम नहीं है।</div>";
-          } else {
-            eBox.innerHTML = "";
-            res.pendingExpenses.forEach(ex => {
-              const item = document.createElement("div");
-              item.className = "admin-list-item";
-              item.innerHTML = `
-                <div>
-                  <b>${ex.name}</b> — <span style="color:#047857;font-weight:800;">₹${ex.amount}</span><br>
-                  <span style="color:#64748b;">📍 ${ex.site} (${ex.category}) | ${ex.date}</span>
-                </div>
-                <div style="display:flex;">
-                  <button class="mini-act-btn" style="background:#059669;" onclick="decideItemAsSumeet('expenseDecision', '${ex.id}', 'Approved')">Approve</button>
-                  <button class="mini-act-btn" style="background:#dc2626;" onclick="decideItemAsSumeet('expenseDecision', '${ex.id}', 'Rejected')">Reject</button>
-                </div>
-              `;
-              eBox.appendChild(item);
-            });
-          }
-
-          // 4. Live Floor
+          // 3. Live Floor
           const fBox = document.getElementById("managerFloorList");
           if (!res.floorList || res.floorList.length === 0) {
             fBox.innerHTML = "<div class='admin-list-item'>⚪ आज अभी तक कोई पंच दर्ज नहीं हुआ है।</div>";
@@ -1856,7 +1827,7 @@
             });
           }
 
-          // 5. Missing Staff WhatsApp Ping
+          // 4. Missing Staff WhatsApp Ping
           const mBox = document.getElementById("managerMissingList");
           if (!res.missingList || res.missingList.length === 0) {
             mBox.innerHTML = "<div class='admin-list-item'>🎉 सभी कर्मचारियों की उपस्थिति दर्ज हो चुकी है!</div>";
@@ -1877,10 +1848,6 @@
         .catch(() => {
           document.getElementById("managerPendingLeaves").innerHTML = "⚠️ पुनः लोड करने के लिए पैनल दोबारा खोलें।";
         });
-    }
-
-    function decideLeaveAsSumeet(leaveId, decision) {
-      decideItemAsSumeet("managerDecision", leaveId, decision);
     }
 
     function decideItemAsSumeet(actionName, itemId, decision) {
@@ -1912,18 +1879,18 @@
       triggerHaptic(30);
       const btn = document.getElementById("btnSyncSheetsMgr");
       btn.disabled = true;
-      btn.innerText = "🔄 सभी शीट्स सिंक हो रही हैं...";
+      btn.innerText = "🔄 सभी 10 शीट्स सिंक हो रही हैं...";
 
       ultraReliableApiCall({ action: "repairSheets" }, 2)
         .then(res => {
           btn.disabled = false;
-          btn.innerText = "✅ All Sheets Repaired & Synced!";
+          btn.innerText = "✅ All 10 Sheets Repaired & Synced!";
           alert("✅ " + (res.message || "सभी Google Sheet टैब्स सफलतापूर्वक अपडेट हो चुके हैं!"));
           loadManagerOverview();
         })
         .catch(() => {
           btn.disabled = false;
-          btn.innerText = "🔧 Sync, Deduplicate & Repair All Sheets Now";
+          btn.innerText = "🔧 Sync, Deduplicate & Repair All 10 Sheets Now";
         });
     }
 
