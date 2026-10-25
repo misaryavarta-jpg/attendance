@@ -6063,5 +6063,612 @@
   }
 </script>
 
+
+<!-- ===================================================================== -->
+<!-- 🛡️ CATEGORY F: ANTI-EXCUSE TECH, WALKIE-TALKIE & QUALITY SOPs ADD-ON  -->
+<!-- (#21 Battery & Net Logger, #22 15-Sec Voice Walkie-Talkie,            -->
+<!--  #23 Tea/OT Snack Headcount Poll, #24 Pocket Wiring & Pre-FAT SOP)    -->
+<!-- Paste this entire block at the very bottom of index.html              -->
+<!-- ===================================================================== -->
+<style>
+  .btn-walkie { background: linear-gradient(135deg, #e11d48, #9f1239); color: #fff; font-size: 13px; padding: 12px 10px; }
+  .btn-teapoll { background: linear-gradient(135deg, #b45309, #78350f); color: #fff; font-size: 13px; padding: 12px 10px; }
+  .btn-wiresop { background: linear-gradient(135deg, #1d4ed8, #1e3a8a); color: #fff; font-size: 13px; padding: 12px 10px; }
+
+  .walkie-rec-box {
+    background: #fff1f2;
+    border: 2px dashed #f43f5e;
+    border-radius: 16px;
+    padding: 14px;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .sop-ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11.2px;
+    margin-bottom: 12px;
+  }
+  .sop-ref-table th {
+    background: #1e3a8a;
+    color: #fff;
+    padding: 6px 8px;
+    text-align: left;
+  }
+  .sop-ref-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #cbd5e1;
+    color: #0f172a;
+    font-weight: 600;
+  }
+</style>
+
+<!-- #22: 15-Second Audio Voice-Memo Walkie-Talkie Modal -->
+<div id="walkieTalkieModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>🎙️ Walkie-Talkie to Sumeet Sir</h3>
+      <span class="close-btn" onclick="closeWalkieTalkieModal()">&times;</span>
+    </div>
+    <p style="font-size:11.5px; color:#475569; margin-bottom:8px;">
+      शोरगुल वाली साइट या शॉपफ्लोर से टाइप करने के बजाय अपनी आवाज़ में <b>15-सेकंड का ऑडियो संदेश (Voice Memo)</b> सीधे मैनेजर <b>Sumeet Singh</b> जी को भेजें:
+    </p>
+
+    <label>पैनल / साइट / विषय (Project or Topic):</label>
+    <input type="text" id="wtTopicInput" placeholder="उदा: Kirloskar Site PLC Fault / MCC Busbar Issue">
+
+    <div class="walkie-rec-box">
+      <div id="wtTimerDisplay" style="font-size:20px; font-weight:900; color:#be123c; font-family:monospace; margin-bottom:8px;">
+        00:00 / 00:15
+      </div>
+      <div class="btn-grid-2">
+        <button type="button" class="btn btn-walkie" id="btnStartWalkieRec" style="padding:11px; font-size:13px;" onclick="startWalkieRecording()">
+          🔴 Start Recording
+        </button>
+        <button type="button" class="btn" id="btnStopWalkieRec" style="background:#334155; padding:11px; font-size:13px;" disabled onclick="stopWalkieRecording()">
+          ⏹️ Stop
+        </button>
+      </div>
+      <audio id="wtAudioPreview" controls style="width:100%; margin-top:10px; display:none;"></audio>
+    </div>
+
+    <button type="button" class="btn btn-clockin" id="btnSendWalkieAudio" style="display:none; font-size:14px; padding:13px;" onclick="submitWalkieVoiceMemo()">
+      📤 Send Voice Memo to Sumeet Sir 🚀
+    </button>
+  </div>
+</div>
+
+<!-- #23: Daily Tea / Overtime Snack Headcount Poll Modal -->
+<div id="teaPollModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>☕ Tea & Overtime Snack Poll</h3>
+      <span class="close-btn" onclick="closeTeaPollModal()">&times;</span>
+    </div>
+    <p style="font-size:11.5px; color:#475569; margin-bottom:10px;">
+      Chikhali Head Office पैंट्री और शाम के ओवरटाइम स्नैक्स की सटीक संख्या (Headcount) दर्ज करें ताकि भोजन/चाय की बर्बादी न हो:
+    </p>
+
+    <div class="cal-kpi-bar" style="margin-bottom:10px;">
+      <div class="cal-kpi"><div class="v" id="tpCountReg" style="color:#b45309;">0</div><div class="k">☕ Regular Tea</div></div>
+      <div class="cal-kpi"><div class="v" id="tpCountOt" style="color:#e11d48;">0</div><div class="k">🥟 Evening OT Snack</div></div>
+      <div class="cal-kpi"><div class="v" id="tpCountSkip" style="color:#64748b;">0</div><div class="k">🚫 No Tea / Site</div></div>
+    </div>
+
+    <label>आज की अपनी पसंद चुनें (Select Your Today's Preference):</label>
+    <select id="tpChoiceSelect">
+      <option value="Regular Office Tea (Morning & Afternoon)">☕ Regular Office Tea (सुबह और दोपहर चाय)</option>
+      <option value="Evening Overtime Tea + Snacks (Staying Late)">🥟 Evening Overtime Tea + Snacks (शाम ओवरटाइम)</option>
+      <option value="Black Tea / Coffee Only">🍵 Black Tea / Coffee Only</option>
+      <option value="No Tea Today (Out on Site / Fasting)">🚫 No Tea Today (आज साइट पर / उपवास)</option>
+    </select>
+
+    <button type="button" class="btn btn-teapoll" id="btnSubmitTeaPoll" style="font-size:14px; padding:12px; margin-top:6px;" onclick="submitTeaPollResponse()">
+      ☕ Update My Today's Tea Count 🚀
+    </button>
+  </div>
+</div>
+
+<!-- #24: Pocket Wiring Standards & Pre-FAT Quality Checklist Modal -->
+<div id="wiringSopModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>📚 Wiring SOP & Pre-FAT Check</h3>
+      <span class="close-btn" onclick="closeWiringSopModal()">&times;</span>
+    </div>
+
+    <div class="admin-section-title" style="margin-top:0; color:#1e3a8a;">⚡ 1. Aryavarta Standard Panel Wiring Reference</div>
+    <table class="sop-ref-table">
+      <thead>
+        <tr><th>Circuit Type</th><th>Standard Color</th><th>Min Size / Torque</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>3-Ph Power (R-Y-B-N)</td><td>Red, Yellow, Blue, Black</td><td>As per BOM (M8: 20Nm, M10: 40Nm)</td></tr>
+        <tr><td>AC Control (110V/230V)</td><td>Red (Phase) / Black (Neutral)</td><td>1.5 sq.mm Copper Flex</td></tr>
+        <tr><td>DC Control (24V DC)</td><td>Blue (+24V) / White-Blue (0V)</td><td>1.0 / 1.5 sq.mm Flex</td></tr>
+        <tr><td>CT Current Circuit</td><td>Red, Yellow, Blue, Black</td><td>2.5 sq.mm (With Shorting TB)</td></tr>
+        <tr><td>PLC Analog (4-20mA)</td><td>Shielded Twisted Pair</td><td>0.75 / 1.0 sq.mm (1-End Earth)</td></tr>
+        <tr><td>Panel & Door Earthing</td><td>Green / Yellow-Green</td><td>2.5 sq.mm Braided / Copper</td></tr>
+      </tbody>
+    </table>
+
+    <div class="admin-section-title" style="color:#047857;">✅ 2. 6-Point Pre-FAT Self-Inspection Sign-Off</div>
+    <p style="font-size:11px; color:#475569; margin-bottom:6px;">
+      QC या क्लाइंट FAT के लिए पैनल देने से पहले अपनी वायरिंग की स्वयं जांच कर सबमिट करें:
+    </p>
+
+    <input type="text" id="pfPanelName" placeholder="पैनल का नाम लिखें (उदा: 125HP VFD Panel - Job #104)">
+
+    <label class="ppe-check-row" style="padding:7px 10px; font-size:11.8px;">
+      <input type="checkbox" id="pfChk1" checked>
+      <span>1. बसबार टॉर्क मार्किंग और फेज क्लीयरेंस (Busbar Torque & Clearance OK)</span>
+    </label>
+    <label class="ppe-check-row" style="padding:7px 10px; font-size:11.8px;">
+      <input type="checkbox" id="pfChk2" checked>
+      <span>2. सभी फेरुल और TB नंबरिंग SLD ड्राइंग के अनुसार (Ferrule & TB Matched)</span>
+    </label>
+    <label class="ppe-check-row" style="padding:7px 10px; font-size:11.8px;">
+      <input type="checkbox" id="pfChk3" checked>
+      <span>3. मल्टीमीटर कंटिन्यूटी व मेगर इंसुलेशन टेस्ट पास (Continuity & Short Test OK)</span>
+    </label>
+    <label class="ppe-check-row" style="padding:7px 10px; font-size:11.8px;">
+      <input type="checkbox" id="pfChk4" checked>
+      <span>4. डोर अर्थिंग, ग्लैंड प्लेट और नेमप्लेट फिक्स (Earthing & Nameplates Fixed)</span>
+    </label>
+    <label class="ppe-check-row" style="padding:7px 10px; font-size:11.8px;">
+      <input type="checkbox" id="pfChk5" checked>
+      <span>5. लग्स क्रिम्पिंग टाइट है, कोई ढीला तार नहीं (No Loose Lugs / Terminations)</span>
+    </label>
+    <label class="ppe-check-row" style="padding:7px 10px; font-size:11.8px;">
+      <input type="checkbox" id="pfChk6" checked>
+      <span>6. पैनल के अंदर से सभी वायर के टुकड़े/कचरा साफ (Panel Vacuumed & Clean)</span>
+    </label>
+
+    <button type="button" class="btn btn-wiresop" id="btnSubmitPreFat" style="font-size:13.8px; padding:12px;" onclick="submitPreFatSelfCheck()">
+      ✅ Submit Pre-FAT Quality Sign-Off to Sumeet Sir 🚀
+    </button>
+  </div>
+</div>
+
+<script>
+  window.currentDeviceTelemetry = "🔋 --% | 📶 Online";
+  let walkieRecorder = null;
+  let walkieChunks = [];
+  let walkieTimerInterval = null;
+  let walkieSecCount = 0;
+  let walkieBase64Audio = "";
+  let walkieMimeType = "audio/webm";
+  let teaPollSummaryCache = { reg: 0, ot: 0, skip: 0, myChoice: "" };
+
+  async function catFPostCall(payloadObj, retries = 2) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payloadObj),
+          redirect: "follow"
+        });
+        if (response.ok) return await response.json();
+      } catch (err) {
+        if (attempt < retries) await new Promise(r => setTimeout(r, 900 * attempt));
+        else throw err;
+      }
+    }
+  }
+
+  // #21: Initialize Real-Time Phone Battery % & Network Shield
+  function initBatteryAndNetworkShield() {
+    const topBar = document.querySelector(".top-bar");
+    if (topBar && !document.getElementById("batteryShieldPill")) {
+      const batPill = document.createElement("span");
+      batPill.id = "batteryShieldPill";
+      batPill.className = "pill-mini";
+      batPill.style.fontSize = "10.5px";
+      batPill.innerText = "🔋 --%";
+      topBar.insertBefore(batPill, topBar.lastElementChild);
+    }
+
+    const updateNetAndBat = (batObj) => {
+      const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      const netType = conn && conn.effectiveType ? conn.effectiveType.toUpperCase() : (navigator.onLine ? "WIFI/4G" : "OFFLINE");
+      let batText = "🔋 N/A";
+      if (batObj) {
+        const pct = Math.round(batObj.level * 100);
+        const chg = batObj.charging ? "⚡" : "";
+        batText = `🔋${chg} ${pct}%`;
+      }
+      window.currentDeviceTelemetry = `${batText} | 📶 ${netType}`;
+      const pill = document.getElementById("batteryShieldPill");
+      if (pill) pill.innerText = `${batText} (${netType})`;
+    };
+
+    if (navigator.getBattery) {
+      navigator.getBattery().then(bat => {
+        updateNetAndBat(bat);
+        bat.addEventListener("levelchange", () => updateNetAndBat(bat));
+        bat.addEventListener("chargingchange", () => updateNetAndBat(bat));
+      }).catch(() => updateNetAndBat(null));
+    } else {
+      updateNetAndBat(null);
+    }
+  }
+
+  function initCategoryFModulesUI() {
+    initBatteryAndNetworkShield();
+
+    // Inject Category F tiles (#22, #23, #24) into Super-App Grid or Action Stack
+    const superGrid = document.querySelector(".super-app-grid");
+    if (superGrid && !document.getElementById("tileWalkieTalkie")) {
+      const catFTiles = `
+        <div class="super-tile" id="tileWalkieTalkie" onclick="openWalkieTalkieModal()">
+          <div class="ico" style="background:#ffe4e6;color:#e11d48;">🎙️</div>
+          <div class="lbl">Voice Memo</div>
+        </div>
+        <div class="super-tile" id="tileTeaPoll" onclick="openTeaPollModal()">
+          <div class="ico" style="background:#fef3c7;color:#b45309;">☕</div>
+          <div class="lbl">Tea / OT Poll</div>
+        </div>
+        <div class="super-tile" id="tileWiringSop" onclick="openWiringSopModal()">
+          <div class="ico" style="background:#dbeafe;color:#1e3a8a;">📚</div>
+          <div class="lbl">Wiring SOP</div>
+        </div>
+      `;
+      superGrid.insertAdjacentHTML("beforeend", catFTiles);
+    } else if (!superGrid && !document.getElementById("catFFallbackBtnGroup")) {
+      const calBtn = document.querySelector(".btn-cal");
+      if (calBtn) {
+        const grp = document.createElement("div");
+        grp.id = "catFFallbackBtnGroup";
+        grp.className = "btn-stack";
+        grp.innerHTML = `
+          <div class="btn-grid-2">
+            <button type="button" class="btn btn-walkie" onclick="openWalkieTalkieModal()">🎙️ Voice Walkie-Talkie</button>
+            <button type="button" class="btn btn-teapoll" onclick="openTeaPollModal()">☕ Tea / OT Poll</button>
+          </div>
+          <button type="button" class="btn btn-wiresop" onclick="openWiringSopModal()">📚 Pocket Wiring SOP & Pre-FAT Checklist</button>
+        `;
+        calBtn.parentNode.insertBefore(grp, calBtn);
+      }
+    }
+
+    // Inject Sumeet Sir's Category F Panels into #managerModal
+    const mgrCard = document.querySelector("#managerModal .modal-card");
+    const firstSec = mgrCard ? mgrCard.querySelector(".admin-section-title") : null;
+    if (mgrCard && firstSec && !document.getElementById("managerWalkieMemosList")) {
+      const catFMgr = document.createElement("div");
+      catFMgr.innerHTML = `
+        <div class="admin-section-title" style="color:#be123c;">🎙️ Employee Voice Walkie-Talkie Memos</div>
+        <div id="managerWalkieMemosList">लोड हो रहा है...</div>
+        <div class="admin-section-title" style="color:#b45309;">☕ Today's Live Tea & Overtime Snack Headcount</div>
+        <div id="managerTeaHeadcountBox" class="admin-list-item">लोड हो रहा है...</div>
+        <div class="admin-section-title" style="color:#1e3a8a;">✅ Recent Pre-FAT Quality Sign-Offs</div>
+        <div id="managerPreFatList">लोड हो रहा है...</div>
+      `;
+      mgrCard.insertBefore(catFMgr, firstSec);
+    }
+  }
+
+  // Chain onto ultraReliableApiCall:
+  // 1) Automatically stamps #21 Phone Battery % & Network into every logPunch & submitRegularization!
+  // 2) Syncs Tea Poll, Walkie-Talkie Memos & Pre-FAT checklists.
+  if (typeof window.ultraReliableApiCall === "function") {
+    const _prevUltraApiCallCatF = window.ultraReliableApiCall;
+    window.ultraReliableApiCall = async function(paramsObj, retries = 3) {
+      if (paramsObj && window.currentDeviceTelemetry) {
+        if (paramsObj.action === "logPunch" && paramsObj.detail && !paramsObj.detail.includes("🔋")) {
+          paramsObj.detail = `${paramsObj.detail} [${window.currentDeviceTelemetry}]`;
+        }
+        if (paramsObj.action === "submitRegularization" && paramsObj.reason && !paramsObj.reason.includes("🔋")) {
+          paramsObj.reason = `${paramsObj.reason} [Submitted @ ${window.currentDeviceTelemetry}]`;
+        }
+      }
+
+      const res = await _prevUltraApiCallCatF(paramsObj, retries);
+      try {
+        if (paramsObj && paramsObj.action === "checkStatus" && res && res.catFData) {
+          teaPollSummaryCache = res.catFData.teaSummary || { reg: 0, ot: 0, skip: 0, myChoice: "" };
+          updateTeaPollModalCounters();
+        }
+        if (paramsObj && paramsObj.action === "getAdminOverview" && res && !res.unauthorized) {
+          renderManagerWalkieMemos(res.walkieMemosList || []);
+          renderManagerTeaHeadcount(res.teaSummary || { reg: 0, ot: 0, skip: 0 });
+          renderManagerPreFatList(res.recentPreFatChecks || []);
+        }
+      } catch (eCatF) {}
+      return res;
+    };
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initCategoryFModulesUI);
+  } else {
+    initCategoryFModulesUI();
+  }
+
+  // -------------------------------------------------------------------------
+  // #22: 15-SECOND VOICE WALKIE-TALKIE FUNCTIONS
+  // -------------------------------------------------------------------------
+  function openWalkieTalkieModal() {
+    triggerHaptic(15);
+    walkieBase64Audio = "";
+    document.getElementById("wtAudioPreview").style.display = "none";
+    document.getElementById("btnSendWalkieAudio").style.display = "none";
+    document.getElementById("wtTimerDisplay").innerText = "00:00 / 00:15";
+    document.getElementById("walkieTalkieModal").style.display = "flex";
+  }
+
+  function closeWalkieTalkieModal() {
+    if (walkieRecorder && walkieRecorder.state === "recording") {
+      walkieRecorder.stop();
+    }
+    if (walkieTimerInterval) clearInterval(walkieTimerInterval);
+    document.getElementById("walkieTalkieModal").style.display = "none";
+  }
+
+  async function startWalkieRecording() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      return alert("आपके ब्राउज़र में ऑडियो रिकॉर्डिंग उपलब्ध नहीं है।");
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      walkieChunks = [];
+      walkieMimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "audio/mp4";
+      walkieRecorder = new MediaRecorder(stream);
+
+      walkieRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) walkieChunks.push(e.data);
+      };
+
+      walkieRecorder.onstop = () => {
+        stream.getTracks().forEach(t => t.stop());
+        if (walkieTimerInterval) clearInterval(walkieTimerInterval);
+        const blob = new Blob(walkieChunks, { type: walkieMimeType });
+        const audioUrl = URL.createObjectURL(blob);
+        const player = document.getElementById("wtAudioPreview");
+        player.src = audioUrl;
+        player.style.display = "block";
+        document.getElementById("btnSendWalkieAudio").style.display = "flex";
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          walkieBase64Audio = reader.result.split(",")[1];
+        };
+        reader.readAsDataURL(blob);
+      };
+
+      walkieRecorder.start();
+      triggerHaptic(30);
+      walkieSecCount = 0;
+      document.getElementById("btnStartWalkieRec").disabled = true;
+      document.getElementById("btnStopWalkieRec").disabled = false;
+      document.getElementById("wtTimerDisplay").innerText = "🔴 00:00 / 00:15";
+
+      walkieTimerInterval = setInterval(() => {
+        walkieSecCount++;
+        const s = String(walkieSecCount).padStart(2, "0");
+        document.getElementById("wtTimerDisplay").innerText = `🔴 00:${s} / 00:15`;
+        if (walkieSecCount >= 15) {
+          stopWalkieRecording();
+        }
+      }, 1000);
+    } catch (err) {
+      alert("🎙️ कृपया माइक्रोफ़ोन अनुमति (Microphone Permission) Allow करें।");
+    }
+  }
+
+  function stopWalkieRecording() {
+    if (walkieRecorder && walkieRecorder.state === "recording") {
+      walkieRecorder.stop();
+      triggerHaptic(25);
+    }
+    document.getElementById("btnStartWalkieRec").disabled = false;
+    document.getElementById("btnStopWalkieRec").disabled = true;
+    document.getElementById("wtTimerDisplay").innerText = `✅ Recorded (${walkieSecCount}s)`;
+  }
+
+  async function submitWalkieVoiceMemo() {
+    if (!walkieBase64Audio) return alert("कृपया पहले ऑडियो रिकॉर्ड करें।");
+    const topic = document.getElementById("wtTopicInput").value.trim() || "Shopfloor / Site Voice Update";
+    const btn = document.getElementById("btnSendWalkieAudio");
+    btn.disabled = true;
+    btn.innerText = "⏳ Sumeet Sir को भेजा जा रहा है...";
+
+    try {
+      await catFPostCall({
+        action: "submitWalkieTalkie",
+        phone: currentEmp.phone,
+        name: currentEmp.name,
+        topic: topic,
+        durationSec: walkieSecCount,
+        batteryInfo: window.currentDeviceTelemetry,
+        fileBase64: walkieBase64Audio,
+        fileMimeType: walkieMimeType
+      }, 2);
+
+      btn.disabled = false;
+      btn.innerText = "📤 Send Voice Memo to Sumeet Sir 🚀";
+      document.getElementById("wtTopicInput").value = "";
+      closeWalkieTalkieModal();
+      triggerHaptic([60, 40, 100]);
+      speakHindi("आपका वॉइस संदेश प्रबंधक सुमीत सिंह जी को भेज दिया गया है।");
+      showMessage(`🎙️ Voice Walkie-Talkie Memo (${walkieSecCount}s) sent to Manager Sumeet Singh!`, "#059669");
+    } catch (e) {
+      btn.disabled = false;
+      btn.innerText = "📤 Send Voice Memo to Sumeet Sir 🚀";
+      alert("⚠️ नेटवर्क धीमा है, कृपया पुनः प्रयास करें।");
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // #23: DAILY TEA & OVERTIME SNACK HEADCOUNT POLL FUNCTIONS
+  // -------------------------------------------------------------------------
+  function openTeaPollModal() {
+    triggerHaptic(15);
+    updateTeaPollModalCounters();
+    document.getElementById("teaPollModal").style.display = "flex";
+  }
+
+  function closeTeaPollModal() {
+    document.getElementById("teaPollModal").style.display = "none";
+  }
+
+  function updateTeaPollModalCounters() {
+    const elReg = document.getElementById("tpCountReg");
+    const elOt = document.getElementById("tpCountOt");
+    const elSkip = document.getElementById("tpCountSkip");
+    if (elReg) elReg.innerText = teaPollSummaryCache.reg || 0;
+    if (elOt) elOt.innerText = teaPollSummaryCache.ot || 0;
+    if (elSkip) elSkip.innerText = teaPollSummaryCache.skip || 0;
+  }
+
+  async function submitTeaPollResponse() {
+    const choice = document.getElementById("tpChoiceSelect").value;
+    const btn = document.getElementById("btnSubmitTeaPoll");
+    btn.disabled = true;
+    btn.innerText = "⏳ अपडेट हो रहा है...";
+
+    try {
+      const res = await catFPostCall({
+        action: "submitTeaPoll",
+        phone: currentEmp.phone,
+        name: currentEmp.name,
+        choice: choice
+      }, 2);
+
+      btn.disabled = false;
+      btn.innerText = "☕ Update My Today's Tea Count 🚀";
+      if (res && res.teaSummary) {
+        teaPollSummaryCache = res.teaSummary;
+        updateTeaPollModalCounters();
+      }
+      closeTeaPollModal();
+      triggerHaptic(30);
+      speakHindi("आपकी आज की चाय और स्नैक प्राथमिकता दर्ज कर ली गई है।");
+      showMessage(`☕ Tea / Snack Poll Updated: ${choice}`, "#059669");
+    } catch (e) {
+      btn.disabled = false;
+      btn.innerText = "☕ Update My Today's Tea Count 🚀";
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // #24: POCKET WIRING SOP & PRE-FAT QUALITY CHECKLIST FUNCTIONS
+  // -------------------------------------------------------------------------
+  function openWiringSopModal() {
+    triggerHaptic(15);
+    document.getElementById("wiringSopModal").style.display = "flex";
+  }
+
+  function closeWiringSopModal() {
+    document.getElementById("wiringSopModal").style.display = "none";
+  }
+
+  async function submitPreFatSelfCheck() {
+    const panelName = document.getElementById("pfPanelName").value.trim();
+    if (!panelName) {
+      alert("कृपया पैनल या जॉब का नाम लिखें (उदा: MCC Panel / VFD Panel)।");
+      return document.getElementById("pfPanelName").focus();
+    }
+
+    for (let i = 1; i <= 6; i++) {
+      if (!document.getElementById("pfChk" + i).checked) {
+        return alert(`⚠️ कृपया बिंदु #${i} की जांच पूरी करके टिक करें ताकि Zero-Rework सुनिश्चित हो सके।`);
+      }
+    }
+
+    const btn = document.getElementById("btnSubmitPreFat");
+    btn.disabled = true;
+    btn.innerText = "⏳ Pre-FAT Sign-Off दर्ज हो रहा है...";
+
+    try {
+      await catFPostCall({
+        action: "submitPreFatCheck",
+        phone: currentEmp.phone,
+        name: currentEmp.name,
+        panelName: panelName,
+        batteryInfo: window.currentDeviceTelemetry
+      }, 2);
+
+      btn.disabled = false;
+      btn.innerText = "✅ Submit Pre-FAT Quality Sign-Off to Sumeet Sir 🚀";
+      document.getElementById("pfPanelName").value = "";
+      closeWiringSopModal();
+      triggerHaptic([60, 40, 100]);
+      speakHindi("प्री-एफएटी क्वालिटी चेकलिस्ट सफलतापूर्वक सबमिट हो गई है।");
+      showMessage(`✅ Pre-FAT 6-Point Quality Sign-Off recorded for ${panelName}!`, "#059669");
+    } catch (e) {
+      btn.disabled = false;
+      btn.innerText = "✅ Submit Pre-FAT Quality Sign-Off to Sumeet Sir 🚀";
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // SUMEET SIR'S MANAGER COMMAND CENTER RENDERERS FOR CATEGORY F
+  // -------------------------------------------------------------------------
+  function renderManagerWalkieMemos(list) {
+    const box = document.getElementById("managerWalkieMemosList");
+    if (!box) return;
+    if (!list || list.length === 0) {
+      box.innerHTML = "<div class='admin-list-item'>🟢 कोई नया वॉइस मेमो (Walkie-Talkie) लंबित नहीं है।</div>";
+      return;
+    }
+    box.innerHTML = "";
+    list.forEach(w => {
+      const audioBtn = w.audioUrl ? `<a class="mini-act-btn" style="background:#e11d48;" href="${w.audioUrl}" target="_blank">▶️ Listen (${w.duration}s)</a>` : "";
+      const d = document.createElement("div");
+      d.className = "issue-card-item";
+      d.innerHTML = `
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+          <b>🎙️ ${w.name} <span style="font-size:10.5px;color:#64748b;">(${w.time})</span></b>
+          <span style="font-size:10.5px;color:#475569;">${w.battery}</span>
+        </div>
+        <div style="color:#0f172a;font-size:12px;"><b>Topic:</b> ${w.topic}</div>
+        <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:6px;">
+          ${audioBtn}
+          <button class="mini-act-btn" style="background:#059669;" onclick="markWalkieHeardAsSumeet('${w.id}')">✅ Heard</button>
+        </div>
+      `;
+      box.appendChild(d);
+    });
+  }
+
+  async function markWalkieHeardAsSumeet(memoId) {
+    if (currentEmp.phone !== SUMEET_SINGH_PHONE) return;
+    triggerHaptic(20);
+    await catFPostCall({ action: "markWalkieHeard", memoId: memoId }, 2);
+    loadManagerOverview();
+  }
+
+  function renderManagerTeaHeadcount(summary) {
+    const box = document.getElementById("managerTeaHeadcountBox");
+    if (!box) return;
+    box.innerHTML = `
+      <div><b>☕ Regular Tea:</b> ${summary.reg || 0} &nbsp;|&nbsp; <b>🥟 Evening OT Snacks:</b> <span style="color:#e11d48;font-weight:900;">${summary.ot || 0}</span> &nbsp;|&nbsp; <b>🚫 Skip:</b> ${summary.skip || 0}</div>
+    `;
+  }
+
+  function renderManagerPreFatList(list) {
+    const box = document.getElementById("managerPreFatList");
+    if (!box) return;
+    if (!list || list.length === 0) {
+      box.innerHTML = "<div class='admin-list-item'>⚪ आज कोई Pre-FAT सेल्फ-चेक दर्ज नहीं हुआ है।</div>";
+      return;
+    }
+    box.innerHTML = "";
+    list.forEach(pf => {
+      const d = document.createElement("div");
+      d.className = "admin-list-item";
+      d.innerHTML = `
+        <div>
+          <b>✅ ${pf.panelName}</b><br>
+          <span style="font-size:11px;color:#475569;">👤 Checked by: <b>${pf.name}</b> (${pf.time})</span>
+        </div>
+        <span style="font-weight:800;color:#059669;font-size:11px;">6/6 OK</span>
+      `;
+      box.appendChild(d);
+    });
+  }
+</script>
 </body>
 </html>
