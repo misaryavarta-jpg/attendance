@@ -2492,5 +2492,439 @@
       document.getElementById("statusMessage").style.display = "none";
     }
   </script>
+
+<!-- ===================================================================== -->
+<!-- 🚪 DIGITAL GATE PASS (SHORT OUT-PASS / EARLY EXIT) ADD-ON MODULE      -->
+<!-- ===================================================================== -->
+<style>
+  .btn-gatepass {
+    background: linear-gradient(135deg, #0d9488, #115e59);
+    font-size: 13px;
+    padding: 12px 10px;
+  }
+  .gp-active-card {
+    background: #f0fdfa;
+    border: 1.5px solid #5eead4;
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-top: 8px;
+    text-align: left;
+    font-size: 12px;
+    color: #134e4a;
+  }
+</style>
+
+<!-- Digital Gate Pass Modal -->
+<div id="gatePassModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>🚪 Digital Gate Pass (Out-Pass)</h3>
+      <span class="close-btn" onclick="closeGatePassModal()">&times;</span>
+    </div>
+
+    <p style="font-size:11.5px; color:#475569; margin-bottom:8px;">
+      शिफ्ट के दौरान थोड़े समय के लिए बाहर जाने (Short Out-Pass) या जल्दी घर जाने (Early Exit) के लिए मैनेजर <b>Sumeet Singh</b> जी से डिजिटल गेट-पास प्राप्त करें:
+    </p>
+
+    <label>गेट-पास का प्रकार (Pass Type):</label>
+    <select id="gpPassType" onchange="toggleGpReturnTime(this.value)">
+      <option value="Short Out-Pass (Return to Office)">🔄 Short Out-Pass (बाहर जाकर वापस ऑफिस आना)</option>
+      <option value="Early Exit Pass (Leave Early)">🏠 Early Exit Pass (शिफ्ट समाप्त होने से पहले घर जाना)</option>
+    </select>
+
+    <div class="btn-grid-2">
+      <div>
+        <label>जाने का समय (Out Time):</label>
+        <input type="time" id="gpOutTime" value="14:00">
+      </div>
+      <div id="gpReturnTimeBox">
+        <label>वापसी समय (Est. Return):</label>
+        <input type="time" id="gpInTime" value="15:00">
+      </div>
+    </div>
+
+    <label>कारण / विवरण (Reason for Gate Pass):</label>
+    <div class="chip-row">
+      <span class="task-chip" onclick="appendGpChip('Bank / ATM Work')">🏦 Bank/ATM</span>
+      <span class="task-chip" onclick="appendGpChip('Medical / Doctor Visit')">🏥 Medical/Doctor</span>
+      <span class="task-chip" onclick="appendGpChip('Official Hardware / Courier')">📦 Official Errand</span>
+      <span class="task-chip" onclick="appendGpChip('Urgent Family / Personal Work')">🏠 Urgent Personal</span>
+    </div>
+    <div class="voice-input-row" style="margin-bottom:10px;">
+      <textarea id="gpReasonText" rows="2" placeholder="गेट-पास का कारण लिखें या 🎙️ दबाकर बोलें..." style="margin-bottom:0;"></textarea>
+      <button type="button" class="mic-btn" id="micGpReasonBtn" onclick="startGpVoiceDictation()">🎙️</button>
+    </div>
+
+    <button class="btn btn-gatepass" id="btnSubmitGatePass" style="font-size:14.5px; padding:13px;" onclick="submitGatePassRequest()">
+      🚪 Request Gate Pass from Sumeet Sir 🚀
+    </button>
+
+    <div class="admin-section-title" style="margin-top:14px;">📂 My Recent Gate Passes</div>
+    <div id="myGatePassHistoryList" style="font-size:12px; color:#64748b;">कोई रिकॉर्ड नहीं है।</div>
+  </div>
+</div>
+
+<script>
+  let myGatePassesCache = [];
+
+  async function gatePassPostCall(payloadObj, retries = 2) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payloadObj),
+          redirect: "follow"
+        });
+        if (response.ok) return await response.json();
+      } catch (err) {
+        if (attempt < retries) await new Promise(r => setTimeout(r, 900 * attempt));
+        else throw err;
+      }
+    }
+  }
+
+  function initGatePassModuleUI() {
+    // 1. Inject Gate Pass status badge & active tracker inside .user-pill
+    const userPill = document.querySelector(".user-pill");
+    if (userPill && !document.getElementById("gatePassStatusBadge")) {
+      const badge = document.createElement("div");
+      badge.id = "gatePassStatusBadge";
+      badge.className = "status-badge-item";
+      userPill.appendChild(badge);
+
+      const actBox = document.createElement("div");
+      actBox.id = "activeGatePassActionBox";
+      actBox.className = "gp-active-card";
+      actBox.style.display = "none";
+      userPill.appendChild(actBox);
+    }
+
+    // 2. Inject "🚪 Digital Gate Pass" button above Calendar button
+    const calBtn = document.querySelector(".btn-cal");
+    if (calBtn && !document.getElementById("btnOpenGatePass")) {
+      const gpBtn = document.createElement("button");
+      gpBtn.type = "button";
+      gpBtn.id = "btnOpenGatePass";
+      gpBtn.className = "btn btn-gatepass";
+      gpBtn.innerHTML = "🚪 Digital Gate Pass (Short Out-Pass / Early Exit)";
+      gpBtn.onclick = openGatePassModal;
+      calBtn.parentNode.insertBefore(gpBtn, calBtn);
+    }
+
+    // 3. Inject Manager Approval section into Sumeet Singh's Command Center
+    const mgrCard = document.querySelector("#managerModal .modal-card");
+    const firstSec = mgrCard ? mgrCard.querySelector(".admin-section-title") : null;
+    if (mgrCard && firstSec && !document.getElementById("managerPendingGatePasses")) {
+      const title = document.createElement("div");
+      title.className = "admin-section-title";
+      title.innerHTML = "🚪 Pending Digital Gate Passes (Sumeet Sir Only)";
+      const list = document.createElement("div");
+      list.id = "managerPendingGatePasses";
+      list.innerHTML = "लोड हो रहा है...";
+      mgrCard.insertBefore(title, firstSec);
+      mgrCard.insertBefore(list, firstSec);
+    }
+
+    // 4. Handle 1-Click Email Approval Link if opened by Sumeet Sir from Gmail
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("gpAction") === "gatePassEmailDecision") {
+      const pId = urlParams.get("passId") || "";
+      const dec = urlParams.get("decision") || "Approved";
+      const sig = urlParams.get("sig") || "";
+      if (pId && sig) {
+        showMessage(`⏳ Processing Gate Pass ${pId} (${dec})...`, "#0284c7");
+        gatePassPostCall({
+          action: "gatePassDecision",
+          passId: pId,
+          decision: dec,
+          sig: sig
+        }).then(res => {
+          if (res && res.status === "success") {
+            alert(`✅ Gate Pass ${pId} has been ${dec.toUpperCase()} by Sumeet Singh!`);
+            history.replaceState({}, document.title, window.location.pathname);
+          } else {
+            alert("⚠️ " + ((res && res.message) || "Unauthorized or expired link."));
+          }
+        }).catch(() => {});
+      }
+    }
+  }
+
+  // Hook into ultraReliableApiCall so checkStatus & getAdminOverview auto-sync Gate Passes
+  if (typeof window.ultraReliableApiCall === "function") {
+    const _baseUltraApiCall = window.ultraReliableApiCall;
+    window.ultraReliableApiCall = async function(paramsObj, retries = 3) {
+      const res = await _baseUltraApiCall(paramsObj, retries);
+      try {
+        if (paramsObj && paramsObj.action === "checkStatus" && res) {
+          myGatePassesCache = res.myGatePasses || [];
+          renderGatePassStatusBadge(res.latestGatePass);
+          renderGatePassHistoryList();
+        }
+        if (paramsObj && paramsObj.action === "getAdminOverview" && res && !res.unauthorized) {
+          renderManagerGatePassesList(res.pendingGatePasses || []);
+        }
+      } catch (eHook) {}
+      return res;
+    };
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initGatePassModuleUI);
+  } else {
+    initGatePassModuleUI();
+  }
+
+  function openGatePassModal() {
+    triggerHaptic(15);
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    const nextHh = String(Math.min(23, now.getHours() + 1)).padStart(2, "0");
+    document.getElementById("gpOutTime").value = `${hh}:${mm}`;
+    document.getElementById("gpInTime").value = `${nextHh}:${mm}`;
+    document.getElementById("gatePassModal").style.display = "flex";
+    renderGatePassHistoryList();
+  }
+
+  function closeGatePassModal() {
+    document.getElementById("gatePassModal").style.display = "none";
+  }
+
+  function toggleGpReturnTime(val) {
+    document.getElementById("gpReturnTimeBox").style.display = val.includes("Early Exit") ? "none" : "block";
+  }
+
+  function appendGpChip(text) {
+    triggerHaptic(15);
+    const el = document.getElementById("gpReasonText");
+    el.value = el.value.trim() ? (el.value.trim() + ", " + text) : text;
+  }
+
+  function startGpVoiceDictation() {
+    if (typeof startVoiceDictation === "function") {
+      startVoiceDictation("gpReasonText", "micGpReasonBtn");
+    } else if (typeof startWorkVoiceDictation === "function") {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) return alert("वॉइस डिक्टेशन उपलब्ध नहीं है।");
+      const rec = new SpeechRec();
+      rec.lang = "hi-IN";
+      const btn = document.getElementById("micGpReasonBtn");
+      btn.innerText = "🔴";
+      rec.onresult = (e) => {
+        appendGpChip(e.results[0][0].transcript);
+        btn.innerText = "🎙️";
+      };
+      rec.onerror = () => { btn.innerText = "🎙️"; };
+      rec.onend = () => { btn.innerText = "🎙️"; };
+      rec.start();
+    }
+  }
+
+  async function submitGatePassRequest() {
+    const passType = document.getElementById("gpPassType").value;
+    const outTime = document.getElementById("gpOutTime").value;
+    const inTime = passType.includes("Early Exit") ? "Early Exit" : document.getElementById("gpInTime").value;
+    const reason = document.getElementById("gpReasonText").value.trim();
+
+    if (!outTime || !reason) {
+      alert("कृपया जाने का समय और कारण दर्ज करें।");
+      return document.getElementById("gpReasonText").focus();
+    }
+
+    const btn = document.getElementById("btnSubmitGatePass");
+    btn.disabled = true;
+    btn.innerText = "⏳ Sumeet Sir को भेजा जा रहा है...";
+
+    const payload = {
+      action: "submitGatePass",
+      phone: currentEmp.phone,
+      name: currentEmp.name,
+      date: getISTDateString(),
+      passType: passType,
+      outTime: outTime,
+      inTime: inTime,
+      reason: reason
+    };
+
+    try {
+      const res = await gatePassPostCall(payload, 2);
+      btn.disabled = false;
+      btn.innerText = "🚪 Request Gate Pass from Sumeet Sir 🚀";
+
+      const newPass = {
+        id: (res && res.passId) || ("GP-" + Date.now().toString().slice(-4)),
+        date: getISTDateString(),
+        passType: passType,
+        outTime: outTime,
+        inTime: inTime,
+        reason: reason,
+        status: "Pending",
+        moveState: "AWAITING_APPROVAL",
+        durationNote: ""
+      };
+
+      myGatePassesCache.unshift(newPass);
+      renderGatePassStatusBadge(newPass);
+      renderGatePassHistoryList();
+      document.getElementById("gpReasonText").value = "";
+      closeGatePassModal();
+      triggerHaptic([60, 40, 100]);
+      speakHindi("डिजिटल गेट पास का अनुरोध प्रबंधक सुमीत सिंह जी को भेज दिया गया है।");
+      showMessage("✅ Digital Gate Pass अनुमोदन हेतु मैनेजर Sumeet Singh जी को भेज दिया गया है।", "#059669");
+    } catch (err) {
+      btn.disabled = false;
+      btn.innerText = "🚪 Request Gate Pass from Sumeet Sir 🚀";
+      alert("⚠️ नेटवर्क धीमा है, कृपया पुनः प्रयास करें।");
+    }
+  }
+
+  function renderGatePassStatusBadge(gp) {
+    const badge = document.getElementById("gatePassStatusBadge");
+    const actBox = document.getElementById("activeGatePassActionBox");
+    if (!badge || !actBox) return;
+
+    if (!gp || !gp.status) {
+      badge.style.display = "none";
+      actBox.style.display = "none";
+      return;
+    }
+
+    badge.style.display = "block";
+    const st = gp.status.toLowerCase();
+    const todayIST = getISTDateString();
+    const timeLabel = gp.inTime === "Early Exit" ? `${gp.outTime} (Early Exit)` : `${gp.outTime} - ${gp.inTime}`;
+
+    if (st.includes("approved")) {
+      badge.className = "status-badge-item badge-approved";
+      badge.innerHTML = `🚪 Gate Pass (${gp.date} | <b>${timeLabel}</b>) APPROVED by Sumeet Singh ${gp.durationNote ? "<br>⏱️ " + gp.durationNote : ""}`;
+
+      if (gp.date === todayIST && gp.moveState !== "COMPLETED") {
+        actBox.style.display = "block";
+        if (gp.moveState === "OUT_NOW") {
+          actBox.innerHTML = `
+            <div style="font-weight:800; margin-bottom:6px;">🚶‍♂️ आप अभी Gate Pass पर बाहर हैं (Out since ${gp.actualOut || gp.outTime})</div>
+            <button type="button" class="btn btn-clockin" style="padding:9px; font-size:12.5px;" onclick="markGatePassMovement('${gp.id}', 'GATE_IN')">
+              🏢 ऑफिस वापसी दर्ज करें (Confirm Gate-In Return)
+            </button>
+          `;
+        } else {
+          const isEarly = gp.passType.includes("Early Exit");
+          actBox.innerHTML = `
+            <div style="font-weight:800; margin-bottom:6px;">🟢 आपका आज का Gate Pass स्वीकृत है:</div>
+            <button type="button" class="btn btn-gatepass" style="padding:9px; font-size:12.5px;" onclick="markGatePassMovement('${gp.id}', 'GATE_OUT')">
+              ${isEarly ? "🚪 Confirm Early Exit & Gate-Out Now" : "🚶‍♂️ बाहर जाते समय दबाएं (Confirm Gate-Out Now)"}
+            </button>
+          `;
+        }
+      } else {
+        actBox.style.display = "none";
+      }
+    } else if (st.includes("rejected")) {
+      badge.className = "status-badge-item badge-rejected";
+      badge.innerHTML = `🔴 Gate Pass (${gp.date} | ${timeLabel}) REJECTED by Manager`;
+      actBox.style.display = "none";
+    } else {
+      badge.className = "status-badge-item badge-pending";
+      badge.innerHTML = `⏳ Gate Pass (${gp.date} | <b>${timeLabel}</b>) is PENDING Sumeet Singh Approval`;
+      actBox.style.display = "none";
+    }
+  }
+
+  async function markGatePassMovement(passId, moveType) {
+    triggerHaptic(30);
+    try {
+      const res = await gatePassPostCall({
+        action: "gatePassMovement",
+        passId: passId,
+        phone: currentEmp.phone,
+        name: currentEmp.name,
+        moveType: moveType
+      }, 2);
+
+      if (res && res.status === "success") {
+        renderGatePassStatusBadge(res.updatedPass);
+        speakHindi(moveType === "GATE_OUT" ? "गेट आउट समय दर्ज कर लिया गया है।" : "ऑफिस में आपकी वापसी दर्ज हो चुकी है।");
+        showMessage(`✅ ${res.message || "Gate Pass movement recorded!"}`, "#059669");
+      }
+    } catch (e) {
+      alert("⚠️ कृपया इंटरनेट कनेक्शन जांचें और पुनः प्रयास करें।");
+    }
+  }
+
+  function renderGatePassHistoryList() {
+    const box = document.getElementById("myGatePassHistoryList");
+    if (!box) return;
+    if (!myGatePassesCache || myGatePassesCache.length === 0) {
+      box.innerHTML = "<div class='admin-list-item'>✅ कोई हालिया गेट-पास रिकॉर्ड नहीं है।</div>";
+      return;
+    }
+    box.innerHTML = "";
+    myGatePassesCache.forEach(gp => {
+      const stColor = gp.status === "Approved" ? "#059669" : (gp.status === "Rejected" ? "#dc2626" : "#d97706");
+      const item = document.createElement("div");
+      item.className = "admin-list-item";
+      item.innerHTML = `
+        <div>
+          <b>${gp.passType}</b> (${gp.date})<br>
+          <span style="color:#64748b;">🕒 ${gp.outTime} - ${gp.inTime} | ${gp.reason} ${gp.durationNote ? " | <b>" + gp.durationNote + "</b>" : ""}</span>
+        </div>
+        <span style="font-weight:800; color:${stColor};">${gp.status}</span>
+      `;
+      box.appendChild(item);
+    });
+  }
+
+  function renderManagerGatePassesList(list) {
+    const box = document.getElementById("managerPendingGatePasses");
+    if (!box) return;
+    if (!list || list.length === 0) {
+      box.innerHTML = "<div class='admin-list-item'>✅ कोई लंबित डिजिटल गेट-पास नहीं है।</div>";
+      return;
+    }
+    box.innerHTML = "";
+    list.forEach(gp => {
+      const item = document.createElement("div");
+      item.className = "admin-list-item";
+      item.innerHTML = `
+        <div>
+          <b>${gp.name}</b> <span style="color:#0d9488;font-weight:800;">(${gp.passType})</span><br>
+          <span style="color:#64748b;">📅 ${gp.date} | 🕒 ${gp.outTime} - ${gp.inTime}<br>📋 ${gp.reason}</span>
+        </div>
+        <div style="display:flex;">
+          <button class="mini-act-btn" style="background:#059669;" onclick="decideGatePassAsSumeet('${gp.id}', 'Approved')">Approve</button>
+          <button class="mini-act-btn" style="background:#dc2626;" onclick="decideGatePassAsSumeet('${gp.id}', 'Rejected')">Reject</button>
+        </div>
+      `;
+      box.appendChild(item);
+    });
+  }
+
+  async function decideGatePassAsSumeet(passId, decision) {
+    if (currentEmp.phone !== SUMEET_SINGH_PHONE) {
+      return alert("🔒 केवल Sumeet Singh जी ही अनुमोदन कर सकते हैं।");
+    }
+    triggerHaptic(30);
+    try {
+      const res = await gatePassPostCall({
+        action: "gatePassDecision",
+        passId: passId,
+        decision: decision,
+        managerPhone: currentEmp.phone,
+        pin: localStorage.getItem("aa_mgr_pin") || ""
+      }, 2);
+      if (res && res.status === "unauthorized") {
+        localStorage.removeItem("aa_mgr_pin");
+        return alert("🔒 अमान्य Manager PIN!");
+      }
+      alert(`✅ Gate Pass ${passId} has been ${decision.toUpperCase()} by Sumeet Singh!`);
+      loadManagerOverview();
+    } catch (e) {
+      alert("सर्वर अपडेट हो रहा है, कृपया 2 सेकंड प्रतीक्षा करें।");
+    }
+  }
+</script>
+
 </body>
 </html>
