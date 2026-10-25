@@ -6670,5 +6670,758 @@
     });
   }
 </script>
+
+<!-- ===================================================================== -->
+<!-- 💼 CATEGORY E: SMART HR, AUTO-PAYSLIPS & OFFICE ADMIN ADD-ON          -->
+<!-- (#17 Payslip & Certificate PDF, #18 Digital ID Card & QR Badge,       -->
+<!--  #19 Client FAT Visitor Gate Pass, #20 Birthday & Anniversary Banner) -->
+<!-- Paste this entire block at the very bottom of index.html              -->
+<!-- ===================================================================== -->
+<style>
+  .btn-payslip { background: linear-gradient(135deg, #0f766e, #115e59); color: #fff; font-size: 13px; padding: 12px 10px; }
+  .btn-idcard { background: linear-gradient(135deg, #1e3a8a, #172554); color: #fff; font-size: 13px; padding: 12px 10px; }
+  .btn-visitor { background: linear-gradient(135deg, #6d28d9, #4c1d95); color: #fff; font-size: 13px; padding: 12px 10px; }
+  .btn-celeb { background: linear-gradient(135deg, #db2777, #9d174d); color: #fff; font-size: 13px; padding: 12px 10px; }
+
+  /* #20: Birthday & Work Anniversary Celebration Banner */
+  #celebrationTopBanner {
+    display: none;
+    background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #fef3c7 100%);
+    border: 2px solid #ec4899;
+    color: #831843;
+    border-radius: 14px;
+    padding: 9px 12px;
+    margin-bottom: 10px;
+    text-align: left;
+    font-size: 12px;
+    line-height: 1.4;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2);
+  }
+
+  /* #18: Official Digital ID Card Styling */
+  .digital-id-card {
+    background: linear-gradient(180deg, #1e3a8a 0%, #1e3a8a 76px, #ffffff 76px, #ffffff 100%);
+    border: 2px solid #1e3a8a;
+    border-radius: 18px;
+    padding: 14px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.22);
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .id-avatar-circle {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: #eff6ff;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+    margin: 14px auto 6px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: 900;
+    color: #1e3a8a;
+  }
+  .id-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    text-align: left;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 8px 10px;
+    margin: 8px 0;
+    font-size: 11.2px;
+  }
+</style>
+
+<!-- #17: 1-Tap Official Monthly Payslip & Attendance Certificate Modal -->
+<div id="payslipCertModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>📄 Payslip & Attendance Certificate</h3>
+      <span class="close-btn" onclick="closePayslipCertModal()">&times;</span>
+    </div>
+    <p style="font-size:11.5px; color:#475569; margin-bottom:8px;">
+      इस महीने के आपके सत्यापित उपस्थिति रिकॉर्ड (Payable Days, Overtime व Leaves) के आधार पर आधिकारिक सर्टिफिकेट या वेतन स्लिप डाउनलोड करें:
+    </p>
+
+    <div class="cal-kpi-bar" style="margin-bottom:10px;">
+      <div class="cal-kpi"><div class="v" id="psPayableDays">-</div><div class="k">💰 देय दिन (Payable)</div></div>
+      <div class="cal-kpi"><div class="v" id="psTotalHours">-</div><div class="k">⏱️ कुल घंटे</div></div>
+      <div class="cal-kpi"><div class="v" id="psOvertimeHours" style="color:#059669;">-</div><div class="k">⭐ ओवरटाइम (OT)</div></div>
+    </div>
+
+    <div style="background:#f0fdfa; border:1.5px solid #99f6e4; border-radius:12px; padding:10px; margin-bottom:10px;">
+      <label style="margin-top:0; color:#115e59;">💵 मासिक बेसिक/ग्रॉस वेतन (Optional - केवल आपकी स्लिप पर गणना हेतु):</label>
+      <input type="number" id="psMonthlyGrossInput" placeholder="उदा: 25000 (यह केवल आपके फोन में सुरक्षित रहता है)" onchange="saveLocalGrossSalary(this.value)" style="margin-bottom:4px;">
+      <div style="font-size:10.5px; color:#0f766e; font-weight:700;">
+        ℹ️ यदि आप राशि खाली छोड़ते हैं, तो आधिकारिक <b>Attendance & Work Verification Certificate</b> जनरेट होगा।
+      </div>
+    </div>
+
+    <div class="btn-grid-2">
+      <button type="button" class="btn btn-payslip" onclick="generateOfficialPayslipPDF(true)">
+        🖨️ Print Payslip PDF
+      </button>
+      <button type="button" class="btn btn-idcard" onclick="generateOfficialPayslipPDF(false)">
+        📜 Attendance Cert.
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- #18: Digital Employee ID Card & Gate-Entry QR Badge Modal -->
+<div id="digitalIdModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>🪪 Official Digital Employee ID</h3>
+      <span class="close-btn" onclick="closeDigitalIdModal()">&times;</span>
+    </div>
+
+    <div class="digital-id-card" id="printableIdCardBox">
+      <div style="color:#fff; font-size:13.5px; font-weight:900; letter-spacing:0.4px;">ARYAVARTA AUTOMATION</div>
+      <div style="color:#93c5fd; font-size:10px; font-weight:700;">Chikhali Head Office, Pune | Control Panel & Automation</div>
+
+      <div class="id-avatar-circle" id="idAvatarInitials">AA</div>
+
+      <div style="font-size:17px; font-weight:900; color:#0f172a;" id="idCardEmpName">Employee Name</div>
+      <div style="font-size:12px; font-weight:800; color:#2563eb; margin-bottom:4px;" id="idCardDesignation">Project & Automation Engineer</div>
+      <span style="display:inline-block; background:#dcfce7; color:#166534; font-size:10px; font-weight:800; padding:2px 9px; border-radius:12px; border:1px solid #86efac;">
+        ✅ VERIFIED ACTIVE STAFF
+      </span>
+
+      <div class="id-meta-grid">
+        <div><span style="color:#64748b;">📱 Mobile:</span><br><b id="idCardPhone">+91 ----------</b></div>
+        <div><span style="color:#64748b;">🩸 Blood Group:</span><br><b id="idCardBlood" style="color:#dc2626;">O+</b></div>
+        <div><span style="color:#64748b;">🆘 Emergency:</span><br><b id="idCardEmergency">+91 9766037466</b></div>
+        <div><span style="color:#64748b;">🏢 Base Location:</span><br><b>Chikhali HO, Pune</b></div>
+      </div>
+
+      <div style="margin-top:6px;">
+        <img id="idCardQrImg" alt="Verification QR" style="width:105px; height:105px; border:1px solid #cbd5e1; border-radius:10px; padding:4px; background:#fff;">
+        <div style="font-size:9.5px; color:#64748b; font-weight:700; margin-top:2px;">Scan to Verify Aryavarta Staff Identity</div>
+      </div>
+    </div>
+
+    <button type="button" class="btn btn-idcard" style="padding:10px; font-size:12.5px; margin-bottom:10px;" onclick="printDigitalIdCard()">
+      🖨️ Print / Save Official ID Card PDF
+    </button>
+
+    <!-- Update Own ID & Birthday/Anniversary Details -->
+    <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:12px; padding:10px;">
+      <div style="font-size:11.5px; font-weight:800; color:#1e3a8a; margin-bottom:6px;">✏️ अपना ID कार्ड एवं जन्मदिन विवरण अपडेट करें:</div>
+      <div class="btn-grid-2">
+        <div>
+          <label>पदनाम (Designation):</label>
+          <input type="text" id="profDesignation" placeholder="e.g. Electrical Engineer" style="font-size:12.5px; padding:8px;">
+        </div>
+        <div>
+          <label>ब्लड ग्रुप (Blood Group):</label>
+          <select id="profBlood" style="font-size:12.5px; padding:8px;">
+            <option value="O+">O+</option><option value="O-">O-</option>
+            <option value="A+">A+</option><option value="A-">A-</option>
+            <option value="B+">B+</option><option value="B-">B-</option>
+            <option value="AB+">AB+</option><option value="AB-">AB-</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-grid-2">
+        <div>
+          <label>🎂 जन्मदिन (Date of Birth):</label>
+          <input type="date" id="profDob" style="font-size:12px; padding:8px;">
+        </div>
+        <div>
+          <label>🎉 जॉइनिंग दिनांक (Joining Date):</label>
+          <input type="date" id="profJoining" style="font-size:12px; padding:8px;">
+        </div>
+      </div>
+      <label>आपातकालीन नंबर (Emergency Family Phone):</label>
+      <input type="tel" id="profEmergency" maxlength="10" placeholder="10-digit Emergency Contact" style="font-size:12.5px; padding:8px;">
+      <button type="button" class="btn btn-clockin" id="btnSaveProfile" style="padding:10px; font-size:13px;" onclick="saveMyEmployeeProfile()">
+        💾 Save My ID & Birthday Details
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- #19: Client FAT Visitor & Vendor Gate-Entry Pass Modal -->
+<div id="visitorPassModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>🤝 Client FAT & Visitor Gate Pass</h3>
+      <span class="close-btn" onclick="closeVisitorPassModal()">&times;</span>
+    </div>
+    <p style="font-size:11.5px; color:#475569; margin-bottom:8px;">
+      Chikhali Head Office में पैनल FAT निरीक्षण (Client Inspection), वेंडर डिलीवरी या मीटिंग के लिए आने वाले अतिथियों का डिजिटल गेट-पास दर्ज करें:
+    </p>
+
+    <div class="btn-grid-2">
+      <div>
+        <label>अतिथि का नाम (Visitor Name):</label>
+        <input type="text" id="vpVisitorName" placeholder="उदा: Mr. Rajesh Kulkarni">
+      </div>
+      <div>
+        <label>मोबाइल नंबर (Phone):</label>
+        <input type="tel" id="vpVisitorPhone" maxlength="10" placeholder="10-digit Mobile">
+      </div>
+    </div>
+
+    <label>कंपनी / संस्था का नाम (Client / Vendor Company):</label>
+    <input type="text" id="vpCompany" placeholder="उदा: Tata Motors / Schneider / L&T Vendor">
+
+    <div class="btn-grid-2">
+      <div>
+        <label>आगमन का उद्देश्य (Visit Purpose):</label>
+        <select id="vpPurpose">
+          <option value="Client Panel FAT Inspection">🛠️ Client Panel FAT Inspection</option>
+          <option value="Vendor Material Delivery">🚚 Vendor Material Delivery</option>
+          <option value="Project / Quotation Meeting">📐 Project / Sales Meeting</option>
+          <option value="Candidate Interview / HR">👔 Interview / HR Visit</option>
+        </select>
+      </div>
+      <div>
+        <label>किससे मिलना है? (Host):</label>
+        <input type="text" id="vpHostName" value="Sumeet Singh">
+      </div>
+    </div>
+
+    <button type="button" class="btn btn-visitor" id="btnSubmitVisitor" style="font-size:14px; padding:12px; margin-top:4px;" onclick="submitVisitorGatePass()">
+      🤝 Generate Visitor Pass & Alert Sumeet Sir 🚀
+    </button>
+
+    <div class="admin-section-title" style="margin-top:12px;">🏢 Today's Visitors at Chikhali HO</div>
+    <div id="todayVisitorsPublicList" style="font-size:12px; color:#64748b;">आज कोई विज़िटर प्रविष्टि नहीं है।</div>
+  </div>
+</div>
+
+<!-- #20: Birthdays & Work Anniversaries Celebration Modal -->
+<div id="celebrationModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>🎂 Birthdays & Work Anniversaries</h3>
+      <span class="close-btn" onclick="closeCelebrationModal()">&times;</span>
+    </div>
+    <p style="font-size:11.5px; color:#475569; margin-bottom:8px;">
+      आर्यावर्त परिवार के सदस्यों के जन्मदिन और कार्य वर्षगांठ (Work Anniversaries) की सूची। आप `🪪 Digital ID` में जाकर अपना जन्मदिन जोड़ सकते हैं:
+    </p>
+    <div id="celebrationsListBox" style="font-size:12px; color:#64748b;">कोई रिकॉर्ड नहीं है।</div>
+    <button type="button" class="btn btn-idcard" style="margin-top:10px; padding:10px; font-size:12.5px;" onclick="closeCelebrationModal(); openDigitalIdModal();">
+      ✏️ Add / Update My Birthday & Joining Date
+    </button>
+  </div>
+</div>
+
+<script>
+  let catEState = {
+    myProfile: { designation: "Automation & Panel Executive", bloodGroup: "O+", emergency: "9766037466", dob: "", joiningDate: "" },
+    todayCelebrations: [],
+    upcomingCelebrations: [],
+    todayVisitors: []
+  };
+
+  async function catEPostCall(payloadObj, retries = 2) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payloadObj),
+          redirect: "follow"
+        });
+        if (response.ok) return await response.json();
+      } catch (err) {
+        if (attempt < retries) await new Promise(r => setTimeout(r, 900 * attempt));
+        else throw err;
+      }
+    }
+  }
+
+  function initCategoryEModulesUI() {
+    // 1. Inject #20 Celebration Banner above User Pill
+    const attView = document.getElementById("attendanceView");
+    const userPill = document.querySelector(".user-pill");
+    if (attView && userPill && !document.getElementById("celebrationTopBanner")) {
+      const celBanner = document.createElement("div");
+      celBanner.id = "celebrationTopBanner";
+      celBanner.onclick = openCelebrationModal;
+      attView.insertBefore(celBanner, userPill);
+    }
+
+    // 2. Inject Category E Tiles (#17, #18, #19, #20) into Super-App Grid or Fallback Stack
+    const superGrid = document.querySelector(".super-app-grid");
+    if (superGrid && !document.getElementById("tilePayslipCert")) {
+      const catETiles = `
+        <div class="super-tile" id="tilePayslipCert" onclick="openPayslipCertModal()">
+          <div class="ico" style="background:#ccfbf1;color:#0f766e;">📄</div>
+          <div class="lbl">Payslip PDF</div>
+        </div>
+        <div class="super-tile" id="tileDigitalId" onclick="openDigitalIdModal()">
+          <div class="ico" style="background:#dbeafe;color:#1e3a8a;">🪪</div>
+          <div class="lbl">Digital ID</div>
+        </div>
+        <div class="super-tile" id="tileVisitorPass" onclick="openVisitorPassModal()">
+          <div class="ico" style="background:#f3e8ff;color:#6d28d9;">🤝</div>
+          <div class="lbl">FAT Visitor</div>
+        </div>
+        <div class="super-tile" id="tileCelebrations" onclick="openCelebrationModal()">
+          <div class="ico" style="background:#fce7f3;color:#db2777;">🎂</div>
+          <div class="lbl">Birthdays</div>
+        </div>
+      `;
+      superGrid.insertAdjacentHTML("beforeend", catETiles);
+    } else if (!superGrid && !document.getElementById("catEFallbackBtnGroup")) {
+      const calBtn = document.querySelector(".btn-cal");
+      if (calBtn) {
+        const grp = document.createElement("div");
+        grp.id = "catEFallbackBtnGroup";
+        grp.className = "btn-stack";
+        grp.innerHTML = `
+          <div class="btn-grid-2">
+            <button type="button" class="btn btn-payslip" onclick="openPayslipCertModal()">📄 Payslip & Cert.</button>
+            <button type="button" class="btn btn-idcard" onclick="openDigitalIdModal()">🪪 Digital ID Card</button>
+          </div>
+          <div class="btn-grid-2">
+            <button type="button" class="btn btn-visitor" onclick="openVisitorPassModal()">🤝 Visitor Gate Pass</button>
+            <button type="button" class="btn btn-celeb" onclick="openCelebrationModal()">🎂 Birthdays</button>
+          </div>
+        `;
+        calBtn.parentNode.insertBefore(grp, calBtn);
+      }
+    }
+
+    // 3. Inject Today's Visitors section into Sumeet Sir's Command Center (#managerModal)
+    const mgrCard = document.querySelector("#managerModal .modal-card");
+    const firstSec = mgrCard ? mgrCard.querySelector(".admin-section-title") : null;
+    if (mgrCard && firstSec && !document.getElementById("managerVisitorsList")) {
+      const vSec = document.createElement("div");
+      vSec.innerHTML = `
+        <div class="admin-section-title" style="color:#6d28d9;">🤝 Today's Client FAT & Office Visitors</div>
+        <div id="managerVisitorsList">लोड हो रहा है...</div>
+      `;
+      mgrCard.insertBefore(vSec, firstSec);
+    }
+
+    // Load saved local salary if present
+    const savedGross = localStorage.getItem("aa_local_gross_sal") || "";
+    if (savedGross && document.getElementById("psMonthlyGrossInput")) {
+      document.getElementById("psMonthlyGrossInput").value = savedGross;
+    }
+  }
+
+  // Chain onto ultraReliableApiCall to sync Profile, Celebrations & Visitors
+  if (typeof window.ultraReliableApiCall === "function") {
+    const _prevUltraApiCallCatE = window.ultraReliableApiCall;
+    window.ultraReliableApiCall = async function(paramsObj, retries = 3) {
+      const res = await _prevUltraApiCallCatE(paramsObj, retries);
+      try {
+        if (paramsObj && paramsObj.action === "checkStatus" && res && res.catEData) {
+          if (res.catEData.myProfile) catEState.myProfile = res.catEData.myProfile;
+          catEState.todayCelebrations = res.catEData.todayCelebrations || [];
+          catEState.upcomingCelebrations = res.catEData.upcomingCelebrations || [];
+          catEState.todayVisitors = res.catEData.todayVisitors || [];
+          renderCelebrationBannerAndList();
+          renderVisitorsListUI("todayVisitorsPublicList", catEState.todayVisitors, false);
+        }
+        if (paramsObj && paramsObj.action === "getAdminOverview" && res && !res.unauthorized) {
+          renderVisitorsListUI("managerVisitorsList", res.todayVisitorsList || [], true);
+        }
+      } catch (eCatE) {}
+      return res;
+    };
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initCategoryEModulesUI);
+  } else {
+    initCategoryEModulesUI();
+  }
+
+  // -------------------------------------------------------------------------
+  // #17: 1-TAP OFFICIAL MONTHLY PAYSLIP & ATTENDANCE CERTIFICATE GENERATOR
+  // -------------------------------------------------------------------------
+  function saveLocalGrossSalary(val) {
+    localStorage.setItem("aa_local_gross_sal", val.trim());
+  }
+
+  function getCurrentMonthMetricsForPayslip() {
+    const year = calDate.getFullYear();
+    const month = calDate.getMonth();
+    const key = `${year}-${month + 1}`;
+    const entry = calendarCache[key] || { history: {}, summary: null };
+    const hist = entry.history || {};
+    const totalDaysInMonth = new Date(year, month + 1, 0).getDate();
+
+    let presentDays = 0, leaveDays = 0, totalHours = 0, overtimeHours = 0, halfDays = 0, lateDays = 0;
+    for (let d = 1; d <= totalDaysInMonth; d++) {
+      const dKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      const dayData = hist[dKey];
+      if (dayData) {
+        if (dayData.isLeave) leaveDays++;
+        else if (!dayData.isHoliday) {
+          presentDays++;
+          const hVal = parseFloat(dayData.hours) || 0;
+          totalHours += hVal;
+          if (hVal > 8.5) overtimeHours += (hVal - 8.5);
+          if (hVal > 0 && hVal < 4.5) halfDays++;
+          if (dayData.isLate) lateDays++;
+        }
+      }
+    }
+    const payableDays = Math.max(0, (presentDays - (halfDays * 0.5)) + leaveDays);
+    return {
+      year, month, totalDaysInMonth, presentDays, leaveDays, halfDays, lateDays,
+      totalHours: parseFloat(totalHours.toFixed(1)),
+      overtimeHours: parseFloat(overtimeHours.toFixed(1)),
+      payableDays: parseFloat(payableDays.toFixed(1))
+    };
+  }
+
+  function openPayslipCertModal() {
+    triggerHaptic(15);
+    const m = getCurrentMonthMetricsForPayslip();
+    document.getElementById("psPayableDays").innerText = `${m.payableDays}d`;
+    document.getElementById("psTotalHours").innerText = `${m.totalHours}h`;
+    document.getElementById("psOvertimeHours").innerText = `${m.overtimeHours}h`;
+    document.getElementById("payslipCertModal").style.display = "flex";
+  }
+
+  function closePayslipCertModal() {
+    document.getElementById("payslipCertModal").style.display = "none";
+  }
+
+  function generateOfficialPayslipPDF(includeSalaryCalc) {
+    triggerHaptic(25);
+    const m = getCurrentMonthMetricsForPayslip();
+    const monthsEn = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    const periodStr = `${monthsEn[m.month]} ${m.year}`;
+    const grossVal = parseFloat(document.getElementById("psMonthlyGrossInput").value) || 0;
+    const desig = (catEState.myProfile && catEState.myProfile.designation) || "Automation & Panel Executive";
+
+    let finSectionHtml = "";
+    if (includeSalaryCalc && grossVal > 0) {
+      const perDayRate = grossVal / 30;
+      const perHourRate = perDayRate / 8.5;
+      const earnedBasicPay = Math.round(perDayRate * m.payableDays);
+      const earnedOtPay = Math.round(perHourRate * m.overtimeHours);
+      const netPayable = earnedBasicPay + earnedOtPay;
+
+      finSectionHtml = `
+        <h3 style="color:#1e3a8a; border-bottom:1.5px solid #cbd5e1; padding-bottom:6px; margin-top:20px;">💰 Monthly Earnings & Overtime Calculation</h3>
+        <table>
+          <thead><tr><th>Description</th><th>Rate / Basis</th><th>Amount (INR)</th></tr></thead>
+          <tbody>
+            <tr><td>Monthly Base Gross Salary</td><td>30 Days Standard Basis</td><td>₹${grossVal.toLocaleString('en-IN')}</td></tr>
+            <tr><td>Earned Salary for Payable Days</td><td>${m.payableDays} Payable Days</td><td>₹${earnedBasicPay.toLocaleString('en-IN')}</td></tr>
+            <tr><td>Earned Overtime (OT) Allowance</td><td>${m.overtimeHours} OT Hours</td><td>₹${earnedOtPay.toLocaleString('en-IN')}</td></tr>
+            <tr style="background:#ecfdf5; font-weight:bold; font-size:14px;">
+              <td colspan="2">NET PAYABLE EARNINGS (${periodStr})</td>
+              <td style="color:#059669;">₹${netPayable.toLocaleString('en-IN')}</td>
+            </tr>
+          </tbody>
+        </table>
+      `;
+    }
+
+    const w = window.open("", "_blank");
+    if (!w) return alert("कृपया पॉप-अप (Pop-up) ऑन करें।");
+    w.document.write(`
+      <html><head><title>Aryavarta Official Certificate - ${currentEmp.name}</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 28px; color: #0f172a; max-width: 720px; margin: auto; border: 2px solid #1e3a8a; border-radius: 12px; }
+        .hdr { text-align: center; border-bottom: 2px solid #1e3a8a; padding-bottom: 12px; margin-bottom: 16px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th { background: #1e3a8a; color: #fff; padding: 9px; text-align: left; }
+        td { padding: 9px; border: 1px solid #cbd5e1; }
+        .sig-row { display: flex; justify-content: space-between; margin-top: 45px; font-size: 13px; font-weight: bold; }
+      </style></head><body>
+        <div class="hdr">
+          <h2 style="color:#1e3a8a; margin:0;">ARYAVARTA AUTOMATION</h2>
+          <p style="margin:4px 0; font-size:12px; color:#475569;">Chikhali Head Office, Pune, Maharashtra | Electrical & Automation Control Panels</p>
+          <h3 style="margin:8px 0 0 0; color:#0f766e;">OFFICIAL ATTENDANCE & PAYROLL STATEMENT (${periodStr})</h3>
+        </div>
+        <table>
+          <tr><td><b>Employee Name:</b> ${currentEmp.name}</td><td><b>Verified Mobile:</b> +91 ${currentEmp.phone}</td></tr>
+          <tr><td><b>Designation:</b> ${desig}</td><td><b>Statement Date:</b> ${getISTDateString()}</td></tr>
+        </table>
+        <h3 style="color:#1e3a8a; border-bottom:1.5px solid #cbd5e1; padding-bottom:6px; margin-top:18px;">📊 Verified Attendance & Shift Summary</h3>
+        <table>
+          <thead><tr><th>Attendance Metric</th><th>Verified Value</th><th>Remarks</th></tr></thead>
+          <tbody>
+            <tr><td>Days Physically Present</td><td><b>${m.presentDays} Days</b></td><td>GPS & Timestamp Verified</td></tr>
+            <tr><td>Approved Paid Leaves / Comp-Off</td><td><b>${m.leaveDays} Days</b></td><td>Approved by Manager Sumeet Singh</td></tr>
+            <tr><td>Half-Day Shifts (<4.5 Hrs)</td><td><b>${m.halfDays} Shifts</b></td><td>Adjusted at 0.5d</td></tr>
+            <tr><td>Total Hours Logged</td><td><b>${m.totalHours} Hours</b></td><td>Standard Shift: 8.5h/day</td></tr>
+            <tr><td>Verified Overtime (OT) Hours</td><td><b>${m.overtimeHours} Hours</b></td><td>Hours worked beyond 8.5h/day</td></tr>
+            <tr style="background:#eff6ff; font-weight:bold;"><td>NET PAYABLE ATTENDANCE DAYS</td><td style="color:#1e3a8a; font-size:14px;">${m.payableDays} Days</td><td>Eligible for Payroll</td></tr>
+          </tbody>
+        </table>
+        ${finSectionHtml}
+        <div class="sig-row">
+          <div>___________________________<br>Employee Signature (${currentEmp.name})</div>
+          <div style="text-align:right;">___________________________<br>Authorized Signatory (Sumeet Singh)</div>
+        </div>
+        <script>window.onload = function(){ window.print(); }<\/script>
+      </body></html>
+    `);
+    w.document.close();
+  }
+
+  // -------------------------------------------------------------------------
+  // #18: DIGITAL EMPLOYEE ID CARD & GATE-ENTRY QR BADGE
+  // -------------------------------------------------------------------------
+  function openDigitalIdModal() {
+    triggerHaptic(15);
+    const p = catEState.myProfile || {};
+    const nameStr = currentEmp.name || "Aryavarta Staff";
+    const initials = nameStr.split(" ").map(x => x[0]).join("").slice(0, 2).toUpperCase();
+
+    document.getElementById("idAvatarInitials").innerText = initials;
+    document.getElementById("idCardEmpName").innerText = nameStr;
+    document.getElementById("idCardDesignation").innerText = p.designation || "Automation & Panel Executive";
+    document.getElementById("idCardPhone").innerText = "+91 " + currentEmp.phone;
+    document.getElementById("idCardBlood").innerText = p.bloodGroup || "O+";
+    document.getElementById("idCardEmergency").innerText = "+91 " + (p.emergency || "9766037466");
+
+    document.getElementById("profDesignation").value = p.designation || "Automation & Panel Executive";
+    document.getElementById("profBlood").value = p.bloodGroup || "O+";
+    document.getElementById("profEmergency").value = p.emergency || "9766037466";
+    if (p.dob) document.getElementById("profDob").value = p.dob;
+    if (p.joiningDate) document.getElementById("profJoining").value = p.joiningDate;
+
+    const qrPayload = `ARYAVARTA STAFF VERIFIED | Name: ${nameStr} | Mobile: +91-${currentEmp.phone} | Role: ${p.designation || "Engineer"} | Blood: ${p.bloodGroup || "O+"} | HO: Chikhali Pune`;
+    document.getElementById("idCardQrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(qrPayload)}`;
+
+    document.getElementById("digitalIdModal").style.display = "flex";
+  }
+
+  function closeDigitalIdModal() {
+    document.getElementById("digitalIdModal").style.display = "none";
+  }
+
+  async function saveMyEmployeeProfile() {
+    const desig = document.getElementById("profDesignation").value.trim() || "Automation & Panel Executive";
+    const blood = document.getElementById("profBlood").value;
+    const emerg = document.getElementById("profEmergency").value.replace(/\D/g, "").slice(-10) || "9766037466";
+    const dob = document.getElementById("profDob").value;
+    const joining = document.getElementById("profJoining").value;
+
+    const btn = document.getElementById("btnSaveProfile");
+    btn.disabled = true;
+    btn.innerText = "⏳ सेव हो रहा है...";
+
+    try {
+      const res = await catEPostCall({
+        action: "saveEmployeeProfile",
+        phone: currentEmp.phone,
+        name: currentEmp.name,
+        designation: desig,
+        bloodGroup: blood,
+        emergency: emerg,
+        dob: dob,
+        joiningDate: joining
+      }, 2);
+
+      btn.disabled = false;
+      btn.innerText = "💾 Save My ID & Birthday Details";
+      catEState.myProfile = { designation: desig, bloodGroup: blood, emergency: emerg, dob: dob, joiningDate: joining };
+      if (res && res.catEData) {
+        catEState.todayCelebrations = res.catEData.todayCelebrations || [];
+        catEState.upcomingCelebrations = res.catEData.upcomingCelebrations || [];
+        renderCelebrationBannerAndList();
+      }
+      openDigitalIdModal();
+      triggerHaptic(30);
+      speakHindi("आपका डिजिटल आईडी कार्ड और जन्मदिन विवरण सुरक्षित कर लिया गया है।");
+      showMessage("✅ Digital ID Card & Birthday Profile Updated!", "#059669");
+    } catch (e) {
+      btn.disabled = false;
+      btn.innerText = "💾 Save My ID & Birthday Details";
+    }
+  }
+
+  function printDigitalIdCard() {
+    const cardHtml = document.getElementById("printableIdCardBox").outerHTML;
+    const w = window.open("", "_blank");
+    if (!w) return;
+    w.document.write(`
+      <html><head><title>Aryavarta ID Card - ${currentEmp.name}</title>
+      <style>body{font-family:Arial,sans-serif;display:flex;justify-content:center;padding:40px;}</style>
+      </head><body><div style="width:330px;">${cardHtml}</div>
+      <script>window.onload=function(){window.print();}<\/script></body></html>
+    `);
+    w.document.close();
+  }
+
+  // -------------------------------------------------------------------------
+  // #19: CLIENT FAT VISITOR & VENDOR GATE-ENTRY PASS
+  // -------------------------------------------------------------------------
+  function openVisitorPassModal() {
+    triggerHaptic(15);
+    document.getElementById("visitorPassModal").style.display = "flex";
+    renderVisitorsListUI("todayVisitorsPublicList", catEState.todayVisitors, false);
+  }
+
+  function closeVisitorPassModal() {
+    document.getElementById("visitorPassModal").style.display = "none";
+  }
+
+  async function submitVisitorGatePass() {
+    const vName = document.getElementById("vpVisitorName").value.trim();
+    const vPhone = document.getElementById("vpVisitorPhone").value.replace(/\D/g, "").slice(-10);
+    const vComp = document.getElementById("vpCompany").value.trim() || "Client / Vendor";
+    const vPurp = document.getElementById("vpPurpose").value;
+    const vHost = document.getElementById("vpHostName").value.trim() || "Sumeet Singh";
+
+    if (!vName || !vComp) {
+      alert("कृपया विज़िटर का नाम और कंपनी दर्ज करें।");
+      return document.getElementById("vpVisitorName").focus();
+    }
+
+    const btn = document.getElementById("btnSubmitVisitor");
+    btn.disabled = true;
+    btn.innerText = "⏳ पास जनरेट हो रहा है...";
+
+    try {
+      const res = await catEPostCall({
+        action: "submitVisitorPass",
+        loggedByPhone: currentEmp.phone,
+        loggedByName: currentEmp.name,
+        visitorName: vName,
+        visitorPhone: vPhone,
+        company: vComp,
+        purpose: vPurp,
+        hostName: vHost
+      }, 2);
+
+      btn.disabled = false;
+      btn.innerText = "🤝 Generate Visitor Pass & Alert Sumeet Sir 🚀";
+      const newVis = {
+        id: (res && res.passId) || "VIS-NEW",
+        time: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true }),
+        visitorName: vName,
+        company: vComp,
+        purpose: vPurp,
+        hostName: vHost,
+        status: "IN_OFFICE"
+      };
+      catEState.todayVisitors.unshift(newVis);
+      renderVisitorsListUI("todayVisitorsPublicList", catEState.todayVisitors, false);
+
+      document.getElementById("vpVisitorName").value = "";
+      document.getElementById("vpVisitorPhone").value = "";
+      document.getElementById("vpCompany").value = "";
+      triggerHaptic([60, 40, 100]);
+      speakHindi(`अतिथि ${vName} का विज़िटर गेट पास दर्ज हो गया है और प्रबंधक सुमीत सिंह जी को सूचना भेज दी गई है।`);
+      showMessage(`🤝 Visitor Gate Pass created for ${vName} (${vComp})!`, "#059669");
+    } catch (e) {
+      btn.disabled = false;
+      btn.innerText = "🤝 Generate Visitor Pass & Alert Sumeet Sir 🚀";
+    }
+  }
+
+  function renderVisitorsListUI(targetBoxId, list, isManagerView) {
+    const box = document.getElementById(targetBoxId);
+    if (!box) return;
+    if (!list || list.length === 0) {
+      box.innerHTML = "<div class='admin-list-item'>⚪ आज अभी तक कोई विज़िटर प्रविष्टि नहीं है।</div>";
+      return;
+    }
+    box.innerHTML = "";
+    list.forEach(v => {
+      const outBtn = (v.status === "IN_OFFICE")
+        ? `<button class="mini-act-btn" style="background:#059669;" onclick="checkoutVisitorEntry('${v.id}')">🚪 Check-Out</button>`
+        : `<span style="color:#64748b;font-weight:800;font-size:11px;">Checked Out</span>`;
+      const d = document.createElement("div");
+      d.className = "admin-list-item";
+      d.innerHTML = `
+        <div>
+          <b>🤝 ${v.visitorName}</b> <span style="font-size:11px;color:#6d28d9;font-weight:800;">(${v.company})</span><br>
+          <span style="font-size:11px;color:#475569;">📋 ${v.purpose} | 👤 Host: ${v.hostName} (${v.time})</span>
+        </div>
+        ${outBtn}
+      `;
+      box.appendChild(d);
+    });
+  }
+
+  async function checkoutVisitorEntry(passId) {
+    triggerHaptic(20);
+    await catEPostCall({ action: "checkoutVisitorPass", passId: passId }, 2);
+    catEState.todayVisitors = (catEState.todayVisitors || []).map(v => v.id === passId ? { ...v, status: "CHECKED_OUT" } : v);
+    renderVisitorsListUI("todayVisitorsPublicList", catEState.todayVisitors, false);
+    if (document.getElementById("managerModal").style.display === "flex") {
+      loadManagerOverview();
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // #20: AUTOMATED BIRTHDAY & WORK ANNIVERSARY CELEBRATION BANNER
+  // -------------------------------------------------------------------------
+  function openCelebrationModal() {
+    triggerHaptic(15);
+    renderCelebrationBannerAndList();
+    document.getElementById("celebrationModal").style.display = "flex";
+  }
+
+  function closeCelebrationModal() {
+    document.getElementById("celebrationModal").style.display = "none";
+  }
+
+  function renderCelebrationBannerAndList() {
+    const banner = document.getElementById("celebrationTopBanner");
+    const listBox = document.getElementById("celebrationsListBox");
+    const todayCel = catEState.todayCelebrations || [];
+    const upcomingCel = catEState.upcomingCelebrations || [];
+
+    if (banner) {
+      if (todayCel.length > 0) {
+        banner.style.display = "block";
+        const names = todayCel.map(c => `${c.icon} <b>${c.name}</b> (${c.label})`).join(" &bull; ");
+        banner.innerHTML = `🎉 <b>आज का विशेष उत्सव (Today at Aryavarta):</b><br>${names} — बधाई देने के लिए टैप करें! &rarr;`;
+
+        const greetKey = "aa_celeb_greet_" + getISTDateString();
+        if (!localStorage.getItem(greetKey)) {
+          localStorage.setItem(greetKey, "true");
+          const isMe = todayCel.some(c => c.name.toLowerCase() === (currentEmp.name || "").toLowerCase());
+          if (isMe) {
+            setTimeout(() => {
+              speakHindi(`बधाई हो ${currentEmp.name} जी! आर्यावर्त ऑटोमेशन परिवार की ओर से आपको हार्दिक शुभकामनाएं!`);
+            }, 1800);
+          }
+        }
+      } else {
+        banner.style.display = "none";
+      }
+    }
+
+    if (listBox) {
+      const combined = [...todayCel, ...upcomingCel];
+      if (combined.length === 0) {
+        listBox.innerHTML = "<div class='admin-list-item'>🎂 अभी तक जन्मदिन सूची खाली है। नीचे दिए गए बटन से अपना जन्मदिन व जॉइनिंग तारीख जोड़ें!</div>";
+      } else {
+        listBox.innerHTML = "";
+        combined.forEach(c => {
+          const waWish = encodeURIComponent(`🎉 नमस्ते ${c.name} जी! आर्यावर्त ऑटोमेशन परिवार की ओर से आपको ${c.label} की हार्दिक शुभकामनाएं! 🎂💐`);
+          const d = document.createElement("div");
+          d.className = "admin-list-item";
+          d.innerHTML = `
+            <div>
+              <b>${c.icon} ${c.name}</b> <span style="font-size:11px;color:#db2777;font-weight:800;">(${c.label})</span><br>
+              <span style="font-size:11px;color:#64748b;">📅 Date: ${c.dateDisplay}</span>
+            </div>
+            <a class="mini-act-btn" style="background:#db2777;" href="https://wa.me/91${c.phone}?text=${waWish}" target="_blank">💐 Wish</a>
+          `;
+          listBox.appendChild(d);
+        });
+      }
+    }
+  }
+</script>
+
 </body>
 </html>
