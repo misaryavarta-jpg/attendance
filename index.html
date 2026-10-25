@@ -7423,5 +7423,31 @@
   }
 </script>
 
+<!-- ===================================================================== -->
+<!-- 🔧 SUPER-APP FINAL POLISH PATCH (Paste right before </body>)          -->
+<!-- ===================================================================== -->
+<script>
+  (function applySuperAppFinalPolish() {
+    const updateGridCounter = () => {
+      const grid = document.querySelector(".super-app-grid");
+      const titleSpan = document.querySelector(".super-grid-title span:last-child");
+      if (grid && titleSpan) {
+        const count = grid.querySelectorAll(".super-tile").length;
+        titleSpan.innerText = `${count} Mini-Portals`;
+      }
+      const syncBtn = document.getElementById("btnSyncSheetsMgr");
+      if (syncBtn && syncBtn.innerText.includes("12")) {
+        syncBtn.innerText = "🔧 Sync, Clean & Repair All Super-App Sheets Now";
+      }
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => setTimeout(updateGridCounter, 150));
+    } else {
+      setTimeout(updateGridCounter, 150);
+    }
+  })();
+</script>
+
 </body>
 </html>
