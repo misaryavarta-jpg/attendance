@@ -2926,5 +2926,417 @@
   }
 </script>
 
+<!-- ===================================================================== -->
+<!-- 🏆 KAIZEN OF THE MONTH (IDEA LEADERBOARD & STAR REWARDS) ADD-ON       -->
+<!-- Paste this entire block at the very bottom of index.html              -->
+<!-- ===================================================================== -->
+<style>
+  .btn-kaizen {
+    background: linear-gradient(135deg, #f59e0b, #b45309);
+    color: #fff;
+    font-size: 13px;
+    padding: 12px 10px;
+  }
+  #kaizenTopBanner {
+    display: none;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1.5px solid #f59e0b;
+    color: #92400e;
+    border-radius: 12px;
+    padding: 8px 12px;
+    font-size: 11.5px;
+    font-weight: 800;
+    margin-bottom: 10px;
+    text-align: left;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(245, 158, 11, 0.18);
+  }
+  .kz-rank-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 10px;
+    padding: 8px 11px;
+    margin-bottom: 6px;
+    font-size: 12.5px;
+  }
+  .kz-hall-card {
+    background: #f8fafc;
+    border-left: 4px solid #f59e0b;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 7px;
+    font-size: 11.8px;
+    line-height: 1.4;
+  }
+</style>
+
+<!-- Kaizen Leaderboard & Idea Submission Modal -->
+<div id="kaizenModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>🏆 Kaizen of the Month</h3>
+      <span class="close-btn" onclick="closeKaizenModal()">&times;</span>
+    </div>
+
+    <!-- Live Monthly Star Leaderboard -->
+    <div class="admin-section-title" style="margin-top:0; color:#b45309;">🏅 Top Problem Solvers of the Month</div>
+    <div id="kaizenLeaderboardBox" style="margin-bottom:10px; font-size:12px; color:#64748b;">
+      कोई स्टार रिकॉर्ड नहीं है। पहला Kaizen आइडिया भेजें!
+    </div>
+
+    <!-- Submit New Kaizen Idea Form -->
+    <div style="background:#fffbeb; border:1.5px solid #fcd34d; border-radius:14px; padding:12px; margin-bottom:10px;">
+      <div style="font-size:12.5px; font-weight:800; color:#92400e; margin-bottom:6px;">
+        💡 नया सुधार सुझाव भेजें (Submit Shopfloor / Site Kaizen Idea)
+      </div>
+      <p style="font-size:11px; color:#78350f; margin-bottom:8px;">
+        पैनल वायरिंग, समय की बचत, सेफ्टी या साइट कार्य को बेहतर बनाने का आइडिया लिखें। मैनेजर <b>Sumeet Singh</b> जी द्वारा पसंद किए जाने पर आपको <b>⭐ Kaizen Stars</b> मिलेंगे!
+      </p>
+
+      <label>सुधार क्षेत्र (Improvement Area):</label>
+      <select id="kzCategory">
+        <option value="MCC/PLC Panel Wiring Speed">⚡ MCC/PLC Panel Wiring Speed</option>
+        <option value="FAT & QC Zero-Defect">🛠️ FAT & QC Testing Improvement</option>
+        <option value="Drawing / BOM Standardization">📐 SLD / GA Drawing & BOM</option>
+        <option value="Site Commissioning Efficiency">🚚 Site Commissioning & Service</option>
+        <option value="Material / Cost Saving">💰 Store Material & Cost Saving</option>
+        <option value="5S & Shopfloor Safety">🦺 5S, Tool Custody & Safety</option>
+      </select>
+
+      <label>वर्तमान कठिनाई या समय की बर्बादी (Current Bottleneck):</label>
+      <input type="text" id="kzProblem" placeholder="उदा: फेरील/लग्स ढूंढने या वायरिंग में अधिक समय लगना...">
+
+      <label>💡 आपका स्मार्ट समाधान (Your Kaizen Idea & Benefit):</label>
+      <div class="chip-row">
+        <span class="task-chip" onclick="appendKzChip('Saves 30+ mins per panel')">⏱️ Saves Time</span>
+        <span class="task-chip" onclick="appendKzChip('Reduces wiring/QC rework')">✅ Zero Rework</span>
+        <span class="task-chip" onclick="appendKzChip('Prevents material wastage')">💰 Saves Cost</span>
+      </div>
+      <div class="voice-input-row" style="margin-bottom:8px;">
+        <textarea id="kzSolution" rows="2" placeholder="अपना आइडिया लिखें या 🎙️ दबाकर बोलें..." style="margin-bottom:0;"></textarea>
+        <button type="button" class="mic-btn" id="micKzSolBtn" onclick="startKzVoiceDictation()">🎙️</button>
+      </div>
+
+      <button class="btn btn-kaizen" id="btnSubmitKaizen" style="font-size:14px; padding:12px;" onclick="submitKaizenIdea()">
+        🏆 Submit Kaizen Idea to Sumeet Sir 🚀
+      </button>
+    </div>
+
+    <!-- Star-Awarded Kaizen Wall of Fame -->
+    <div class="admin-section-title" style="color:#047857;">🌟 Awarded Kaizen Ideas (Wall of Fame)</div>
+    <div id="kaizenHallOfFameBox" style="font-size:12px; color:#64748b;">
+      अभी तक कोई पुरस्कृत आइडिया नहीं है।
+    </div>
+  </div>
+</div>
+
+<script>
+  let kaizenStateCache = { leaderboard: [], hallOfFame: [], myStars: 0 };
+
+  async function kaizenPostCall(payloadObj, retries = 2) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payloadObj),
+          redirect: "follow"
+        });
+        if (response.ok) return await response.json();
+      } catch (err) {
+        if (attempt < retries) await new Promise(r => setTimeout(r, 900 * attempt));
+        else throw err;
+      }
+    }
+  }
+
+  function initKaizenModuleUI() {
+    // 1. Inject Live Kaizen Champion Banner above Shift Timer / Holiday Banner
+    const holBanner = document.getElementById("holidayBanner");
+    if (holBanner && !document.getElementById("kaizenTopBanner")) {
+      const kzBanner = document.createElement("div");
+      kzBanner.id = "kaizenTopBanner";
+      kzBanner.onclick = openKaizenModal;
+      holBanner.parentNode.insertBefore(kzBanner, holBanner);
+    }
+
+    // 2. Inject "🏆 Kaizen of the Month" button above Calendar button
+    const calBtn = document.querySelector(".btn-cal");
+    if (calBtn && !document.getElementById("btnOpenKaizen")) {
+      const kzBtn = document.createElement("button");
+      kzBtn.type = "button";
+      kzBtn.id = "btnOpenKaizen";
+      kzBtn.className = "btn btn-kaizen";
+      kzBtn.innerHTML = "🏆 Kaizen of the Month (Idea Leaderboard)";
+      kzBtn.onclick = openKaizenModal;
+      calBtn.parentNode.insertBefore(kzBtn, calBtn);
+    }
+
+    // 3. Inject Sumeet Sir's Kaizen Star Award section into Manager Command Center
+    const mgrCard = document.querySelector("#managerModal .modal-card");
+    const firstSec = mgrCard ? mgrCard.querySelector(".admin-section-title") : null;
+    if (mgrCard && firstSec && !document.getElementById("managerPendingKaizens")) {
+      const title = document.createElement("div");
+      title.className = "admin-section-title";
+      title.innerHTML = "🏆 Pending Kaizen Ideas & Award Stars (Sumeet Sir Only)";
+      const list = document.createElement("div");
+      list.id = "managerPendingKaizens";
+      list.innerHTML = "लोड हो रहा है...";
+      mgrCard.insertBefore(title, firstSec);
+      mgrCard.insertBefore(list, firstSec);
+    }
+
+    // 4. Handle 1-Click Email Star Award Link if clicked by Sumeet Sir in Gmail
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("kzAction") === "kaizenEmailDecision") {
+      const kId = urlParams.get("kaizenId") || "";
+      const stars = parseInt(urlParams.get("stars") || "1", 10);
+      const dec = urlParams.get("decision") || "Awarded";
+      const sig = urlParams.get("sig") || "";
+      if (kId && sig) {
+        showMessage(`⏳ Processing Kaizen Decision (${kId})...`, "#d97706");
+        kaizenPostCall({
+          action: "kaizenDecision",
+          kaizenId: kId,
+          decision: dec,
+          stars: stars,
+          sig: sig
+        }).then(res => {
+          if (res && res.status === "success") {
+            alert(`🏆 Kaizen ${kId} updated (${dec} ${stars > 0 ? "+" + stars + " Stars" : ""}) by Sumeet Singh!`);
+            history.replaceState({}, document.title, window.location.pathname);
+          } else {
+            alert("⚠️ " + ((res && res.message) || "Unauthorized or expired link."));
+          }
+        }).catch(() => {});
+      }
+    }
+  }
+
+  // Chain cleanly onto ultraReliableApiCall without disturbing earlier hooks
+  if (typeof window.ultraReliableApiCall === "function") {
+    const _prevUltraApiCallKz = window.ultraReliableApiCall;
+    window.ultraReliableApiCall = async function(paramsObj, retries = 3) {
+      const res = await _prevUltraApiCallKz(paramsObj, retries);
+      try {
+        if (paramsObj && paramsObj.action === "checkStatus" && res && res.kaizenData) {
+          kaizenStateCache = res.kaizenData;
+          renderKaizenBannerAndModal();
+        }
+        if (paramsObj && paramsObj.action === "getAdminOverview" && res && !res.unauthorized) {
+          renderManagerKaizensList(res.pendingKaizens || []);
+        }
+      } catch (eKz) {}
+      return res;
+    };
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initKaizenModuleUI);
+  } else {
+    initKaizenModuleUI();
+  }
+
+  function openKaizenModal() {
+    triggerHaptic(15);
+    document.getElementById("kaizenModal").style.display = "flex";
+    renderKaizenBannerAndModal();
+  }
+
+  function closeKaizenModal() {
+    document.getElementById("kaizenModal").style.display = "none";
+  }
+
+  function appendKzChip(text) {
+    triggerHaptic(15);
+    const el = document.getElementById("kzSolution");
+    el.value = el.value.trim() ? (el.value.trim() + " (" + text + ")") : text;
+  }
+
+  function startKzVoiceDictation() {
+    if (typeof startVoiceDictation === "function") {
+      startVoiceDictation("kzSolution", "micKzSolBtn");
+    } else {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) return alert("वॉइस डिक्टेशन उपलब्ध नहीं है।");
+      const rec = new SpeechRec();
+      rec.lang = "hi-IN";
+      const btn = document.getElementById("micKzSolBtn");
+      btn.innerText = "🔴";
+      rec.onresult = (e) => {
+        appendKzChip(e.results[0][0].transcript);
+        btn.innerText = "🎙️";
+      };
+      rec.onerror = () => { btn.innerText = "🎙️"; };
+      rec.onend = () => { btn.innerText = "🎙️"; };
+      rec.start();
+    }
+  }
+
+  function renderKaizenBannerAndModal() {
+    const banner = document.getElementById("kaizenTopBanner");
+    const lbBox = document.getElementById("kaizenLeaderboardBox");
+    const hofBox = document.getElementById("kaizenHallOfFameBox");
+    const lb = kaizenStateCache.leaderboard || [];
+    const hof = kaizenStateCache.hallOfFame || [];
+    const myStars = kaizenStateCache.myStars || 0;
+
+    // 1. Top Champion Banner on Main Screen
+    if (banner) {
+      if (lb.length > 0) {
+        const top = lb[0];
+        banner.style.display = "block";
+        banner.innerHTML = `🏆 <b>Kaizen Star of the Month:</b> ${top.name} (⭐ ${top.stars} Stars) ${myStars > 0 ? " | 🎖️ My Stars: " + myStars : ""} &rarr;`;
+      } else {
+        banner.style.display = "block";
+        banner.innerHTML = `🏆 <b>Kaizen of the Month:</b> अपना बेस्ट शॉपफ्लोर/साइट आइडिया भेजें और ⭐ Star जीतें! &rarr;`;
+      }
+    }
+
+    // 2. Leaderboard inside Modal
+    if (lbBox) {
+      if (lb.length === 0) {
+        lbBox.innerHTML = "<div class='admin-list-item'>🌟 इस महीने का पहला Kaizen Star जीतने के लिए नीचे अपना आइडिया दर्ज करें!</div>";
+      } else {
+        lbBox.innerHTML = "";
+        const medals = ["🥇", "🥈", "🥉", "🏅", "🏅"];
+        lb.forEach((row, idx) => {
+          const d = document.createElement("div");
+          d.className = "kz-rank-row";
+          d.innerHTML = `
+            <div><b>${medals[idx] || "⭐"} ${row.name}</b> <span style="font-size:11px;color:#78350f;">(${row.ideas} Kaizens)</span></div>
+            <div style="font-weight:900;color:#b45309;">${"⭐".repeat(Math.min(5, row.stars))} (${row.stars} Stars)</div>
+          `;
+          lbBox.appendChild(d);
+        });
+      }
+    }
+
+    // 3. Hall of Fame Ideas
+    if (hofBox) {
+      if (hof.length === 0) {
+        hofBox.innerHTML = "<div class='admin-list-item'>अभी तक कोई पुरस्कृत आइडिया नहीं है।</div>";
+      } else {
+        hofBox.innerHTML = "";
+        hof.forEach(item => {
+          const c = document.createElement("div");
+          c.className = "kz-hall-card";
+          c.innerHTML = `
+            <div style="display:flex;justify-content:space-between;">
+              <b>👤 ${item.name} (${item.category})</b>
+              <span style="color:#b45309;font-weight:800;">+${item.stars} ⭐</span>
+            </div>
+            <div style="color:#0f172a;margin-top:3px;"><b>💡 Kaizen:</b> ${item.solution}</div>
+            ${item.note ? `<div style="color:#047857;font-size:11px;font-weight:700;margin-top:2px;">👑 Sumeet Sir: "${item.note}"</div>` : ""}
+          `;
+          hofBox.appendChild(c);
+        });
+      }
+    }
+  }
+
+  async function submitKaizenIdea() {
+    const category = document.getElementById("kzCategory").value;
+    const problem = document.getElementById("kzProblem").value.trim() || "General Efficiency Improvement";
+    const solution = document.getElementById("kzSolution").value.trim();
+
+    if (!solution) {
+      alert("कृपया अपना Kaizen सुधार आइडिया लिखें।");
+      return document.getElementById("kzSolution").focus();
+    }
+
+    const btn = document.getElementById("btnSubmitKaizen");
+    btn.disabled = true;
+    btn.innerText = "⏳ Sumeet Sir को भेजा जा रहा है...";
+
+    try {
+      await kaizenPostCall({
+        action: "submitKaizen",
+        phone: currentEmp.phone,
+        name: currentEmp.name,
+        date: getISTDateString(),
+        category: category,
+        problem: problem,
+        solution: solution
+      }, 2);
+
+      btn.disabled = false;
+      btn.innerText = "🏆 Submit Kaizen Idea to Sumeet Sir 🚀";
+      document.getElementById("kzProblem").value = "";
+      document.getElementById("kzSolution").value = "";
+      closeKaizenModal();
+      triggerHaptic([60, 40, 100]);
+      speakHindi("आपका काइज़न सुधार सुझाव प्रबंधक सुमीत सिंह जी को भेज दिया गया है।");
+      showMessage("🏆 आपका Kaizen Idea स्टार मूल्यांकन हेतु मैनेजर Sumeet Singh जी को भेज दिया गया है!", "#059669");
+    } catch (e) {
+      btn.disabled = false;
+      btn.innerText = "🏆 Submit Kaizen Idea to Sumeet Sir 🚀";
+      alert("⚠️ नेटवर्क धीमा है, कृपया पुनः प्रयास करें।");
+    }
+  }
+
+  function renderManagerKaizensList(list) {
+    const box = document.getElementById("managerPendingKaizens");
+    if (!box) return;
+    if (!list || list.length === 0) {
+      box.innerHTML = "<div class='admin-list-item'>✅ कोई लंबित Kaizen Idea नहीं है।</div>";
+      return;
+    }
+    box.innerHTML = "";
+    list.forEach(kz => {
+      const card = document.createElement("div");
+      card.className = "issue-card-item";
+      card.innerHTML = `
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+          <b>👤 ${kz.name} <span style="font-size:11px;color:#64748b;">(${kz.date})</span></b>
+          <span style="font-size:11px;font-weight:800;color:#b45309;">${kz.category}</span>
+        </div>
+        <div style="color:#475569;font-size:11.5px;"><b>Bottleneck:</b> ${kz.problem}</div>
+        <div style="color:#047857;font-weight:700;margin:3px 0;"><b>💡 Kaizen Idea:</b> ${kz.solution}</div>
+        <div style="display:flex;justify-content:flex-end;gap:5px;margin-top:6px;">
+          <button class="mini-act-btn" style="background:#f59e0b;" onclick="decideKaizenAsSumeet('${kz.id}', 'Awarded', 1)">⭐ +1 Star</button>
+          <button class="mini-act-btn" style="background:#059669;" onclick="decideKaizenAsSumeet('${kz.id}', 'Awarded', 3)">🌟 Super (+3 Stars)</button>
+          <button class="mini-act-btn" style="background:#dc2626;" onclick="decideKaizenAsSumeet('${kz.id}', 'Rejected', 0)">Reject</button>
+        </div>
+      `;
+      box.appendChild(card);
+    });
+  }
+
+  async function decideKaizenAsSumeet(kaizenId, decision, starsCount) {
+    if (currentEmp.phone !== SUMEET_SINGH_PHONE) {
+      return alert("🔒 केवल Sumeet Singh जी ही Kaizen Star दे सकते हैं।");
+    }
+    let mgrNote = "";
+    if (decision === "Awarded") {
+      mgrNote = prompt(`👑 Sumeet Sir: इस Kaizen पर अपनी सराहना टिप्पणी लिखें (+${starsCount} Stars):`, "Excellent practical shopfloor improvement!");
+      if (mgrNote === null) return;
+    }
+    triggerHaptic(30);
+    try {
+      const res = await kaizenPostCall({
+        action: "kaizenDecision",
+        kaizenId: kaizenId,
+        decision: decision,
+        stars: starsCount,
+        note: mgrNote,
+        managerPhone: currentEmp.phone,
+        pin: localStorage.getItem("aa_mgr_pin") || ""
+      }, 2);
+      if (res && res.status === "unauthorized") {
+        localStorage.removeItem("aa_mgr_pin");
+        return alert("🔒 अमान्य Manager PIN!");
+      }
+      alert(`🏆 Kaizen ${kaizenId} ${decision === "Awarded" ? "awarded +" + starsCount + " Stars!" : "Rejected."}`);
+      loadManagerOverview();
+    } catch (e) {
+      alert("सर्वर अपडेट हो रहा है, कृपया 2 सेकंड प्रतीक्षा करें।");
+    }
+  }
+</script>
+
 </body>
 </html>
