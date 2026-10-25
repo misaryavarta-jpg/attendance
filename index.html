@@ -3338,5 +3338,485 @@
   }
 </script>
 
+
+
+  <!-- Added Tool & Testing Kit Custody Tracker module -->
+<!-- ===================================================================== -->
+<!-- 🧰 TOOL & TESTING KIT CUSTODY TRACKER ADD-ON MODULE                   -->
+<!-- Paste this entire block at the very bottom of index.html              -->
+<!-- ===================================================================== -->
+<style>
+  .btn-tool {
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    color: #fff;
+    font-size: 13px;
+    padding: 12px 10px;
+  }
+  .tool-custody-badge {
+    background: #eff6ff;
+    border: 1.5px solid #93c5fd;
+    color: #1e3a8a;
+    border-radius: 11px;
+    padding: 9px 11px;
+    margin-top: 8px;
+    text-align: left;
+    font-size: 11.8px;
+    line-height: 1.4;
+  }
+  .tool-holder-row {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 9px 11px;
+    margin-bottom: 6px;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+  }
+</style>
+
+<!-- Tool & Testing Kit Custody Modal -->
+<div id="toolCustodyModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>🧰 Tool & Testing Kit Tracker</h3>
+      <span class="close-btn" onclick="closeToolCustodyModal()">&times;</span>
+    </div>
+
+    <!-- Section 1: Tools Currently Held by This Employee -->
+    <div id="myHeldToolsSection" style="display:none; margin-bottom:12px;">
+      <div class="admin-section-title" style="margin-top:0; color:#dc2626;">🛠️ Tools Currently in Your Custody (Return After Use)</div>
+      <div id="myHeldToolsList"></div>
+    </div>
+
+    <!-- Section 2: Issue / Take a Tool Form -->
+    <div style="background:#eff6ff; border:1.5px solid #bfdbfe; border-radius:14px; padding:12px; margin-bottom:12px;">
+      <div style="font-size:12.5px; font-weight:800; color:#1e3a8a; margin-bottom:6px;">
+        📥 नया टूल / टेस्टिंग किट लें (Take Tool / Issue Custody)
+      </div>
+
+      <div class="btn-grid-2">
+        <div>
+          <label>टूल / मीटर चुनें (Select Tool):</label>
+          <select id="tcToolName">
+            <option value="Digital Multimeter (Fluke/Meco)">📟 Digital Multimeter</option>
+            <option value="Insulation Tester / Megger">⚡ Megger / Insulation Tester</option>
+            <option value="Digital Clamp Meter">钳 Digital Clamp Meter</option>
+            <option value="PLC Programming Laptop & Cable">💻 PLC Laptop & Comm Cable</option>
+            <option value="Hydraulic / Ratchet Crimping Tool">🔧 Crimping Tool Kit</option>
+            <option value="Ferrule Printing Machine">🖨️ Ferrule Printer</option>
+            <option value="Drilling / Angle Grinder Machine">🔩 Drill / Grinder Machine</option>
+            <option value="HV / Di-Electric Test Kit">🛡️ HV Test Kit</option>
+            <option value="Torque Wrench / Spanner Set">🛠️ Torque Wrench / Tool Bag</option>
+            <option value="Phase Sequence / Earth Tester">🧭 Phase Sequence Meter</option>
+          </select>
+        </div>
+        <div>
+          <label>किट नंबर / सीरियल (Kit ID):</label>
+          <input type="text" id="tcKitTag" placeholder="उदा: KIT-01 / FLK-2">
+        </div>
+      </div>
+
+      <label>कहाँ उपयोग हो रहा है? (Site / Panel Name):</label>
+      <div class="chip-row">
+        <span class="task-chip" onclick="appendTcChip('Chikhali HO Shopfloor FAT')">🏭 HO Shopfloor FAT</span>
+        <span class="task-chip" onclick="appendTcChip('MCC / PLC Panel Wiring')">⚡ Panel Wiring</span>
+        <span class="task-chip" onclick="appendTcChip('Client Site Testing')">🚚 Client Site Visit</span>
+      </div>
+      <div class="voice-input-row" style="margin-bottom:6px;">
+        <input type="text" id="tcPurpose" placeholder="प्रोजेक्ट, पैनल या साइट का नाम लिखें या 🎙️ बोलें..." style="margin-bottom:0;">
+        <button type="button" class="mic-btn" id="micTcPurposeBtn" onclick="startTcVoiceDictation()">🎙️</button>
+      </div>
+
+      <label>📸 टूल की फोटो (Optional Condition Photo):</label>
+      <div class="file-box" style="background:#fff;">
+        <input type="file" id="tcPhotoInput" accept="image/*" style="margin-bottom:2px; border:none; padding:2px; font-size:12px;" onchange="handleToolPhotoSelect(this)">
+        <div id="tcPhotoPreviewText" style="font-size:11px; color:#059669; font-weight:700; display:none;"></div>
+      </div>
+
+      <button class="btn btn-tool" id="btnSubmitToolIssue" style="font-size:14px; padding:12px;" onclick="submitToolIssueRequest()">
+        🧰 Confirm Tool Take-Out (दर्ज करें) 🚀
+      </button>
+    </div>
+
+    <!-- Section 3: Live Company-Wide Tool Radar (Who Has Which Tool Right Now?) -->
+    <div class="admin-section-title" style="color:#1e3a8a;">📡 Live Tool Radar (अभी कौन-सा टूल किसके पास है?)</div>
+    <div id="companyActiveToolsList" style="font-size:12px; color:#64748b;">
+      सभी टूल्स स्टोर में उपलब्ध हैं।
+    </div>
+  </div>
+</div>
+
+<script>
+  let toolCustodyState = { myTools: [], allActiveTools: [] };
+  let preparedToolPhoto = { base64: "", mimeType: "", fileName: "" };
+
+  async function toolCustodyPostCall(payloadObj, retries = 2) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payloadObj),
+          redirect: "follow"
+        });
+        if (response.ok) return await response.json();
+      } catch (err) {
+        if (attempt < retries) await new Promise(r => setTimeout(r, 900 * attempt));
+        else throw err;
+      }
+    }
+  }
+
+  function initToolCustodyUI() {
+    // 1. Inject Active Tool Custody Badge inside .user-pill
+    const userPill = document.querySelector(".user-pill");
+    if (userPill && !document.getElementById("toolCustodyUserBadge")) {
+      const b = document.createElement("div");
+      b.id = "toolCustodyUserBadge";
+      b.className = "tool-custody-badge";
+      b.style.display = "none";
+      userPill.appendChild(b);
+    }
+
+    // 2. Inject "🧰 Tool & Testing Kit Tracker" button above Calendar button
+    const calBtn = document.querySelector(".btn-cal");
+    if (calBtn && !document.getElementById("btnOpenToolTracker")) {
+      const tBtn = document.createElement("button");
+      tBtn.type = "button";
+      tBtn.id = "btnOpenToolTracker";
+      tBtn.className = "btn btn-tool";
+      tBtn.innerHTML = "🧰 Tool & Testing Kit Custody Tracker";
+      tBtn.onclick = openToolCustodyModal;
+      calBtn.parentNode.insertBefore(tBtn, calBtn);
+    }
+
+    // 3. Inject Manager Tool Custody Monitor into Sumeet Singh's Command Center
+    const mgrCard = document.querySelector("#managerModal .modal-card");
+    const firstSec = mgrCard ? mgrCard.querySelector(".admin-section-title") : null;
+    if (mgrCard && firstSec && !document.getElementById("managerActiveToolsList")) {
+      const title = document.createElement("div");
+      title.className = "admin-section-title";
+      title.innerHTML = "🧰 Active Tool & Testing Kit Custody (Floor / Sites)";
+      const list = document.createElement("div");
+      list.id = "managerActiveToolsList";
+      list.innerHTML = "लोड हो रहा है...";
+      mgrCard.insertBefore(title, firstSec);
+      mgrCard.insertBefore(list, firstSec);
+    }
+  }
+
+  // Chain onto ultraReliableApiCall to auto-load Tool Custody data on checkStatus & getAdminOverview
+  if (typeof window.ultraReliableApiCall === "function") {
+    const _prevUltraApiCallTc = window.ultraReliableApiCall;
+    window.ultraReliableApiCall = async function(paramsObj, retries = 3) {
+      const res = await _prevUltraApiCallTc(paramsObj, retries);
+      try {
+        if (paramsObj && paramsObj.action === "checkStatus" && res && res.toolCustodyData) {
+          toolCustodyState = res.toolCustodyData;
+          renderToolCustodyBadgeAndLists();
+        }
+        if (paramsObj && paramsObj.action === "getAdminOverview" && res && !res.unauthorized) {
+          renderManagerToolCustodyList(res.activeToolsList || []);
+        }
+      } catch (eTc) {}
+      return res;
+    };
+  }
+
+  // Optional Reminder on Clock-Out if employee still holds a shopfloor tool
+  if (typeof window.handlePunch === "function") {
+    const _origHandlePunchTc = window.handlePunch;
+    window.handlePunch = function(punchType) {
+      if (punchType === "Clock Out" && toolCustodyState.myTools && toolCustodyState.myTools.length > 0) {
+        const names = toolCustodyState.myTools.map(t => t.toolName).join(", ");
+        const proceed = confirm(`🧰 टूल अनुस्मारक (Tool Custody Reminder):\n\nआपके नाम पर अभी यह टूल दर्ज है:\n👉 ${names}\n\nयदि आपने इसे स्टोर में वापस रख दिया है, तो आप पोर्टल में 'Return Tool' दबा सकते हैं। क्या आप अभी Clock Out जारी रखना चाहते हैं?`);
+        if (!proceed) {
+          openToolCustodyModal();
+          return;
+        }
+      }
+      return _origHandlePunchTc(punchType);
+    };
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initToolCustodyUI);
+  } else {
+    initToolCustodyUI();
+  }
+
+  function openToolCustodyModal() {
+    triggerHaptic(15);
+    document.getElementById("toolCustodyModal").style.display = "flex";
+    renderToolCustodyBadgeAndLists();
+  }
+
+  function closeToolCustodyModal() {
+    document.getElementById("toolCustodyModal").style.display = "none";
+  }
+
+  function appendTcChip(text) {
+    triggerHaptic(15);
+    const el = document.getElementById("tcPurpose");
+    el.value = el.value.trim() ? (el.value.trim() + " - " + text) : text;
+  }
+
+  function startTcVoiceDictation() {
+    if (typeof startVoiceDictation === "function") {
+      startVoiceDictation("tcPurpose", "micTcPurposeBtn");
+    } else {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) return alert("वॉइस डिक्टेशन उपलब्ध नहीं है।");
+      const rec = new SpeechRec();
+      rec.lang = "hi-IN";
+      const btn = document.getElementById("micTcPurposeBtn");
+      btn.innerText = "🔴";
+      rec.onresult = (e) => {
+        appendTcChip(e.results[0][0].transcript);
+        btn.innerText = "🎙️";
+      };
+      rec.onerror = () => { btn.innerText = "🎙️"; };
+      rec.onend = () => { btn.innerText = "🎙️"; };
+      rec.start();
+    }
+  }
+
+  function handleToolPhotoSelect(inputEl) {
+    const previewEl = document.getElementById("tcPhotoPreviewText");
+    const file = inputEl.files && inputEl.files[0];
+    if (!file) {
+      preparedToolPhoto = { base64: "", mimeType: "", fileName: "" };
+      previewEl.style.display = "none";
+      return;
+    }
+    previewEl.style.display = "block";
+    previewEl.innerText = "⏳ फोटो प्रोसेस हो रही है...";
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement("canvas");
+        const maxDim = 1024;
+        let w = img.width, h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+          else { w = Math.round((w * maxDim) / h); h = maxDim; }
+        }
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
+        preparedToolPhoto = {
+          base64: dataUrl.split(",")[1],
+          mimeType: "image/jpeg",
+          fileName: "tool_" + Date.now() + ".jpg"
+        };
+        previewEl.innerText = "✅ टूल फोटो तैयार!";
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function submitToolIssueRequest() {
+    const toolName = document.getElementById("tcToolName").value;
+    const kitTag = document.getElementById("tcKitTag").value.trim() || "Standard";
+    const purpose = document.getElementById("tcPurpose").value.trim();
+
+    if (!purpose) {
+      alert("कृपया लिखें कि यह टूल किस पैनल या साइट के लिए लिया जा रहा है।");
+      return document.getElementById("tcPurpose").focus();
+    }
+
+    const btn = document.getElementById("btnSubmitToolIssue");
+    btn.disabled = true;
+    btn.innerText = "⏳ दर्ज हो रहा है...";
+
+    try {
+      const res = await toolCustodyPostCall({
+        action: "submitToolIssue",
+        phone: currentEmp.phone,
+        name: currentEmp.name,
+        toolName: toolName,
+        kitTag: kitTag,
+        purpose: purpose,
+        fileBase64: preparedToolPhoto.base64 || "",
+        fileMimeType: preparedToolPhoto.mimeType || "",
+        fileName: preparedToolPhoto.fileName || ""
+      }, 2);
+
+      btn.disabled = false;
+      btn.innerText = "🧰 Confirm Tool Take-Out (दर्ज करें) 🚀";
+
+      if (res && res.toolCustodyData) {
+        toolCustodyState = res.toolCustodyData;
+      } else {
+        const newRec = {
+          id: (res && res.custodyId) || ("TL-" + Date.now().toString().slice(-4)),
+          toolName: toolName,
+          kitTag: kitTag,
+          holderName: currentEmp.name,
+          holderPhone: currentEmp.phone,
+          purpose: purpose,
+          issuedAt: "Just now"
+        };
+        toolCustodyState.myTools.unshift(newRec);
+        toolCustodyState.allActiveTools.unshift(newRec);
+      }
+
+      document.getElementById("tcKitTag").value = "";
+      document.getElementById("tcPurpose").value = "";
+      document.getElementById("tcPhotoInput").value = "";
+      document.getElementById("tcPhotoPreviewText").style.display = "none";
+      preparedToolPhoto = { base64: "", mimeType: "", fileName: "" };
+
+      renderToolCustodyBadgeAndLists();
+      closeToolCustodyModal();
+      triggerHaptic([60, 40, 100]);
+      speakHindi(`${toolName} आपके नाम पर दर्ज हो गया है। कार्य समाप्त होने पर इसे स्टोर में वापस जमा करें।`);
+      showMessage(`🧰 ${toolName} (${kitTag}) आपके नाम पर जारी (Issued) हो गया है!`, "#059669");
+    } catch (err) {
+      btn.disabled = false;
+      btn.innerText = "🧰 Confirm Tool Take-Out (दर्ज करें) 🚀";
+      alert("⚠️ नेटवर्क धीमा है, कृपया पुनः प्रयास करें।");
+    }
+  }
+
+  async function returnToolToStore(custodyId, toolName) {
+    const cond = prompt(`🔄 "${toolName}" को स्टोर में वापस जमा कर रहे हैं।\n\nटूल की स्थिति लिखें (OK / Good अथवा यदि कोई खराबी हो तो लिखें):`, "Good & Working (Returned to HO Store)");
+    if (cond === null) return;
+
+    triggerHaptic(30);
+    try {
+      const res = await toolCustodyPostCall({
+        action: "returnToolCustody",
+        custodyId: custodyId,
+        phone: currentEmp.phone,
+        name: currentEmp.name,
+        returnCondition: cond.trim() || "Good & Working"
+      }, 2);
+
+      if (res && res.toolCustodyData) {
+        toolCustodyState = res.toolCustodyData;
+      } else {
+        toolCustodyState.myTools = (toolCustodyState.myTools || []).filter(t => t.id !== custodyId);
+        toolCustodyState.allActiveTools = (toolCustodyState.allActiveTools || []).filter(t => t.id !== custodyId);
+      }
+
+      renderToolCustodyBadgeAndLists();
+      speakHindi("धन्यवाद! टूल की वापसी सफलतापूर्वक दर्ज कर ली गई है।");
+      showMessage(`✅ ${toolName} सफलतापूर्वक स्टोर में वापस (Returned) दर्ज हो गया!`, "#059669");
+      if (document.getElementById("managerModal").style.display === "flex") {
+        loadManagerOverview();
+      }
+    } catch (e) {
+      alert("⚠️ नेटवर्क त्रुटि, कृपया पुनः प्रयास करें।");
+    }
+  }
+
+  function renderToolCustodyBadgeAndLists() {
+    const userBadge = document.getElementById("toolCustodyUserBadge");
+    const mySec = document.getElementById("myHeldToolsSection");
+    const myList = document.getElementById("myHeldToolsList");
+    const allList = document.getElementById("companyActiveToolsList");
+
+    const myTools = toolCustodyState.myTools || [];
+    const allTools = toolCustodyState.allActiveTools || [];
+
+    // 1. Badge inside .user-pill
+    if (userBadge) {
+      if (myTools.length > 0) {
+        userBadge.style.display = "block";
+        userBadge.innerHTML = myTools.map(t => `
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <span>🧰 <b>${t.toolName}</b> (${t.kitTag})<br><span style="font-size:10.5px;color:#475569;">📍 ${t.purpose}</span></span>
+            <button type="button" class="mini-act-btn" style="background:#059669;" onclick="returnToolToStore('${t.id}', '${t.toolName}')">🔄 Return</button>
+          </div>
+        `).join("");
+      } else {
+        userBadge.style.display = "none";
+      }
+    }
+
+    // 2. My Held Tools inside Modal
+    if (mySec && myList) {
+      if (myTools.length > 0) {
+        mySec.style.display = "block";
+        myList.innerHTML = "";
+        myTools.forEach(t => {
+          const row = document.createElement("div");
+          row.className = "tool-holder-row";
+          row.style.background = "#fef2f2";
+          row.style.borderColor = "#fecaca";
+          row.innerHTML = `
+            <div>
+              <b>${t.toolName}</b> <span style="color:#dc2626;font-weight:800;">(${t.kitTag})</span><br>
+              <span style="font-size:11px;color:#475569;">📍 ${t.purpose} | 🕒 ${t.issuedAt}</span>
+            </div>
+            <button type="button" class="mini-act-btn" style="background:#059669;" onclick="returnToolToStore('${t.id}', '${t.toolName}')">✅ Return Tool</button>
+          `;
+          myList.appendChild(row);
+        });
+      } else {
+        mySec.style.display = "none";
+      }
+    }
+
+    // 3. Company-Wide Active Tool Radar
+    if (allList) {
+      if (allTools.length === 0) {
+        allList.innerHTML = "<div class='admin-list-item'>🟢 सभी टूल्स और टेस्टिंग किट इस समय Chikhali HO स्टोर में उपलब्ध हैं।</div>";
+      } else {
+        allList.innerHTML = "";
+        allTools.forEach(t => {
+          const waMsg = encodeURIComponent(`नमस्ते ${t.holderName} जी, पोर्टल में दिख रहा है कि ${t.toolName} (${t.kitTag}) अभी आपके पास (${t.purpose}) है। कृपया बताएं काम होने पर कब तक मिलेगा?`);
+          const row = document.createElement("div");
+          row.className = "tool-holder-row";
+          row.innerHTML = `
+            <div>
+              <b>🧰 ${t.toolName}</b> <span style="font-size:11px;color:#1d4ed8;font-weight:800;">[${t.kitTag}]</span><br>
+              <span style="font-size:11px;color:#334155;">👤 <b>${t.holderName}</b> | 📍 ${t.purpose} (${t.issuedAt})</span>
+            </div>
+            <a class="mini-act-btn" style="background:#10b981;" href="https://wa.me/91${t.holderPhone}?text=${waMsg}" target="_blank">💬 Ask</a>
+          `;
+          allList.appendChild(row);
+        });
+      }
+    }
+  }
+
+  function renderManagerToolCustodyList(list) {
+    const box = document.getElementById("managerActiveToolsList");
+    if (!box) return;
+    if (!list || list.length === 0) {
+      box.innerHTML = "<div class='admin-list-item'>🟢 सभी टूल्स स्टोर में वापस जमा हैं (No tools pending outside).</div>";
+      return;
+    }
+    box.innerHTML = "";
+    list.forEach(t => {
+      const waMsg = encodeURIComponent(`नमस्ते ${t.holderName} जी, आपके नाम पर जारी ${t.toolName} (${t.kitTag} - ${t.purpose}) को कार्य समाप्त होने पर Chikhali HO स्टोर में जमा करें और पोर्टल में 'Return Tool' अपडेट करें।`);
+      const photoBtn = t.photoUrl ? `<a class="mini-act-btn" style="background:#2563eb;" href="${t.photoUrl}" target="_blank">📸 Photo</a>` : "";
+      const item = document.createElement("div");
+      item.className = "tool-holder-row";
+      item.innerHTML = `
+        <div>
+          <b>${t.toolName} (${t.kitTag})</b><br>
+          <span style="font-size:11px;color:#475569;">👤 <b>${t.holderName}</b> | 📍 ${t.purpose}<br>🕒 Issued: ${t.issuedAt}</span>
+        </div>
+        <div style="display:flex;align-items:center;">
+          ${photoBtn}
+          <a class="mini-act-btn" style="background:#10b981;" href="https://wa.me/91${t.holderPhone}?text=${waMsg}" target="_blank">💬 Ping</a>
+          <button class="mini-act-btn" style="background:#059669;" onclick="returnToolToStore('${t.id}', '${t.toolName}')">✅ Returned</button>
+        </div>
+      `;
+      box.appendChild(item);
+    });
+  }
+</script>
+
 </body>
 </html>
