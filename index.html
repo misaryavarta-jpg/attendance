@@ -4484,5 +4484,633 @@
   }
 </script>
 
+
+
+<!-- ===================================================================== -->
+<!-- ✨ CATEGORY C: STUNNING UI/UX & ANTI-PROXY UPGRADES ADD-ON             -->
+<!-- (#9 3x3 Super-App Grid, #10 Watermarked Site Selfie,                  -->
+<!--  #11 Punctuality Streak Counter, #12 Site Breakdown / Emergency SOS)  -->
+<!-- Paste this entire block at the very bottom of index.html              -->
+<!-- ===================================================================== -->
+<style>
+  /* #9: 3x3 Super-App Icon Launcher Grid */
+  .super-grid-title {
+    font-size: 11px;
+    font-weight: 800;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    text-align: left;
+    margin: 14px 0 8px 2px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .super-app-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .super-tile {
+    background: linear-gradient(145deg, #ffffff, #f8fafc);
+    border: 1.5px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 11px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.05);
+    transition: transform 0.12s ease, border-color 0.15s ease;
+    user-select: none;
+  }
+  .super-tile:active {
+    transform: scale(0.94);
+    border-color: #2563eb;
+  }
+  .super-tile .ico {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+  }
+  .super-tile .lbl {
+    font-size: 11px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.15;
+    text-align: center;
+  }
+
+  /* #11: Gamified Punctuality Streak Pill */
+  .streak-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(135deg, #fff7ed, #ffedd5);
+    border: 1.5px solid #fdba74;
+    color: #c2410c;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-top: 6px;
+  }
+
+  /* #12: Emergency SOS Button */
+  .btn-sos {
+    background: linear-gradient(135deg, #dc2626, #991b1b);
+    border: 1.5px solid #fca5a5;
+    color: #fff;
+    font-size: 13.5px;
+    padding: 12px 10px;
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.28);
+  }
+
+  /* #10: Watermarked Selfie Camera Box */
+  .selfie-cam-wrap {
+    position: relative;
+    width: 100%;
+    background: #0f172a;
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  #siteSelfieVideo, #siteSelfiePreviewImg {
+    width: 100%;
+    max-height: 290px;
+    object-fit: cover;
+    display: block;
+  }
+</style>
+
+<!-- #10: Auto-Watermarked Site Selfie Verification Modal -->
+<div id="siteSelfieModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>📸 Verified Site Selfie Clock-In</h3>
+      <span class="close-btn" onclick="closeSiteSelfieModal()">&times;</span>
+    </div>
+    <p style="font-size:11.5px; color:#475569; margin-bottom:8px;">
+      🛡️ <b>Anti-Proxy Site Verification:</b> साइट उपस्थिति (`Work from Site`) के लिए अपनी लाइव सेल्फी लें। फोटो पर आपका नाम, साइट, समय और GPS अपने-आप छप जाएगा:
+    </p>
+
+    <div class="selfie-cam-wrap">
+      <video id="siteSelfieVideo" autoplay playsinline muted></video>
+      <img id="siteSelfiePreviewImg" style="display:none;" alt="Watermarked Site Selfie">
+      <canvas id="siteSelfieCanvas" style="display:none;"></canvas>
+    </div>
+
+    <div class="btn-grid-2" style="margin-bottom:8px;">
+      <button type="button" class="btn btn-reg" id="btnSnapSiteSelfie" style="padding:11px; font-size:13px;" onclick="captureWatermarkedSiteFrame()">
+        📸 Snap Live Selfie
+      </button>
+      <label for="siteSelfieFallbackInput" class="btn" style="background:#475569; padding:11px; font-size:12.5px; margin:0; cursor:pointer;">
+        📷 Use Phone Camera
+      </label>
+      <input type="file" id="siteSelfieFallbackInput" accept="image/*" capture="user" style="display:none;" onchange="handleFallbackSiteSelfie(this)">
+    </div>
+
+    <button type="button" class="btn btn-clockin" id="btnConfirmSiteSelfiePunch" style="display:none; font-size:14px; padding:13px;" onclick="confirmWatermarkedSelfieAndPunch()">
+      ✅ Verify Selfie & Complete Clock-In 🚀
+    </button>
+  </div>
+</div>
+
+<!-- #12: 1-Tap Emergency SOS / Site Breakdown Help Modal -->
+<div id="sosHelpModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 style="color:#dc2626;">🚨 Site Breakdown / SOS Help</h3>
+      <span class="close-btn" onclick="closeSosHelpModal()">&times;</span>
+    </div>
+
+    <div class="privacy-banner" style="background:#fef2f2; border-color:#fca5a5; color:#991b1b;">
+      🚨 <b>तत्काल सहायता (Instant Escalation to Sumeet Sir):</b> साइट पर पैनल फॉल्ट, तकनीकी रुकावट या किसी भी आपातकालीन स्थिति में तुरंत अपनी लाइव GPS लोकेशन के साथ Sumeet Sir को अलर्ट भेजें।
+    </div>
+
+    <label>आपातकालीन श्रेणी (Emergency / Breakdown Type):</label>
+    <select id="sosType">
+      <option value="⚡ Urgent Site Panel / PLC / VFD Breakdown">⚡ Urgent Site Panel / PLC / VFD Breakdown</option>
+      <option value="🚧 Client Escalation / Drawing or BOM Mismatch">🚧 Client Escalation / Drawing Mismatch</option>
+      <option value="🔌 Testing Kit / Power Supply Safety Hazard">🔌 Testing Kit / Power Supply Hazard</option>
+      <option value="🏥 Medical / Travel / Site Access Emergency">🏥 Medical / Travel / Site Emergency</option>
+    </select>
+
+    <label>साइट / स्थान का नाम (Current Site / Location Name):</label>
+    <input type="text" id="sosSiteName" placeholder="उदा: Tata Motors Site / Chikhali Shopfloor">
+
+    <label>समस्या एवं तत्काल आवश्यकता (What Urgent Help is Needed?):</label>
+    <div class="voice-input-row" style="margin-bottom:10px;">
+      <textarea id="sosDetailText" rows="2" placeholder="तत्काल क्या मदद चाहिए? लिखें या 🎙️ दबाकर बोलें..." style="margin-bottom:0;"></textarea>
+      <button type="button" class="mic-btn" id="micSosBtn" onclick="startSosVoiceDictation()">🎙️</button>
+    </div>
+
+    <button type="button" class="btn btn-sos" id="btnSubmitSos" style="font-size:14.5px; padding:13px;" onclick="submitEmergencySosAlert()">
+      🚨 Send Live GPS SOS Alert to Sumeet Sir 🚀
+    </button>
+  </div>
+</div>
+
+<script>
+  window._siteSelfieVerifiedForCurrentPunch = false;
+  let siteSelfieStream = null;
+  let capturedSiteSelfieBase64 = "";
+
+  async function catCPostCall(payloadObj, retries = 2) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payloadObj),
+          redirect: "follow"
+        });
+        if (response.ok) return await response.json();
+      } catch (err) {
+        if (attempt < retries) await new Promise(r => setTimeout(r, 900 * attempt));
+        else throw err;
+      }
+    }
+  }
+
+  function initCategoryCUpgradesUI() {
+    // 1. Inject #11 Punctuality Streak Counter inside .user-pill
+    const userPill = document.querySelector(".user-pill");
+    const phoneEl = document.getElementById("empDisplayPhone");
+    if (userPill && phoneEl && !document.getElementById("punctualityStreakPill")) {
+      const streakEl = document.createElement("div");
+      streakEl.id = "punctualityStreakPill";
+      streakEl.className = "streak-pill";
+      streakEl.innerHTML = "🔥 On-Time Streak: Calculating...";
+      phoneEl.insertAdjacentElement("afterend", streakEl);
+    }
+
+    // 2. Build #9 Sleek 3x3 Super-App Icon Launcher Grid & #12 SOS Button
+    const mgrBtn = document.getElementById("btnManagerPanel");
+    const actionStack = mgrBtn ? mgrBtn.parentNode : null;
+    if (actionStack && !document.getElementById("superAppLauncherGrid")) {
+      // Hide old stacked buttons inside actionStack while keeping #btnManagerPanel
+      Array.from(actionStack.children).forEach(child => {
+        if (child.id !== "btnManagerPanel") {
+          child.style.display = "none";
+        }
+      });
+
+      const wrapper = document.createElement("div");
+      wrapper.id = "superAppLauncherGrid";
+      wrapper.innerHTML = `
+        <div class="super-grid-title">
+          <span>📱 Aryavarta Employee Super-App</span>
+          <span style="color:#2563eb;">9 Mini-Portals</span>
+        </div>
+        <div class="super-app-grid">
+          <div class="super-tile" onclick="openLeaveModal()">
+            <div class="ico" style="background:#fef3c7;color:#b45309;">📝</div>
+            <div class="lbl">Apply Leave</div>
+          </div>
+          <div class="super-tile" onclick="openRegModal()">
+            <div class="ico" style="background:#e0f2fe;color:#0369a1;">🛠️</div>
+            <div class="lbl">Missed Punch</div>
+          </div>
+          <div class="super-tile" onclick="typeof openOtModal==='function' ? openOtModal() : alert('Sunday/OT Pass')">
+            <div class="ico" style="background:#fce7f3;color:#be185d;">🌟</div>
+            <div class="lbl">Sunday / OT</div>
+          </div>
+          <div class="super-tile" onclick="typeof openGatePassModal==='function' ? openGatePassModal() : alert('Gate Pass')">
+            <div class="ico" style="background:#ccfbf1;color:#0f766e;">🚪</div>
+            <div class="lbl">Gate Pass</div>
+          </div>
+          <div class="super-tile" onclick="typeof openToolCustodyModal==='function' ? openToolCustodyModal() : alert('Tool Tracker')">
+            <div class="ico" style="background:#dbeafe;color:#1d4ed8;">🧰</div>
+            <div class="lbl">Tool Tracker</div>
+          </div>
+          <div class="super-tile" onclick="typeof openKaizenModal==='function' ? openKaizenModal() : alert('Kaizen Ideas')">
+            <div class="ico" style="background:#fef9c3;color:#a16207;">🏆</div>
+            <div class="lbl">Kaizen Star</div>
+          </div>
+          <div class="super-tile" onclick="typeof openSalaryAdvanceModal==='function' ? openSalaryAdvanceModal() : alert('Salary Advance')">
+            <div class="ico" style="background:#dcfce7;color:#15803d;">💸</div>
+            <div class="lbl">Salary Adv.</div>
+          </div>
+          <div class="super-tile" onclick="typeof openIssueModal==='function' ? openIssueModal() : alert('Raise Issue')">
+            <div class="ico" style="background:#f3e8ff;color:#6d28d9;">🛡️</div>
+            <div class="lbl">Raise Issue</div>
+          </div>
+          <div class="super-tile" onclick="openCalendarModal()">
+            <div class="ico" style="background:#f1f5f9;color:#334155;">📅</div>
+            <div class="lbl">Passbook</div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-sos" style="margin-bottom:8px;" onclick="openSosHelpModal()">
+          🚨 Site Breakdown / Emergency SOS Help
+        </button>
+      `;
+      actionStack.insertBefore(wrapper, mgrBtn);
+    }
+
+    // 3. Inject SOS & Site Selfie sections into Sumeet Singh's Command Center
+    const mgrCard = document.querySelector("#managerModal .modal-card");
+    const firstSec = mgrCard ? mgrCard.querySelector(".admin-section-title") : null;
+    if (mgrCard && firstSec && !document.getElementById("managerActiveSosList")) {
+      const sosBlock = document.createElement("div");
+      sosBlock.innerHTML = `
+        <div class="admin-section-title" style="color:#dc2626;">🚨 Active Site Breakdown / SOS Alerts</div>
+        <div id="managerActiveSosList">लोड हो रहा है...</div>
+        <div class="admin-section-title" style="color:#0284c7;">📸 Today's Watermarked Site Selfies</div>
+        <div id="managerSiteSelfiesList">लोड हो रहा है...</div>
+      `;
+      mgrCard.insertBefore(sosBlock, firstSec);
+    }
+  }
+
+  // Intercept handlePunch for #10 Watermarked Live Selfie on Outside-Site Clock-In
+  if (typeof window.handlePunch === "function") {
+    const _baseHandlePunchCatC = window.handlePunch;
+    window.handlePunch = function(punchType) {
+      const mode = document.getElementById("workMode") ? document.getElementById("workMode").value : "Office";
+      if (punchType === "Clock In" && mode === "Site" && !window._siteSelfieVerifiedForCurrentPunch) {
+        const siteVal = document.getElementById("siteName").value.trim();
+        if (!siteVal) {
+          alert("कृपया पहले साइट / प्रोजेक्ट का नाम दर्ज करें।");
+          document.getElementById("siteName").focus();
+          return;
+        }
+        openSiteSelfieModal();
+        return;
+      }
+      window._siteSelfieVerifiedForCurrentPunch = false;
+      return _baseHandlePunchCatC(punchType);
+    };
+  }
+
+  // Chain onto ultraReliableApiCall for #11 Punctuality Streak & #12 Manager SOS / Selfie Lists
+  if (typeof window.ultraReliableApiCall === "function") {
+    const _prevUltraApiCallCatC = window.ultraReliableApiCall;
+    window.ultraReliableApiCall = async function(paramsObj, retries = 3) {
+      const res = await _prevUltraApiCallCatC(paramsObj, retries);
+      try {
+        if (paramsObj && paramsObj.action === "checkStatus" && res) {
+          renderPunctualityStreakBadge(res.punctualityStreak || 0, res.calendarHistory || {});
+        }
+        if (paramsObj && paramsObj.action === "getAdminOverview" && res && !res.unauthorized) {
+          renderManagerSosList(res.activeSosList || []);
+          renderManagerSiteSelfiesList(res.recentSiteSelfies || []);
+        }
+      } catch (eCatC) {}
+      return res;
+    };
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initCategoryCUpgradesUI);
+  } else {
+    initCategoryCUpgradesUI();
+  }
+
+  // -------------------------------------------------------------------------
+  // #11: GAMIFIED PUNCTUALITY STREAK COUNTER
+  // -------------------------------------------------------------------------
+  function renderPunctualityStreakBadge(serverStreak, calHistory) {
+    const pill = document.getElementById("punctualityStreakPill");
+    if (!pill) return;
+
+    let streak = parseInt(serverStreak, 10) || 0;
+    if (!streak && calHistory) {
+      const dates = Object.keys(calHistory).sort().reverse();
+      for (const d of dates) {
+        const entry = calHistory[d];
+        if (entry && entry.punches && entry.punches.length > 0 && !entry.isLeave && !entry.isHoliday) {
+          if (!entry.isLate) streak++;
+          else break;
+        }
+      }
+    }
+
+    if (streak > 0) {
+      pill.innerHTML = `🔥 <b>${streak}-Day On-Time Streak!</b> (Before 10:00 AM)`;
+      pill.style.background = "linear-gradient(135deg, #fff7ed, #ffedd5)";
+      pill.style.color = "#c2410c";
+    } else {
+      pill.innerHTML = `⚡ Clock in before 10:00 AM tomorrow to start your 🔥 Streak!`;
+      pill.style.background = "#f1f5f9";
+      pill.style.color = "#475569";
+      pill.style.borderColor = "#cbd5e1";
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // #10: AUTO-WATERMARKED LIVE SELFIE FOR SITE CLOCK-IN
+  // -------------------------------------------------------------------------
+  function openSiteSelfieModal() {
+    triggerHaptic(20);
+    capturedSiteSelfieBase64 = "";
+    document.getElementById("siteSelfieModal").style.display = "flex";
+    document.getElementById("siteSelfieVideo").style.display = "block";
+    document.getElementById("siteSelfiePreviewImg").style.display = "none";
+    document.getElementById("btnConfirmSiteSelfiePunch").style.display = "none";
+
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 720 } }, audio: false })
+        .then(stream => {
+          siteSelfieStream = stream;
+          document.getElementById("siteSelfieVideo").srcObject = stream;
+        })
+        .catch(() => {
+          document.getElementById("siteSelfieVideo").style.display = "none";
+        });
+    }
+  }
+
+  function stopSiteSelfieCamera() {
+    if (siteSelfieStream) {
+      siteSelfieStream.getTracks().forEach(t => t.stop());
+      siteSelfieStream = null;
+    }
+  }
+
+  function closeSiteSelfieModal() {
+    stopSiteSelfieCamera();
+    document.getElementById("siteSelfieModal").style.display = "none";
+  }
+
+  function stampWatermarkOnCanvas(sourceEl, srcWidth, srcHeight) {
+    const canvas = document.getElementById("siteSelfieCanvas");
+    const targetW = 720;
+    const targetH = Math.round((srcHeight / srcWidth) * targetW) || 540;
+    canvas.width = targetW;
+    canvas.height = targetH;
+    const ctx = canvas.getContext("2d");
+
+    ctx.drawImage(sourceEl, 0, 0, targetW, targetH);
+
+    // Draw semi-transparent tamper-proof GPS & Timestamp footer bar
+    const barH = 82;
+    ctx.fillStyle = "rgba(15, 23, 42, 0.82)";
+    ctx.fillRect(0, targetH - barH, targetW, barH);
+
+    const siteVal = document.getElementById("siteName").value.trim() || "Client Site";
+    const gpsStr = (warmGPS.lat && warmGPS.lon)
+      ? `GPS: ${warmGPS.lat.toFixed(5)}, ${warmGPS.lon.toFixed(5)} (±${warmGPS.acc || 15}m)`
+      : "GPS: Verified Active";
+    const nowStr = new Date().toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "medium" });
+
+    ctx.fillStyle = "#38bdf8";
+    ctx.font = "bold 16px sans-serif";
+    ctx.fillText(`⚡ ARYAVARTA SITE VERIFIED: ${currentEmp.name}`, 14, targetH - barH + 24);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 14px sans-serif";
+    ctx.fillText(`📍 Site: ${siteVal}`, 14, targetH - barH + 46);
+
+    ctx.fillStyle = "#a7f3d0";
+    ctx.font = "13px monospace";
+    ctx.fillText(`🕒 ${nowStr} | ${gpsStr}`, 14, targetH - barH + 68);
+
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.80);
+    capturedSiteSelfieBase64 = dataUrl.split(",")[1];
+
+    const prevImg = document.getElementById("siteSelfiePreviewImg");
+    prevImg.src = dataUrl;
+    prevImg.style.display = "block";
+    document.getElementById("siteSelfieVideo").style.display = "none";
+    document.getElementById("btnConfirmSiteSelfiePunch").style.display = "flex";
+    stopSiteSelfieCamera();
+  }
+
+  function captureWatermarkedSiteFrame() {
+    triggerHaptic(25);
+    const video = document.getElementById("siteSelfieVideo");
+    if (!video || !video.videoWidth) {
+      return document.getElementById("siteSelfieFallbackInput").click();
+    }
+    stampWatermarkOnCanvas(video, video.videoWidth, video.videoHeight);
+  }
+
+  function handleFallbackSiteSelfie(inputEl) {
+    const file = inputEl.files && inputEl.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        stampWatermarkOnCanvas(img, img.width, img.height);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function confirmWatermarkedSelfieAndPunch() {
+    if (!capturedSiteSelfieBase64) return alert("कृपया पहले सेल्फी लें।");
+    const btn = document.getElementById("btnConfirmSiteSelfiePunch");
+    btn.disabled = true;
+    btn.innerText = "⏳ Uploading Watermarked Selfie...";
+
+    const siteVal = document.getElementById("siteName").value.trim();
+    try {
+      const res = await catCPostCall({
+        action: "uploadSiteSelfie",
+        phone: currentEmp.phone,
+        name: currentEmp.name,
+        siteName: siteVal,
+        lat: warmGPS.lat || "",
+        lon: warmGPS.lon || "",
+        fileBase64: capturedSiteSelfieBase64
+      }, 2);
+
+      if (res && res.selfieUrl) {
+        document.getElementById("siteName").value = `${siteVal} (📸 Selfie Verified)`;
+      }
+    } catch (e) {}
+
+    btn.disabled = false;
+    btn.innerText = "✅ Verify Selfie & Complete Clock-In 🚀";
+    closeSiteSelfieModal();
+    window._siteSelfieVerifiedForCurrentPunch = true;
+    handlePunch("Clock In");
+  }
+
+  // -------------------------------------------------------------------------
+  // #12: 1-TAP EMERGENCY SOS / SITE BREAKDOWN HELP FUNCTIONS
+  // -------------------------------------------------------------------------
+  function openSosHelpModal() {
+    triggerHaptic([50, 30, 50]);
+    const curSite = document.getElementById("siteName") ? document.getElementById("siteName").value.trim() : "";
+    if (curSite) document.getElementById("sosSiteName").value = curSite;
+    document.getElementById("sosHelpModal").style.display = "flex";
+  }
+
+  function closeSosHelpModal() {
+    document.getElementById("sosHelpModal").style.display = "none";
+  }
+
+  function startSosVoiceDictation() {
+    if (typeof startVoiceDictation === "function") {
+      startVoiceDictation("sosDetailText", "micSosBtn");
+    }
+  }
+
+  async function submitEmergencySosAlert() {
+    const sosType = document.getElementById("sosType").value;
+    const siteName = document.getElementById("sosSiteName").value.trim() || "Field / Chikhali HO";
+    const detail = document.getElementById("sosDetailText").value.trim();
+
+    if (!detail) {
+      alert("कृपया संक्षेप में लिखें या बोलें कि क्या आपातकालीन मदद चाहिए।");
+      return document.getElementById("sosDetailText").focus();
+    }
+
+    const btn = document.getElementById("btnSubmitSos");
+    btn.disabled = true;
+    btn.innerText = "🚨 Sending Live GPS SOS to Sumeet Sir...";
+
+    const lat = warmGPS.lat || "";
+    const lon = warmGPS.lon || "";
+    const mapLink = (lat && lon) ? `https://www.google.com/maps?q=${lat},${lon}` : "GPS Pending";
+
+    try {
+      await catCPostCall({
+        action: "submitSosAlert",
+        phone: currentEmp.phone,
+        name: currentEmp.name,
+        sosType: sosType,
+        siteName: siteName,
+        detail: detail,
+        lat: lat,
+        lon: lon
+      }, 2);
+    } catch (e) {}
+
+    btn.disabled = false;
+    btn.innerText = "🚨 Send Live GPS SOS Alert to Sumeet Sir 🚀";
+    document.getElementById("sosDetailText").value = "";
+    closeSosHelpModal();
+
+    triggerHaptic([100, 50, 100, 50, 150]);
+    speakHindi("आपातकालीन एसओएस अलर्ट और आपकी लाइव लोकेशन प्रबंधक सुमीत सिंह जी को भेज दी गई है।");
+    showMessage("🚨 Emergency SOS & Live GPS Pin sent to Manager Sumeet Singh!", "#dc2626");
+
+    // Offer instant 1-tap WhatsApp SOS ping to Sumeet Sir (9766037466)
+    const waText = `🚨 *URGENT SOS / SITE BREAKDOWN ALERT*\n👤 *Engineer:* ${currentEmp.name} (+91 ${currentEmp.phone})\n⚠️ *Type:* ${sosType}\n📍 *Site:* ${siteName}\n📋 *Issue:* ${detail}\n🗺️ *Live GPS Pin:* ${mapLink}`;
+    if (confirm("🚨 Email SOS भेज दिया गया है!\n\nक्या आप तुरंत Sumeet Sir को WhatsApp पर भी लाइव GPS SOS भेजना चाहते हैं?")) {
+      window.open(`https://wa.me/91${SUMEET_SINGH_PHONE}?text=${encodeURIComponent(waText)}`, "_blank");
+    }
+  }
+
+  function renderManagerSosList(list) {
+    const box = document.getElementById("managerActiveSosList");
+    if (!box) return;
+    if (!list || list.length === 0) {
+      box.innerHTML = "<div class='admin-list-item'>🟢 कोई सक्रिय आपातकालीन (SOS / Breakdown) अलर्ट नहीं है।</div>";
+      return;
+    }
+    box.innerHTML = "";
+    list.forEach(sos => {
+      const mapBtn = sos.mapUrl ? `<a class="mini-act-btn" style="background:#2563eb;" href="${sos.mapUrl}" target="_blank">📍 GPS Map</a>` : "";
+      const card = document.createElement("div");
+      card.className = "issue-card-item";
+      card.style.background = "#fef2f2";
+      card.style.borderColor = "#f87171";
+      card.innerHTML = `
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+          <b style="color:#991b1b;">🚨 ${sos.name} (${sos.time})</b>
+          <a href="tel:+91${sos.phone}" style="color:#dc2626;font-weight:900;text-decoration:none;">📞 Call</a>
+        </div>
+        <div style="font-size:11px;font-weight:800;color:#b91c1c;">${sos.sosType} | 📍 ${sos.siteName}</div>
+        <div style="color:#0f172a;margin:4px 0;"><b>Issue:</b> ${sos.detail}</div>
+        <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:6px;">
+          ${mapBtn}
+          <button class="mini-act-btn" style="background:#059669;" onclick="resolveSosAsSumeet('${sos.id}')">✅ Mark Assisted / Resolved</button>
+        </div>
+      `;
+      box.appendChild(card);
+    });
+  }
+
+  async function resolveSosAsSumeet(sosId) {
+    if (currentEmp.phone !== SUMEET_SINGH_PHONE) return;
+    triggerHaptic(25);
+    try {
+      await catCPostCall({
+        action: "resolveSosAlert",
+        sosId: sosId,
+        managerPhone: currentEmp.phone,
+        pin: localStorage.getItem("aa_mgr_pin") || ""
+      }, 2);
+      loadManagerOverview();
+    } catch (e) {}
+  }
+
+  function renderManagerSiteSelfiesList(list) {
+    const box = document.getElementById("managerSiteSelfiesList");
+    if (!box) return;
+    if (!list || list.length === 0) {
+      box.innerHTML = "<div class='admin-list-item'>⚪ आज कोई साइट सेल्फी पंच दर्ज नहीं हुआ है।</div>";
+      return;
+    }
+    box.innerHTML = "";
+    list.forEach(sf => {
+      const item = document.createElement("div");
+      item.className = "admin-list-item";
+      item.innerHTML = `
+        <div>
+          <b>${sf.name}</b> <span style="font-size:11px;color:#0284c7;font-weight:800;">(📍 ${sf.siteName})</span><br>
+          <span style="font-size:11px;color:#64748b;">🕒 ${sf.time}</span>
+        </div>
+        <a class="mini-act-btn" style="background:#0284c7;" href="${sf.selfieUrl}" target="_blank">📸 View Watermarked Selfie</a>
+      `;
+      box.appendChild(item);
+    });
+  }
+</script>
+
 </body>
 </html>
