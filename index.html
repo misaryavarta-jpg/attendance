@@ -7449,5 +7449,648 @@
   })();
 </script>
 
+<!-- ===================================================================== -->
+<!-- 📦 CATEGORY G: #25 PANEL DISPATCH TRACKER & #27 DRAWING REVISION ALERT-->
+<!-- Paste this entire block at the very bottom of index.html              -->
+<!-- ===================================================================== -->
+<style>
+  .btn-dispatch { background: linear-gradient(135deg, #0369a1, #0c4a6e); color: #fff; font-size: 13px; padding: 12px 10px; }
+  .btn-drwalert { background: linear-gradient(135deg, #d97706, #92400e); color: #fff; font-size: 13px; padding: 12px 10px; }
+
+  /* #27: Flashing Drawing Revision Alert Banner on Home Screen */
+  #drawingRevTopBanner {
+    display: none;
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border: 2px solid #f59e0b;
+    color: #92400e;
+    border-radius: 13px;
+    padding: 9px 12px;
+    margin-bottom: 10px;
+    text-align: left;
+    font-size: 11.8px;
+    line-height: 1.4;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.22);
+  }
+</style>
+
+<!-- #25: Panel Dispatch & Vehicle / E-Way Bill Gate Tracker Modal -->
+<div id="dispatchTrackerModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>🚛 Panel Dispatch & LR Tracker</h3>
+      <span class="close-btn" onclick="closeDispatchTrackerModal()">&times;</span>
+    </div>
+    <p style="font-size:11.5px; color:#475569; margin-bottom:8px;">
+      Chikhali Head Office से डिस्पैच होने वाले प्रत्येक पैनल का वाहन नंबर, ड्राइवर मोबाइल, LR/E-Way बिल और लोडिंग फोटो दर्ज करें:
+    </p>
+
+    <div class="btn-grid-2">
+      <div>
+        <label>पैनल / जॉब का नाम (Panel Name):</label>
+        <input type="text" id="dpPanelName" placeholder="उदा: 250kW MCC Panel">
+      </div>
+      <div>
+        <label>क्लाइंट / साइट (Client Name):</label>
+        <input type="text" id="dpClientName" placeholder="उदा: Tata Motors / Kirloskar">
+      </div>
+    </div>
+
+    <div class="btn-grid-2">
+      <div>
+        <label>गाड़ी नंबर (Vehicle No.):</label>
+        <input type="text" id="dpVehicleNo" placeholder="उदा: MH-14-AB-1234" style="text-transform:uppercase;">
+      </div>
+      <div>
+        <label>ड्राइवर मोबाइल (Driver Phone):</label>
+        <input type="tel" id="dpDriverPhone" maxlength="10" placeholder="10-digit Mobile">
+      </div>
+    </div>
+
+    <label>Challan / E-Way Bill / LR विवरण एवं नोट्स:</label>
+    <div class="chip-row">
+      <span class="task-chip" onclick="appendDpChip('Shrink-wrapped & Tarpaulin covered')">🛡️ Tarpaulin Covered</span>
+      <span class="task-chip" onclick="appendDpChip('Test Certificate & As-Built SLD Inside')">📐 SLD/TC Inside</span>
+      <span class="task-chip" onclick="appendDpChip('Door Keys &Loose Spares Handed to Driver')">🔑 Keys/Spares Given</span>
+    </div>
+    <div class="voice-input-row" style="margin-bottom:6px;">
+      <input type="text" id="dpNotes" placeholder="चालान नंबर या पैकिंग विवरण लिखें या 🎙️ बोलें..." style="margin-bottom:0;">
+      <button type="button" class="mic-btn" id="micDpNotesBtn" onclick="startCatGVoice('dpNotes', 'micDpNotesBtn')">🎙️</button>
+    </div>
+
+    <label>📸 वाहन में पैनल लोडिंग फोटो (Attach Vehicle Loading Photo):</label>
+    <div class="file-box">
+      <input type="file" id="dpPhotoInput" accept="image/*" style="margin-bottom:2px; border:none; padding:2px; font-size:12px;" onchange="handleDispatchPhotoSelect(this)">
+      <div id="dpPhotoPreviewText" style="font-size:11px; color:#059669; font-weight:700; display:none;"></div>
+    </div>
+
+    <button type="button" class="btn btn-dispatch" id="btnSubmitDispatch" style="font-size:14px; padding:12px;" onclick="submitPanelDispatchLog()">
+      🚛 Log Panel Dispatch & Alert Sumeet Sir 🚀
+    </button>
+
+    <div class="admin-section-title" style="margin-top:12px;">📦 Recent Panel Dispatches</div>
+    <div id="recentDispatchesList" style="font-size:12px; color:#64748b;">कोई डिस्पैच रिकॉर्ड नहीं है।</div>
+  </div>
+</div>
+
+<!-- #27: Live SLD / GA Drawing Revision Alert Modal -->
+<div id="drawingRevModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>📐 SLD / GA Drawing Revision Alert</h3>
+      <span class="close-btn" onclick="closeDrawingRevModal()">&times;</span>
+    </div>
+
+    <!-- Active Shopfloor Drawing Revision Warnings -->
+    <div class="admin-section-title" style="margin-top:0; color:#b45309;">⚠️ Active Drawing Revisions (Verify Before Wiring!)</div>
+    <div id="activeDrawingAlertsList" style="margin-bottom:10px; font-size:12px; color:#64748b;">
+      कोई सक्रिय ड्रॉइंग संशोधन अलर्ट नहीं है।
+    </div>
+
+    <!-- Post New Drawing Revision Alert Form -->
+    <div style="background:#fffbeb; border:1.5px solid #fcd34d; border-radius:14px; padding:12px;">
+      <div style="font-size:12.5px; font-weight:800; color:#92400e; margin-bottom:6px;">
+        📢 नया ड्रॉइंग संशोधन जारी करें (Post New Drawing Revision Alert)
+      </div>
+      <p style="font-size:11px; color:#78350f; margin-bottom:8px;">
+        पुरानी प्रिंटेड ड्रॉइंग से गलत वायरिंग रोकने के लिए पैनल का नया Revision नंबर और बदलाव तुरंत सभी शॉपफ्लोर इंजीनियरों को दिखाएं:
+      </p>
+
+      <div class="btn-grid-2">
+        <div>
+          <label>पैनल / प्रोजेक्ट (Panel Name):</label>
+          <input type="text" id="drPanelName" placeholder="उदा: PLC Panel Job #108">
+        </div>
+        <div>
+          <label>नया रिवीजन (Latest Rev No.):</label>
+          <select id="drRevNo">
+            <option value="REV-01 (Updated)">🔄 REV-01 (Updated)</option>
+            <option value="REV-02 (Latest)">⚠️ REV-02 (Stop Rev-01)</option>
+            <option value="REV-03 (Latest)">🚨 REV-03 (Stop Rev-02)</option>
+            <option value="REV-04 (Final As-Built)">✅ REV-04 (Final)</option>
+          </select>
+        </div>
+      </div>
+
+      <label>ड्रॉइंग में क्या बदलाव हुआ है? (Key Change Summary):</label>
+      <div class="chip-row">
+        <span class="task-chip" onclick="appendDrChip('Feeder MCB/Contactor rating changed')">⚡ Feeder Rating Changed</span>
+        <span class="task-chip" onclick="appendDrChip('PLC DI/DO TB ferrule numbering updated')">🏷️ PLC TB Changed</span>
+        <span class="task-chip" onclick="appendDrChip('GA Door cutout / Busbar layout modified')">📐 GA Layout Changed</span>
+      </div>
+      <div class="voice-input-row" style="margin-bottom:6px;">
+        <textarea id="drChangeSummary" rows="2" placeholder="बदलाव लिखें (उदा: पंप फीडर 32A से 63A किया गया, पुरानी ड्रॉइंग फाड़ दें)..." style="margin-bottom:0;"></textarea>
+        <button type="button" class="mic-btn" id="micDrSummaryBtn" onclick="startCatGVoice('drChangeSummary', 'micDrSummaryBtn')">🎙️</button>
+      </div>
+
+      <label>📎 नई SLD / GA ड्रॉइंग फोटो या PDF (Optional Attachment):</label>
+      <div class="file-box" style="background:#fff;">
+        <input type="file" id="drFileInput" accept="image/*,.pdf" style="margin-bottom:2px; border:none; padding:2px; font-size:12px;" onchange="handleDrawingFileSelect(this)">
+        <div id="drFilePreviewText" style="font-size:11px; color:#059669; font-weight:700; display:none;"></div>
+      </div>
+
+      <button type="button" class="btn btn-drwalert" id="btnSubmitDrawingRev" style="font-size:14px; padding:12px;" onclick="submitDrawingRevisionAlert()">
+        📐 Broadcast Drawing Revision Alert 🚀
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let catGState = {
+    recentDispatches: [],
+    activeDrawingAlerts: []
+  };
+  let preparedDispatchPhoto = { base64: "", mimeType: "", fileName: "" };
+  let preparedDrawingFile = { base64: "", mimeType: "", fileName: "" };
+
+  async function catGPostCall(payloadObj, retries = 2) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payloadObj),
+          redirect: "follow"
+        });
+        if (response.ok) return await response.json();
+      } catch (err) {
+        if (attempt < retries) await new Promise(r => setTimeout(r, 900 * attempt));
+        else throw err;
+      }
+    }
+  }
+
+  function initCategoryGModulesUI() {
+    // 1. Inject #27 Active Drawing Revision Warning Banner above User Pill
+    const attView = document.getElementById("attendanceView");
+    const userPill = document.querySelector(".user-pill");
+    if (attView && userPill && !document.getElementById("drawingRevTopBanner")) {
+      const drBanner = document.createElement("div");
+      drBanner.id = "drawingRevTopBanner";
+      drBanner.onclick = openDrawingRevModal;
+      attView.insertBefore(drBanner, userPill);
+    }
+
+    // 2. Inject #25 Dispatch Tracker & #27 Drawing Alert Tiles into Super-App Grid
+    const superGrid = document.querySelector(".super-app-grid");
+    if (superGrid && !document.getElementById("tileDispatchTracker")) {
+      const catGTiles = `
+        <div class="super-tile" id="tileDispatchTracker" onclick="openDispatchTrackerModal()">
+          <div class="ico" style="background:#e0f2fe;color:#0369a1;">🚛</div>
+          <div class="lbl">Dispatch Log</div>
+        </div>
+        <div class="super-tile" id="tileDrawingRev" onclick="openDrawingRevModal()">
+          <div class="ico" style="background:#fef3c7;color:#b45309;">📐</div>
+          <div class="lbl">Drawing Rev</div>
+        </div>
+      `;
+      superGrid.insertAdjacentHTML("beforeend", catGTiles);
+
+      // Update Super-App tile counter automatically
+      const titleSpan = document.querySelector(".super-grid-title span:last-child");
+      if (titleSpan) {
+        titleSpan.innerText = `${superGrid.querySelectorAll(".super-tile").length} Mini-Portals`;
+      }
+    } else if (!superGrid && !document.getElementById("catGFallbackBtnGroup")) {
+      const calBtn = document.querySelector(".btn-cal");
+      if (calBtn) {
+        const grp = document.createElement("div");
+        grp.id = "catGFallbackBtnGroup";
+        grp.className = "btn-grid-2";
+        grp.style.marginBottom = "8px";
+        grp.innerHTML = `
+          <button type="button" class="btn btn-dispatch" onclick="openDispatchTrackerModal()">🚛 Dispatch Tracker</button>
+          <button type="button" class="btn btn-drwalert" onclick="openDrawingRevModal()">📐 Drawing Alert</button>
+        `;
+        calBtn.parentNode.insertBefore(grp, calBtn);
+      }
+    }
+
+    // 3. Inject #25 & #27 Manager Sections into Sumeet Sir's Command Center (#managerModal)
+    const mgrCard = document.querySelector("#managerModal .modal-card");
+    const firstSec = mgrCard ? mgrCard.querySelector(".admin-section-title") : null;
+    if (mgrCard && firstSec && !document.getElementById("managerDispatchesList")) {
+      const gSec = document.createElement("div");
+      gSec.innerHTML = `
+        <div class="admin-section-title" style="color:#0369a1;">🚛 Recent Panel Dispatches & Vehicle Logs</div>
+        <div id="managerDispatchesList">लोड हो रहा है...</div>
+        <div class="admin-section-title" style="color:#b45309;">📐 Active Shopfloor Drawing Revision Alerts</div>
+        <div id="managerDrawingAlertsList">लोड हो रहा है...</div>
+      `;
+      mgrCard.insertBefore(gSec, firstSec);
+    }
+  }
+
+  // Chain onto ultraReliableApiCall to auto-sync Dispatches & Drawing Revision Alerts
+  if (typeof window.ultraReliableApiCall === "function") {
+    const _prevUltraApiCallCatG = window.ultraReliableApiCall;
+    window.ultraReliableApiCall = async function(paramsObj, retries = 3) {
+      const res = await _prevUltraApiCallCatG(paramsObj, retries);
+      try {
+        if (paramsObj && paramsObj.action === "checkStatus" && res && res.catGData) {
+          catGState.recentDispatches = res.catGData.recentDispatches || [];
+          catGState.activeDrawingAlerts = res.catGData.activeDrawingAlerts || [];
+          renderDrawingRevBannerAndModal();
+          renderDispatchesListUI("recentDispatchesList", catGState.recentDispatches);
+        }
+        if (paramsObj && paramsObj.action === "getAdminOverview" && res && !res.unauthorized) {
+          renderDispatchesListUI("managerDispatchesList", res.recentDispatchesList || []);
+          renderManagerDrawingAlertsUI(res.activeDrawingAlertsList || []);
+        }
+      } catch (eCatG) {}
+      return res;
+    };
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initCategoryGModulesUI);
+  } else {
+    initCategoryGModulesUI();
+  }
+
+  function startCatGVoice(inputId, btnId) {
+    if (typeof startVoiceDictation === "function") {
+      startVoiceDictation(inputId, btnId);
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // #25: PANEL DISPATCH & VEHICLE / LR TRACKER FUNCTIONS
+  // -------------------------------------------------------------------------
+  function openDispatchTrackerModal() {
+    triggerHaptic(15);
+    renderDispatchesListUI("recentDispatchesList", catGState.recentDispatches);
+    document.getElementById("dispatchTrackerModal").style.display = "flex";
+  }
+
+  function closeDispatchTrackerModal() {
+    document.getElementById("dispatchTrackerModal").style.display = "none";
+  }
+
+  function appendDpChip(text) {
+    triggerHaptic(15);
+    const el = document.getElementById("dpNotes");
+    el.value = el.value.trim() ? (el.value.trim() + " | " + text) : text;
+  }
+
+  function handleDispatchPhotoSelect(inputEl) {
+    const previewEl = document.getElementById("dpPhotoPreviewText");
+    const file = inputEl.files && inputEl.files[0];
+    if (!file) {
+      preparedDispatchPhoto = { base64: "", mimeType: "", fileName: "" };
+      previewEl.style.display = "none";
+      return;
+    }
+    previewEl.style.display = "block";
+    previewEl.innerText = "⏳ लोडिंग फोटो तैयार हो रही है...";
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement("canvas");
+        const maxDim = 1150;
+        let w = img.width, h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+          else { w = Math.round((w * maxDim) / h); h = maxDim; }
+        }
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.78);
+        preparedDispatchPhoto = {
+          base64: dataUrl.split(",")[1],
+          mimeType: "image/jpeg",
+          fileName: "dispatch_" + Date.now() + ".jpg"
+        };
+        previewEl.innerText = "✅ वाहन लोडिंग फोटो तैयार!";
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function submitPanelDispatchLog() {
+    const panelName = document.getElementById("dpPanelName").value.trim();
+    const clientName = document.getElementById("dpClientName").value.trim();
+    const vehicleNo = document.getElementById("dpVehicleNo").value.trim().toUpperCase();
+    const driverPhone = document.getElementById("dpDriverPhone").value.replace(/\D/g, "").slice(-10);
+    const notes = document.getElementById("dpNotes").value.trim() || "Standard Dispatch";
+
+    if (!panelName || !clientName || !vehicleNo) {
+      alert("कृपया पैनल का नाम, क्लाइंट और गाड़ी नंबर (Vehicle No.) अवश्य दर्ज करें।");
+      return document.getElementById("dpPanelName").focus();
+    }
+
+    const btn = document.getElementById("btnSubmitDispatch");
+    btn.disabled = true;
+    btn.innerText = "⏳ डिस्पैच लॉग अपलोड हो रहा है...";
+
+    try {
+      const res = await catGPostCall({
+        action: "submitPanelDispatch",
+        phone: currentEmp.phone,
+        name: currentEmp.name,
+        panelName: panelName,
+        clientName: clientName,
+        vehicleNo: vehicleNo,
+        driverPhone: driverPhone,
+        notes: notes,
+        fileBase64: preparedDispatchPhoto.base64 || "",
+        fileMimeType: preparedDispatchPhoto.mimeType || "",
+        fileName: preparedDispatchPhoto.fileName || ""
+      }, 2);
+
+      btn.disabled = false;
+      btn.innerText = "🚛 Log Panel Dispatch & Alert Sumeet Sir 🚀";
+
+      const newDisp = {
+        id: (res && res.dispatchId) || "DSP-NEW",
+        date: getISTDateString(),
+        panelName: panelName,
+        clientName: clientName,
+        vehicleNo: vehicleNo,
+        driverPhone: driverPhone,
+        byName: currentEmp.name,
+        photoUrl: (res && res.photoUrl) || ""
+      };
+      catGState.recentDispatches.unshift(newDisp);
+      renderDispatchesListUI("recentDispatchesList", catGState.recentDispatches);
+
+      document.getElementById("dpPanelName").value = "";
+      document.getElementById("dpClientName").value = "";
+      document.getElementById("dpVehicleNo").value = "";
+      document.getElementById("dpDriverPhone").value = "";
+      document.getElementById("dpNotes").value = "";
+      document.getElementById("dpPhotoInput").value = "";
+      document.getElementById("dpPhotoPreviewText").style.display = "none";
+      preparedDispatchPhoto = { base64: "", mimeType: "", fileName: "" };
+
+      closeDispatchTrackerModal();
+      triggerHaptic([60, 40, 100]);
+      speakHindi(`पैनल डिस्पैच और गाड़ी नंबर ${vehicleNo} का विवरण सफलतापूर्वक प्रबंधक सुमीत सिंह जी को भेज दिया गया है।`);
+      showMessage(`🚛 Panel Dispatch (${panelName} - ${vehicleNo}) logged & emailed to Sumeet Sir!`, "#059669");
+    } catch (e) {
+      btn.disabled = false;
+      btn.innerText = "🚛 Log Panel Dispatch & Alert Sumeet Sir 🚀";
+      alert("⚠️ नेटवर्क धीमा है, कृपया पुनः प्रयास करें।");
+    }
+  }
+
+  function renderDispatchesListUI(targetBoxId, list) {
+    const box = document.getElementById(targetBoxId);
+    if (!box) return;
+    if (!list || list.length === 0) {
+      box.innerHTML = "<div class='admin-list-item'>⚪ अभी तक कोई पैनल डिस्पैच रिकॉर्ड नहीं है।</div>";
+      return;
+    }
+    box.innerHTML = "";
+    list.forEach(d => {
+      const photoBtn = d.photoUrl ? `<a class="mini-act-btn" style="background:#0284c7;" href="${d.photoUrl}" target="_blank">📸 Photo</a>` : "";
+      const callBtn = d.driverPhone ? `<a class="mini-act-btn" style="background:#059669;" href="tel:+91${d.driverPhone}">📞 Driver</a>` : "";
+      const item = document.createElement("div");
+      item.className = "admin-list-item";
+      item.innerHTML = `
+        <div>
+          <b>🚛 ${d.panelName} &rarr; ${d.clientName}</b><br>
+          <span style="font-size:11px;color:#334155;">🚚 <b>${d.vehicleNo}</b> | 📅 ${d.date} (By: ${d.byName})</span>
+        </div>
+        <div style="display:flex;">${photoBtn}${callBtn}</div>
+      `;
+      box.appendChild(item);
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // #27: LIVE SLD / GA DRAWING REVISION ALERT FUNCTIONS
+  // -------------------------------------------------------------------------
+  function openDrawingRevModal() {
+    triggerHaptic(15);
+    renderDrawingRevBannerAndModal();
+    document.getElementById("drawingRevModal").style.display = "flex";
+  }
+
+  function closeDrawingRevModal() {
+    document.getElementById("drawingRevModal").style.display = "none";
+  }
+
+  function appendDrChip(text) {
+    triggerHaptic(15);
+    const el = document.getElementById("drChangeSummary");
+    el.value = el.value.trim() ? (el.value.trim() + " | " + text) : text;
+  }
+
+  function handleDrawingFileSelect(inputEl) {
+    const previewEl = document.getElementById("drFilePreviewText");
+    const file = inputEl.files && inputEl.files[0];
+    if (!file) {
+      preparedDrawingFile = { base64: "", mimeType: "", fileName: "" };
+      previewEl.style.display = "none";
+      return;
+    }
+    if (file.size > 4.5 * 1024 * 1024) {
+      alert("⚠️ फाइल 4.5 MB से कम होनी चाहिए।");
+      inputEl.value = "";
+      return;
+    }
+    previewEl.style.display = "block";
+    previewEl.innerText = "⏳ ड्रॉइंग फाइल तैयार हो रही है...";
+
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement("canvas");
+          const maxDim = 1280;
+          let w = img.width, h = img.height;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+            else { w = Math.round((w * maxDim) / h); h = maxDim; }
+          }
+          canvas.width = w;
+          canvas.height = h;
+          canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.80);
+          preparedDrawingFile = {
+            base64: dataUrl.split(",")[1],
+            mimeType: "image/jpeg",
+            fileName: file.name.replace(/\.[^/.]+$/, "") + ".jpg"
+          };
+          previewEl.innerText = `✅ ड्रॉइंग इमेज तैयार: ${preparedDrawingFile.fileName}`;
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    } else {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        preparedDrawingFile = {
+          base64: e.target.result.split(",")[1],
+          mimeType: file.type || "application/pdf",
+          fileName: file.name
+        };
+        previewEl.innerText = `✅ ड्रॉइंग PDF तैयार: ${file.name}`;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  async function submitDrawingRevisionAlert() {
+    const panelName = document.getElementById("drPanelName").value.trim();
+    const revNo = document.getElementById("drRevNo").value;
+    const summary = document.getElementById("drChangeSummary").value.trim();
+
+    if (!panelName || !summary) {
+      alert("कृपया पैनल का नाम और ड्रॉइंग में हुए बदलाव का विवरण लिखें।");
+      return document.getElementById("drPanelName").focus();
+    }
+
+    const btn = document.getElementById("btnSubmitDrawingRev");
+    btn.disabled = true;
+    btn.innerText = "⏳ शॉपफ्लोर अलर्ट जारी हो रहा है...";
+
+    try {
+      const res = await catGPostCall({
+        action: "submitDrawingAlert",
+        phone: currentEmp.phone,
+        name: currentEmp.name,
+        panelName: panelName,
+        revNo: revNo,
+        summary: summary,
+        fileBase64: preparedDrawingFile.base64 || "",
+        fileMimeType: preparedDrawingFile.mimeType || "",
+        fileName: preparedDrawingFile.fileName || ""
+      }, 2);
+
+      btn.disabled = false;
+      btn.innerText = "📐 Broadcast Drawing Revision Alert 🚀";
+
+      const newAlert = {
+        id: (res && res.alertId) || ("DRW-" + Date.now().toString().slice(-4)),
+        date: getISTDateString(),
+        panelName: panelName,
+        revNo: revNo,
+        summary: summary,
+        byName: currentEmp.name,
+        fileUrl: (res && res.fileUrl) || ""
+      };
+      catGState.activeDrawingAlerts.unshift(newAlert);
+      renderDrawingRevBannerAndModal();
+
+      document.getElementById("drPanelName").value = "";
+      document.getElementById("drChangeSummary").value = "";
+      document.getElementById("drFileInput").value = "";
+      document.getElementById("drFilePreviewText").style.display = "none";
+      preparedDrawingFile = { base64: "", mimeType: "", fileName: "" };
+
+      closeDrawingRevModal();
+      triggerHaptic([60, 40, 100]);
+      speakHindi(`सावधान! ${panelName} के लिए नई ड्रॉइंग ${revNo} जारी कर दी गई है। पुरानी ड्रॉइंग का उपयोग न करें।`);
+      showMessage(`📐 Drawing Revision Alert (${panelName} - ${revNo}) published to all shopfloor phones!`, "#059669");
+    } catch (e) {
+      btn.disabled = false;
+      btn.innerText = "📐 Broadcast Drawing Revision Alert 🚀";
+      alert("⚠️ नेटवर्क धीमा है, कृपया पुनः प्रयास करें।");
+    }
+  }
+
+  function renderDrawingRevBannerAndModal() {
+    const banner = document.getElementById("drawingRevTopBanner");
+    const listBox = document.getElementById("activeDrawingAlertsList");
+    const alerts = catGState.activeDrawingAlerts || [];
+
+    // 1. Top Warning Banner on Home Screen
+    if (banner) {
+      if (alerts.length > 0) {
+        const latest = alerts[0];
+        banner.style.display = "block";
+        banner.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-weight:900;color:#b45309;">📐 DRAWING REVISION ALERT (${alerts.length} Active)</span>
+            <span style="font-size:10.5px;font-weight:800;background:#f59e0b;color:#fff;padding:2px 7px;border-radius:8px;">${latest.revNo}</span>
+          </div>
+          <div style="margin-top:3px;color:#78350f;"><b>⚡ ${latest.panelName}:</b> ${latest.summary} <u>(Tap to View)</u></div>
+        `;
+
+        const spokenDrwKey = "aa_drw_spoken_" + latest.id;
+        if (latest.id && !localStorage.getItem(spokenDrwKey)) {
+          localStorage.setItem(spokenDrwKey, "true");
+          setTimeout(() => {
+            speakHindi(`शॉपफ्लोर ड्रॉइंग सूचना: ${latest.panelName} में ${latest.revNo} अपडेट हुआ है। कृपया वायरिंग से पहले नई ड्रॉइंग जांचें।`);
+          }, 2200);
+        }
+      } else {
+        banner.style.display = "none";
+      }
+    }
+
+    // 2. Active List inside Modal
+    if (listBox) {
+      if (alerts.length === 0) {
+        listBox.innerHTML = "<div class='admin-list-item'>🟢 सभी पैनल वर्तमान मानक ड्रॉइंग पर हैं (No pending revision alerts).</div>";
+      } else {
+        listBox.innerHTML = "";
+        alerts.forEach(a => {
+          const fileBtn = a.fileUrl ? `<a class="mini-act-btn" style="background:#2563eb;margin-left:0;" href="${a.fileUrl}" target="_blank">📎 Open New Drawing</a>` : "";
+          const archiveBtn = (currentEmp.phone === SUMEET_SINGH_PHONE || (a.byName || "").toLowerCase() === (currentEmp.name || "").toLowerCase())
+            ? `<button class="mini-act-btn" style="background:#059669;" onclick="archiveDrawingAlert('${a.id}')">✅ Panel Done / Clear</button>`
+            : "";
+          const card = document.createElement("div");
+          card.className = "issue-card-item";
+          card.style.background = "#fffbeb";
+          card.style.borderColor = "#fcd34d";
+          card.innerHTML = `
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+              <b style="color:#92400e;">⚡ ${a.panelName}</b>
+              <span style="font-size:11px;font-weight:900;color:#dc2626;">${a.revNo}</span>
+            </div>
+            <div style="color:#0f172a;font-size:12px;margin-bottom:4px;"><b>⚠️ Change:</b> ${a.summary}</div>
+            <div style="font-size:10.5px;color:#64748b;">👤 Posted by: ${a.byName} (${a.date})</div>
+            <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:6px;">
+              ${fileBtn}${archiveBtn}
+            </div>
+          `;
+          listBox.appendChild(card);
+        });
+      }
+    }
+  }
+
+  function renderManagerDrawingAlertsUI(list) {
+    const box = document.getElementById("managerDrawingAlertsList");
+    if (!box) return;
+    if (!list || list.length === 0) {
+      box.innerHTML = "<div class='admin-list-item'>🟢 कोई सक्रिय ड्रॉइंग संशोधन अलर्ट नहीं है।</div>";
+      return;
+    }
+    box.innerHTML = "";
+    list.forEach(a => {
+      const d = document.createElement("div");
+      d.className = "admin-list-item";
+      d.innerHTML = `
+        <div>
+          <b>📐 ${a.panelName} (${a.revNo})</b><br>
+          <span style="font-size:11px;color:#475569;">${a.summary} (By: ${a.byName})</span>
+        </div>
+        <button class="mini-act-btn" style="background:#059669;" onclick="archiveDrawingAlert('${a.id}')">✅ Clear</button>
+      `;
+      box.appendChild(d);
+    });
+  }
+
+  async function archiveDrawingAlert(alertId) {
+    triggerHaptic(25);
+    await catGPostCall({ action: "archiveDrawingAlert", alertId: alertId }, 2);
+    catGState.activeDrawingAlerts = (catGState.activeDrawingAlerts || []).filter(a => a.id !== alertId);
+    renderDrawingRevBannerAndModal();
+    if (document.getElementById("managerModal").style.display === "flex") {
+      loadManagerOverview();
+    }
+  }
+</script>
+
 </body>
 </html>
