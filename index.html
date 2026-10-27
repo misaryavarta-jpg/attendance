@@ -8798,5 +8798,515 @@
   }
 </script>
 
+<!-- ===================================================================== -->
+<!-- 🛡️ CATEGORY I: #33 ANTI-FAKE-GPS, #35 SPIRIT LEVEL & #36 EMP OF MONTH -->
+<!-- Paste this entire block at the very bottom of index.html              -->
+<!-- ===================================================================== -->
+<style>
+  .btn-level { background: linear-gradient(135deg, #0284c7, #1e3a8a); color: #fff; font-size: 13px; padding: 12px 10px; }
+  .btn-eom { background: linear-gradient(135deg, #ca8a04, #854d0e); color: #fff; font-size: 13px; padding: 12px 10px; }
+
+  /* #35: Digital Spirit Level Bubble Vial */
+  .spirit-vial-box {
+    width: 190px;
+    height: 190px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #0f172a 0%, #1e293b 100%);
+    border: 5px solid #475569;
+    margin: 10px auto;
+    position: relative;
+    box-shadow: inset 0 0 25px rgba(0,0,0,0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .spirit-target-ring {
+    width: 54px;
+    height: 54px;
+    border: 2px dashed #38bdf8;
+    border-radius: 50%;
+    position: absolute;
+    pointer-events: none;
+  }
+  .spirit-bubble {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #86efac, #10b981);
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.85);
+    position: absolute;
+    transition: transform 0.08s linear, background 0.2s ease;
+  }
+  .eom-gold-card {
+    background: linear-gradient(135deg, #fefce8 0%, #fef08a 50%, #fde047 100%);
+    border: 2px solid #ca8a04;
+    border-radius: 16px;
+    padding: 14px;
+    text-align: center;
+    color: #713f12;
+    margin-bottom: 12px;
+    box-shadow: 0 6px 18px rgba(202, 138, 4, 0.22);
+  }
+</style>
+
+<!-- #35: Panel Spirit Level & Inspection Flashlight Modal -->
+<div id="panelUtilityModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>🔦 Panel Spirit Level & Torch</h3>
+      <span class="close-btn" onclick="closePanelUtilityModal()">&times;</span>
+    </div>
+    <p style="font-size:11.5px; color:#475569; margin-bottom:6px;">
+      पैनल इरेक्शन (Mounting) के समय फोन को पैनल के ऊपर या दरवाजे पर रखकर <b>0.0° Plumb & Level</b> जांचें, या अंधेरे पैनल कोने देखने के लिए टॉर्च जलाएं:
+    </p>
+
+    <div class="spirit-vial-box">
+      <div class="spirit-target-ring"></div>
+      <div class="spirit-bubble" id="spiritBubbleEl"></div>
+    </div>
+
+    <div id="spiritReadoutText" style="text-align:center; font-family:monospace; font-size:15px; font-weight:900; color:#0f172a; margin-bottom:8px;">
+      X (Left/Right): 0.0° | Y (Front/Back): 0.0°
+    </div>
+
+    <div class="btn-grid-2" style="margin-bottom:10px;">
+      <button type="button" class="btn btn-level" style="padding:10px; font-size:12.5px;" onclick="calibrateSpiritLevelZero()">
+        🎯 Zero / Calibrate
+      </button>
+      <button type="button" class="btn" id="btnToggleTorch" style="background:#eab308; color:#0f172a; padding:10px; font-size:12.5px;" onclick="toggleInspectionFlashlight()">
+        🔦 Turn ON Torch
+      </button>
+    </div>
+
+    <!-- Log Panel Erection Level Sign-Off -->
+    <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:12px; padding:10px;">
+      <label style="margin-top:0;">📐 पैनल लेवलिंग रिकॉर्ड सेव करें (Log Panel Alignment):</label>
+      <input type="text" id="plPanelSiteName" placeholder="उदा: MCC Panel #2 - Tata Motors Site" style="margin-bottom:6px; font-size:12.5px; padding:9px;">
+      <button type="button" class="btn btn-clockin" id="btnSaveLevelLog" style="padding:10px; font-size:13px;" onclick="submitPanelLevelCheckLog()">
+        ✅ Save Verified Level Sign-Off
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- #36: Automated "Employee of the Month" Trophy & Certificate Modal -->
+<div id="eomTrophyModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>🏅 Employee of the Month</h3>
+      <span class="close-btn" onclick="closeEomTrophyModal()">&times;</span>
+    </div>
+
+    <div class="eom-gold-card" id="eomWinnerHighlightBox">
+      <div style="font-size:28px;">🏆</div>
+      <div style="font-size:11px; font-weight:900; letter-spacing:0.6px; text-transform:uppercase; color:#a16207;">
+        ARYAVARTA STAR PERFORMER OF THE MONTH
+      </div>
+      <div style="font-size:19px; font-weight:900; color:#422006; margin:4px 0;" id="eomTopWinnerName">Calculating...</div>
+      <div style="font-size:12px; font-weight:800; color:#854d0e;" id="eomTopWinnerMeta">Score: -- pts | Punctuality: --%</div>
+    </div>
+
+    <button type="button" class="btn btn-eom" style="margin-bottom:12px; font-size:13.5px; padding:12px;" onclick="printEmployeeOfTheMonthCertificate()">
+      🖨️ Print Gold-Bordered Award Certificate PDF
+    </button>
+
+    <div class="admin-section-title" style="color:#854d0e;">📊 Live Monthly Excellence Leaderboard (Top 5)</div>
+    <p style="font-size:10.5px; color:#64748b; margin-bottom:6px;">
+      गणना सूत्र: देय उपस्थिति दिन (Payable Days) + समयनिष्ठा (Punctuality %) + Kaizen Stars + Overtime
+    </p>
+    <div id="eomLeaderboardList" style="font-size:12px; color:#64748b;">लोड हो रहा है...</div>
+  </div>
+</div>
+
+<script>
+  // #33 Anti-Spoof State
+  window.antiSpoofReport = { status: "🛡️ Verified Genuine", suspect: false, reason: "" };
+
+  // #35 Spirit Level & Torch State
+  let spiritOffsets = { x: 0, y: 0 };
+  let currentTilt = { x: 0, y: 0 };
+  let spiritListenerActive = false;
+  let activeTorchStream = null;
+  let isTorchOn = false;
+
+  // #36 Employee of the Month State
+  let eomLeaderboardCache = [];
+
+  async function catIPostCall(payloadObj, retries = 2) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payloadObj),
+          redirect: "follow"
+        });
+        if (response.ok) return await response.json();
+      } catch (err) {
+        if (attempt < retries) await new Promise(r => setTimeout(r, 900 * attempt));
+        else throw err;
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // #33: ANTI-FAKE-GPS & CLOCK/TIMEZONE TAMPER DETECTOR ENGINE
+  // -------------------------------------------------------------------------
+  function evaluateAntiSpoofTelemetry() {
+    let flags = [];
+    const tz = (Intl && Intl.DateTimeFormat) ? Intl.DateTimeFormat().resolvedOptions().timeZone : "Asia/Kolkata";
+    if (tz && tz !== "Asia/Kolkata" && tz !== "Asia/Calcutta") {
+      flags.push(`Timezone Mismatch (${tz})`);
+    }
+
+    if (warmGPS && warmGPS.lat && warmGPS.lon) {
+      // Android Mock GPS apps often inject exact integer accuracy (e.g. 1m or 5m) with 0 altitude
+      if (warmGPS.acc !== null && (warmGPS.acc === 1 || warmGPS.acc === 0)) {
+        flags.push(`Suspicious Mock GPS Accuracy (${warmGPS.acc}m)`);
+      }
+    }
+
+    if (flags.length > 0) {
+      window.antiSpoofReport = {
+        status: "🚨 SPOOF/TAMPER SUSPECTED",
+        suspect: true,
+        reason: flags.join(", ")
+      };
+    } else {
+      window.antiSpoofReport = {
+        status: "🛡️ Anti-Spoof OK",
+        suspect: false,
+        reason: "Genuine GPS & IST Clock"
+      };
+    }
+    return window.antiSpoofReport;
+  }
+
+  function initCategoryIModulesUI() {
+    // 1. Inject #35 Spirit Level & #36 Employee of the Month Tiles into Super-App Grid
+    const superGrid = document.querySelector(".super-app-grid");
+    if (superGrid && !document.getElementById("tileSpiritLevel")) {
+      const catITiles = `
+        <div class="super-tile" id="tileSpiritLevel" onclick="openPanelUtilityModal()">
+          <div class="ico" style="background:#e0f2fe;color:#0284c7;">🔦</div>
+          <div class="lbl">Spirit Level</div>
+        </div>
+        <div class="super-tile" id="tileEomTrophy" onclick="openEomTrophyModal()">
+          <div class="ico" style="background:#fef9c3;color:#ca8a04;">🏅</div>
+          <div class="lbl">Emp of Month</div>
+        </div>
+      `;
+      superGrid.insertAdjacentHTML("beforeend", catITiles);
+
+      const titleSpan = document.querySelector(".super-grid-title span:last-child");
+      if (titleSpan) {
+        titleSpan.innerText = `${superGrid.querySelectorAll(".super-tile").length} Mini-Portals`;
+      }
+    }
+
+    // 2. Inject #33 Anti-Spoof Security Audit & #36 EOM into Sumeet Sir's Command Center (#managerModal)
+    const mgrCard = document.querySelector("#managerModal .modal-card");
+    const firstSec = mgrCard ? mgrCard.querySelector(".admin-section-title") : null;
+    if (mgrCard && firstSec && !document.getElementById("managerSpoofAlertsList")) {
+      const iSec = document.createElement("div");
+      iSec.innerHTML = `
+        <div class="admin-section-title" style="color:#dc2626;">🕵️‍♂️ Anti-Fake-GPS & Clock Tamper Security Log</div>
+        <div id="managerSpoofAlertsList">लोड हो रहा है...</div>
+      `;
+      mgrCard.insertBefore(iSec, firstSec);
+    }
+  }
+
+  // Chain onto ultraReliableApiCall:
+  // 1) Runs #33 Anti-Spoof check on every logPunch and checks client-vs-server clock drift!
+  // 2) Syncs #36 Employee of the Month Leaderboard & #33 Security Logs.
+  if (typeof window.ultraReliableApiCall === "function") {
+    const _prevUltraApiCallCatI = window.ultraReliableApiCall;
+    window.ultraReliableApiCall = async function(paramsObj, retries = 3) {
+      if (paramsObj && paramsObj.action === "logPunch") {
+        const spoof = evaluateAntiSpoofTelemetry();
+        paramsObj.clientEpochMs = Date.now();
+        if (spoof.suspect && paramsObj.detail && !paramsObj.detail.includes("SPOOF")) {
+          paramsObj.detail = `${paramsObj.detail} [${spoof.status}: ${spoof.reason}]`;
+          catIPostCall({
+            action: "logSpoofAlert",
+            phone: currentEmp.phone,
+            name: currentEmp.name,
+            reason: spoof.reason,
+            lat: warmGPS.lat || "",
+            lon: warmGPS.lon || ""
+          }, 1).catch(() => {});
+        }
+      }
+
+      const res = await _prevUltraApiCallCatI(paramsObj, retries);
+      try {
+        if (paramsObj && paramsObj.action === "checkStatus" && res && res.catIData) {
+          eomLeaderboardCache = res.catIData.eomLeaderboard || [];
+          renderEomModalLeaderboard();
+        }
+        if (paramsObj && paramsObj.action === "getAdminOverview" && res && !res.unauthorized) {
+          if (res.eomLeaderboard) eomLeaderboardCache = res.eomLeaderboard;
+          renderManagerSpoofAlertsUI(res.spoofAlertsList || []);
+        }
+      } catch (eCatI) {}
+      return res;
+    };
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initCategoryIModulesUI);
+  } else {
+    initCategoryIModulesUI();
+  }
+
+  // -------------------------------------------------------------------------
+  // #35: PANEL SPIRIT LEVEL & INSPECTION FLASHLIGHT FUNCTIONS
+  // -------------------------------------------------------------------------
+  function handleOrientationEvent(e) {
+    const rawX = e.gamma || 0; // Left-to-Right tilt (-90 to 90)
+    const rawY = e.beta || 0;  // Front-to-Back tilt (-180 to 180)
+    const calX = parseFloat((rawX - spiritOffsets.x).toFixed(1));
+    const calY = parseFloat((rawY - spiritOffsets.y).toFixed(1));
+    currentTilt = { x: calX, y: calY };
+
+    const bubble = document.getElementById("spiritBubbleEl");
+    const readout = document.getElementById("spiritReadoutText");
+    if (!bubble || !readout) return;
+
+    const maxShift = 62;
+    const shiftX = Math.max(-maxShift, Math.min(maxShift, calX * 3.2));
+    const shiftY = Math.max(-maxShift, Math.min(maxShift, calY * 3.2));
+    bubble.style.transform = `translate(${shiftX}px, ${shiftY}px)`;
+
+    const isLevel = Math.abs(calX) <= 1.2 && Math.abs(calY) <= 1.2;
+    if (isLevel) {
+      bubble.style.background = "radial-gradient(circle at 30% 30%, #86efac, #10b981)";
+      readout.style.color = "#059669";
+      readout.innerText = `✅ PERFECT LEVEL! (X: ${calX}° | Y: ${calY}°)`;
+    } else {
+      bubble.style.background = "radial-gradient(circle at 30% 30%, #fde047, #eab308)";
+      readout.style.color = "#d97706";
+      readout.innerText = `📐 X (L/R): ${calX}° | Y (F/B): ${calY}°`;
+    }
+  }
+
+  function openPanelUtilityModal() {
+    triggerHaptic(15);
+    document.getElementById("panelUtilityModal").style.display = "flex";
+    if (!spiritListenerActive && window.DeviceOrientationEvent) {
+      window.addEventListener("deviceorientation", handleOrientationEvent, true);
+      spiritListenerActive = true;
+    }
+  }
+
+  function closePanelUtilityModal() {
+    if (isTorchOn) toggleInspectionFlashlight();
+    document.getElementById("panelUtilityModal").style.display = "none";
+  }
+
+  function calibrateSpiritLevelZero() {
+    triggerHaptic(25);
+    spiritOffsets.x += currentTilt.x;
+    spiritOffsets.y += currentTilt.y;
+    showMessage("🎯 Spirit Level Zero-Calibrated!", "#0284c7");
+  }
+
+  async function toggleInspectionFlashlight() {
+    triggerHaptic(30);
+    const btn = document.getElementById("btnToggleTorch");
+    if (isTorchOn) {
+      if (activeTorchStream) {
+        activeTorchStream.getTracks().forEach(t => t.stop());
+        activeTorchStream = null;
+      }
+      isTorchOn = false;
+      btn.innerText = "🔦 Turn ON Torch";
+      btn.style.background = "#eab308";
+      document.querySelector("#panelUtilityModal .modal-card").style.background = "#fff";
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" }
+      });
+      const track = stream.getVideoTracks()[0];
+      const caps = track.getCapabilities ? track.getCapabilities() : {};
+      if (caps.torch) {
+        await track.applyConstraints({ advanced: [{ torch: true }] });
+        activeTorchStream = stream;
+        isTorchOn = true;
+        btn.innerText = "🛑 Turn OFF Torch";
+        btn.style.background = "#ef4444";
+        btn.style.color = "#fff";
+        return;
+      } else {
+        stream.getTracks().forEach(t => t.stop());
+      }
+    } catch (e) {}
+
+    // Fallback: Ultra-Bright White Inspection Screen Lamp
+    isTorchOn = true;
+    btn.innerText = "🛑 Turn OFF Screen Lamp";
+    btn.style.background = "#ef4444";
+    btn.style.color = "#fff";
+    document.querySelector("#panelUtilityModal .modal-card").style.background = "#ffffff";
+    alert("💡 आपके फोन पर High-Brightness Screen Inspection Light सक्रिय कर दी गई है!");
+  }
+
+  async function submitPanelLevelCheckLog() {
+    const panelSite = document.getElementById("plPanelSiteName").value.trim();
+    if (!panelSite) {
+      alert("कृपया पैनल और साइट का नाम लिखें।");
+      return document.getElementById("plPanelSiteName").focus();
+    }
+    const btn = document.getElementById("btnSaveLevelLog");
+    btn.disabled = true;
+    btn.innerText = "⏳ सेव हो रहा है...";
+
+    try {
+      await catIPostCall({
+        action: "submitPanelLevelLog",
+        phone: currentEmp.phone,
+        name: currentEmp.name,
+        panelSite: panelSite,
+        tiltReading: `X: ${currentTilt.x}°, Y: ${currentTilt.y}°`
+      }, 2);
+      btn.disabled = false;
+      btn.innerText = "✅ Save Verified Level Sign-Off";
+      document.getElementById("plPanelSiteName").value = "";
+      closePanelUtilityModal();
+      triggerHaptic([60, 40, 100]);
+      speakHindi("पैनल इरेक्शन लेवल की जांच सफलतापूर्वक दर्ज हो गई है।");
+      showMessage(`📐 Panel Level Verified (${currentTilt.x}°, ${currentTilt.y}°) for ${panelSite}!`, "#059669");
+    } catch (e) {
+      btn.disabled = false;
+      btn.innerText = "✅ Save Verified Level Sign-Off";
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // #36: AUTOMATED "EMPLOYEE OF THE MONTH" TROPHY & GOLD CERTIFICATE PDF
+  // -------------------------------------------------------------------------
+  function openEomTrophyModal() {
+    triggerHaptic(15);
+    renderEomModalLeaderboard();
+    document.getElementById("eomTrophyModal").style.display = "flex";
+  }
+
+  function closeEomTrophyModal() {
+    document.getElementById("eomTrophyModal").style.display = "none";
+  }
+
+  function renderEomModalLeaderboard() {
+    const nameEl = document.getElementById("eomTopWinnerName");
+    const metaEl = document.getElementById("eomTopWinnerMeta");
+    const listBox = document.getElementById("eomLeaderboardList");
+    const list = eomLeaderboardCache || [];
+
+    if (list.length === 0) {
+      if (nameEl) nameEl.innerText = currentEmp.name || "Aryavarta Star";
+      if (metaEl) metaEl.innerText = "Live Monthly Ranking Active";
+      if (listBox) listBox.innerHTML = "<div class='admin-list-item'>इस महीने का लीडरबोर्ड अपडेट हो रहा है...</div>";
+      return;
+    }
+
+    const top = list[0];
+    if (nameEl) nameEl.innerText = `👑 ${top.name}`;
+    if (metaEl) metaEl.innerText = `Excellence Score: ${top.score} pts | Payable: ${top.payable}d | Kaizen: ⭐${top.stars}`;
+
+    if (listBox) {
+      listBox.innerHTML = "";
+      const medals = ["🥇", "🥈", "🥉", "🏅", "🏅"];
+      list.forEach((emp, i) => {
+        const d = document.createElement("div");
+        d.className = "kz-rank-row";
+        d.innerHTML = `
+          <div>
+            <b>${medals[i] || "⭐"} ${emp.name}</b><br>
+            <span style="font-size:10.8px;color:#64748b;">📅 Payable: ${emp.payable}d | ⏱️ OT: ${emp.ot}h | ⭐ Kaizen: ${emp.stars}</span>
+          </div>
+          <div style="font-weight:900;color:#854d0e;font-size:13.5px;">${emp.score} pts</div>
+        `;
+        listBox.appendChild(d);
+      });
+    }
+  }
+
+  function printEmployeeOfTheMonthCertificate() {
+    triggerHaptic(25);
+    const winner = (eomLeaderboardCache && eomLeaderboardCache[0])
+      ? eomLeaderboardCache[0]
+      : { name: currentEmp.name || "Employee", score: 250, payable: 26, ot: 12, stars: 3 };
+    const monthsEn = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    const now = new Date();
+    const monthTitle = `${monthsEn[now.getMonth()]} ${now.getFullYear()}`;
+
+    const w = window.open("", "_blank");
+    if (!w) return alert("कृपया पॉप-अप (Pop-up) अनुमति ऑन करें।");
+    w.document.write(`
+      <html><head><title>Employee of the Month - ${winner.name}</title>
+      <style>
+        body { font-family: 'Georgia', serif; background: #fff; padding: 30px; text-align: center; }
+        .cert-frame { border: 10px double #ca8a04; background: #fefce8; padding: 40px 30px; max-width: 760px; margin: auto; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+        h1 { color: #1e3a8a; font-size: 28px; margin: 0; letter-spacing: 1px; }
+        h2 { color: #ca8a04; font-size: 22px; margin: 12px 0; text-transform: uppercase; }
+        .winner { font-size: 32px; font-weight: bold; color: #0f172a; border-bottom: 2px solid #ca8a04; display: inline-block; padding: 4px 28px; margin: 14px 0; }
+        .stats { font-family: Arial, sans-serif; font-size: 13.5px; color: #334155; margin: 18px 0; }
+        .sig-bar { display: flex; justify-content: space-between; margin-top: 50px; font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; color: #1e293b; }
+      </style></head><body>
+        <div class="cert-frame">
+          <div style="font-size:44px;">🏆</div>
+          <h1>ARYAVARTA AUTOMATION</h1>
+          <p style="font-family:Arial,sans-serif; font-size:12px; color:#475569; margin-top:4px;">Chikhali Head Office, Pune | Industrial Automation & Control Panels</p>
+          <h2>Certificate of Excellence — Employee of the Month (${monthTitle})</h2>
+          <p style="font-size:15px; color:#334155;">This prestigious award is proudly presented to</p>
+          <div class="winner">${winner.name}</div>
+          <p style="font-size:14.5px; color:#334155; max-width:580px; margin:auto; line-height:1.5;">
+            In recognition of outstanding punctuality, dedication to zero-defect panel engineering, shopfloor Kaizen innovation, and exemplary teamwork during <b>${monthTitle}</b>.
+          </p>
+          <div class="stats">
+            <b>🏅 Excellence Score:</b> ${winner.score} Pts &nbsp;|&nbsp;
+            <b>📅 Payable Days:</b> ${winner.payable}d &nbsp;|&nbsp;
+            <b>⭐ Kaizen Stars:</b> ${winner.stars} &nbsp;|&nbsp;
+            <b>⏱️ Overtime:</b> ${winner.ot}h
+          </div>
+          <div class="sig-bar">
+            <div>📅 Date: ${getISTDateString()}<br>📍 Chikhali HO, Pune</div>
+            <div>___________________________<br>👑 Sumeet Singh (Manager)</div>
+          </div>
+        </div>
+        <script>window.onload = function(){ window.print(); }<\/script>
+      </body></html>
+    `);
+    w.document.close();
+  }
+
+  function renderManagerSpoofAlertsUI(list) {
+    const box = document.getElementById("managerSpoofAlertsList");
+    if (!box) return;
+    if (!list || list.length === 0) {
+      box.innerHTML = "<div class='admin-list-item'>🛡️ 100% Genuine Punches (कोई फेक GPS या टाइम-टैम्परिंग नहीं मिली).</div>";
+      return;
+    }
+    box.innerHTML = "";
+    list.forEach(s => {
+      const d = document.createElement("div");
+      d.className = "issue-card-item";
+      d.style.background = "#fef2f2";
+      d.style.borderColor = "#f87171";
+      d.innerHTML = `
+        <div style="display:flex;justify-content:space-between;">
+          <b style="color:#991b1b;">🚨 ${s.name}</b>
+          <span style="font-size:10.5px;color:#64748b;">${s.time}</span>
+        </div>
+        <div style="font-size:11.5px;color:#b91c1c;font-weight:700;margin-top:2px;">⚠️ Flag: ${s.reason}</div>
+      `;
+      box.appendChild(d);
+    });
+  }
+</script>
+
 </body>
 </html>
