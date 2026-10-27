@@ -8092,5 +8092,711 @@
   }
 </script>
 
+<!-- ===================================================================== -->
+<!-- 🤝 CATEGORY H: #30 SKILL MATRIX & #32 OFFICE COURIER/PARCEL LOG       -->
+<!-- Paste this entire block at the very bottom of index.html              -->
+<!-- ===================================================================== -->
+<style>
+  .btn-skill { background: linear-gradient(135deg, #4338ca, #312e81); color: #fff; font-size: 13px; padding: 12px 10px; }
+  .btn-courier { background: linear-gradient(135deg, #0d9488, #134e4a); color: #fff; font-size: 13px; padding: 12px 10px; }
+
+  .parcel-inbox-card {
+    background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+    border: 1.5px solid #14b8a6;
+    color: #134e4a;
+    border-radius: 12px;
+    padding: 9px 11px;
+    margin-top: 8px;
+    text-align: left;
+    font-size: 11.8px;
+    line-height: 1.4;
+  }
+  .skill-slider-row {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+  }
+  .skill-slider-row label {
+    margin: 0 0 4px 0;
+    font-size: 11.8px;
+    color: #1e293b;
+  }
+  .skill-slider-row select {
+    margin-bottom: 0;
+    padding: 7px 10px;
+    font-size: 12.5px;
+  }
+</style>
+
+<!-- #30: Employee Skill Matrix & Cross-Training Tracker Modal -->
+<div id="skillMatrixModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>🎓 Skill Matrix & Training Tracker</h3>
+      <span class="close-btn" onclick="closeSkillMatrixModal()">&times;</span>
+    </div>
+
+    <div class="cal-kpi-bar" style="margin-bottom:10px;">
+      <div class="cal-kpi"><div class="v" id="skMyScore" style="color:#4338ca;">0/18</div><div class="k">⚡ Skill Score</div></div>
+      <div class="cal-kpi"><div class="v" id="skExpertCount" style="color:#059669;">0</div><div class="k">⭐ Expert Areas</div></div>
+      <div class="cal-kpi"><div class="v" id="skVerifyBadge" style="color:#d97706;">Self</div><div class="k">👑 Status</div></div>
+    </div>
+
+    <div style="background:#eef2ff; border:1.5px solid #c7d2fe; border-radius:14px; padding:11px; margin-bottom:12px;">
+      <div style="font-size:12px; font-weight:800; color:#312e81; margin-bottom:6px;">
+        🛠️ अपने तकनीकी कौशल (6 Core Skills) को रेट करें:
+      </div>
+
+      <div class="skill-slider-row">
+        <label>1. ⚡ Power & Busbar Assembly (Bending, Sleeving, Torque):</label>
+        <select id="skPower">
+          <option value="0">0 - Not Started (सीखना बाकी)</option>
+          <option value="1">1 - Learner / Basic (प्रशिक्षु)</option>
+          <option value="2" selected>2 - Independent Working (स्वतंत्र कार्य)</option>
+          <option value="3">3 - Master Expert ⭐ (विशेषज्ञ)</option>
+        </select>
+      </div>
+
+      <div class="skill-slider-row">
+        <label>2. 🔌 Control & Ferrule Wiring (SLD Reading, TB, Relay):</label>
+        <select id="skControl">
+          <option value="0">0 - Not Started (सीखना बाकी)</option>
+          <option value="1">1 - Learner / Basic (प्रशिक्षु)</option>
+          <option value="2" selected>2 - Independent Working (स्वतंत्र कार्य)</option>
+          <option value="3">3 - Master Expert ⭐ (विशेषज्ञ)</option>
+        </select>
+      </div>
+
+      <div class="skill-slider-row">
+        <label>3. 💻 PLC / HMI / SCADA Programming & Comm.:</label>
+        <select id="skPlc">
+          <option value="0">0 - Not Started (सीखना बाकी)</option>
+          <option value="1" selected>1 - Learner / Basic (प्रशिक्षु)</option>
+          <option value="2">2 - Independent Working (स्वतंत्र कार्य)</option>
+          <option value="3">3 - Master Expert ⭐ (विशेषज्ञ)</option>
+        </select>
+      </div>
+
+      <div class="skill-slider-row">
+        <label>4. ⚙️ VFD / Servo Drive Parameter & Commissioning:</label>
+        <select id="skVfd">
+          <option value="0">0 - Not Started (सीखना बाकी)</option>
+          <option value="1" selected>1 - Learner / Basic (प्रशिक्षु)</option>
+          <option value="2">2 - Independent Working (स्वतंत्र कार्य)</option>
+          <option value="3">3 - Master Expert ⭐ (विशेषज्ञ)</option>
+        </select>
+      </div>
+
+      <div class="skill-slider-row">
+        <label>5. 📐 AutoCAD / EPLAN Drawing & BOM Preparation:</label>
+        <select id="skCad">
+          <option value="0">0 - Not Started (सीखना बाकी)</option>
+          <option value="1" selected>1 - Learner / Basic (प्रशिक्षु)</option>
+          <option value="2">2 - Independent Working (स्वतंत्र कार्य)</option>
+          <option value="3">3 - Master Expert ⭐ (विशेषज्ञ)</option>
+        </select>
+      </div>
+
+      <div class="skill-slider-row">
+        <label>6. 🛠️ Client FAT Testing & Site Troubleshooting:</label>
+        <select id="skFat">
+          <option value="0">0 - Not Started (सीखना बाकी)</option>
+          <option value="1">1 - Learner / Basic (प्रशिक्षु)</option>
+          <option value="2" selected>2 - Independent Working (स्वतंत्र कार्य)</option>
+          <option value="3">3 - Master Expert ⭐ (विशेषज्ञ)</option>
+        </select>
+      </div>
+
+      <label>🎯 अगला कौशल जो आप सीखना चाहते हैं (Next Training Goal):</label>
+      <input type="text" id="skTrainingGoal" placeholder="उदा: Siemens/Allen-Bradley PLC & VFD Modbus Comm..." style="font-size:12.5px; padding:9px;">
+
+      <button type="button" class="btn btn-skill" id="btnSaveSkillMatrix" style="font-size:13.8px; padding:12px;" onclick="submitMySkillMatrix()">
+        🎓 Save My Skill Matrix & Training Goal 🚀
+      </button>
+    </div>
+
+    <!-- Searchable Team Skill Directory -->
+    <div class="admin-section-title" style="color:#312e81;">🔍 Aryavarta Team Skill Finder (Filter by Domain)</div>
+    <select id="skFilterDomain" onchange="renderTeamSkillDirectory()" style="font-size:12.5px; padding:8px; margin-bottom:8px;">
+      <option value="ALL">🌟 Show All Recorded Staff Skills</option>
+      <option value="power">⚡ Power & Busbar Experts</option>
+      <option value="control">🔌 Control Wiring Experts</option>
+      <option value="plc">💻 PLC / HMI / SCADA Specialists</option>
+      <option value="vfd">⚙️ VFD Commissioning Specialists</option>
+      <option value="cad">📐 AutoCAD / EPLAN / BOM Specialists</option>
+      <option value="fat">🛠️ Client FAT & Site Troubleshooters</option>
+    </select>
+    <div id="teamSkillDirectoryBox" style="font-size:12px; color:#64748b;">कोई रिकॉर्ड नहीं है।</div>
+  </div>
+</div>
+
+<!-- #32: Office Courier & Parcel Inward / Outward Desk Modal -->
+<div id="courierParcelModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>📦 Office Courier & Parcel Log</h3>
+      <span class="close-btn" onclick="closeCourierParcelModal()">&times;</span>
+    </div>
+    <p style="font-size:11.5px; color:#475569; margin-bottom:8px;">
+      Chikhali Head Office में आने वाले (Inward) या भेजे जाने वाले (Outward) कूरियर, PLC/VFD स्पेयर्स, चालान व डॉक्यूमेंट पार्सल दर्ज करें। संबंधित कर्मचारी को तुरंत अलर्ट मिलेगा!
+    </p>
+
+    <div class="btn-grid-2">
+      <div>
+        <label>प्रकार (Direction):</label>
+        <select id="cpDirection">
+          <option value="Inward (Received at HO)">📥 Inward (ऑफिस में आया)</option>
+          <option value="Outward (Sent from HO)">📤 Outward (ऑफिस से भेजा)</option>
+        </select>
+      </div>
+      <div>
+        <label>कूरियर सेवा (Courier Name):</label>
+        <select id="cpCourierName">
+          <option value="BlueDart / DHL">✈️ BlueDart / DHL</option>
+          <option value="DTDC / Trackon">📦 DTDC / Trackon</option>
+          <option value="Delhivery / Safexpress">🚚 Delhivery / Safexpress</option>
+          <option value="Porter / Local Tempo">🛺 Porter / Local Tempo</option>
+          <option value="Vendor Hand Delivery">🤝 Hand Delivery</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="btn-grid-2">
+      <div>
+        <label>पार्टी / वेंडर का नाम (Sender/To):</label>
+        <input type="text" id="cpPartyName" placeholder="उदा: Siemens / Schneider">
+      </div>
+      <div>
+        <label>ट्रैकिंग / डॉकेट नंबर (Docket #):</label>
+        <input type="text" id="cpDocketNo" placeholder="उदा: AWB-884920">
+      </div>
+    </div>
+
+    <label>किस कर्मचारी के लिए है? (Concerned Person at Aryavarta):</label>
+    <select id="cpForEmployee">
+      <option value="Sumeet Singh">Sumeet Singh (Manager)</option>
+      <option value="Ashish Ingle">Ashish Ingle</option>
+      <option value="Pranita Mane">Pranita Mane</option>
+      <option value="Trupti Raut">Trupti Raut</option>
+      <option value="Manisha Kambale">Manisha Kambale</option>
+      <option value="Kshitija Raut">Kshitija Raut</option>
+      <option value="Samsher Khan">Samsher Khan</option>
+      <option value="Amasidha Pujari">Amasidha Pujari</option>
+      <option value="Vinod Zoje">Vinod Zoje</option>
+      <option value="Vikash Modanwal">Vikash Modanwal</option>
+      <option value="Shashikant Sharma">Shashikant Sharma</option>
+      <option value="Mohnish Apturkar">Mohnish Apturkar</option>
+      <option value="Bhushan Shirsath">Bhushan Shirsath</option>
+      <option value="Rameshwar Khotkar">Rameshwar Khotkar</option>
+      <option value="Aman Singh">Aman Singh</option>
+      <option value="Gorakh Rathod">Gorakh Rathod</option>
+      <option value="Tafizur Rehman">Tafizur Rehman</option>
+      <option value="Shivappa Done">Shivappa Done</option>
+      <option value="Kalpesh Somaji">Kalpesh Somaji</option>
+      <option value="Pratik Shinde">Pratik Shinde</option>
+      <option value="Pankaj Jadhav">Pankaj Jadhav</option>
+      <option value="Ram Mahagaonkar">Ram Mahagaonkar</option>
+    </select>
+
+    <label>पार्सल विवरण (Contents / Material Inside):</label>
+    <div class="chip-row">
+      <span class="task-chip" onclick="appendCpChip('PLC / HMI / VFD Spare Module')">📟 PLC/VFD Module</span>
+      <span class="task-chip" onclick="appendCpChip('Switchgear / MCB / Contactor Box')">⚡ Switchgear Box</span>
+      <span class="task-chip" onclick="appendCpChip('Client PO / Invoice / Cheque / TC')">📄 PO / Invoice Docs</span>
+      <span class="task-chip" onclick="appendCpChip('Testing Instrument / Calibration')">🧰 Testing Meter</span>
+    </div>
+    <div class="voice-input-row" style="margin-bottom:6px;">
+      <input type="text" id="cpContents" placeholder="पार्सल में क्या सामान है? लिखें या 🎙️ बोलें..." style="margin-bottom:0;">
+      <button type="button" class="mic-btn" id="micCpContentsBtn" onclick="startCatHVoice('cpContents', 'micCpContentsBtn')">🎙️</button>
+    </div>
+
+    <label>📸 पार्सल / चालान की फोटो (Optional Photo):</label>
+    <div class="file-box">
+      <input type="file" id="cpPhotoInput" accept="image/*" style="margin-bottom:2px; border:none; padding:2px; font-size:12px;" onchange="handleCourierPhotoSelect(this)">
+      <div id="cpPhotoPreviewText" style="font-size:11px; color:#059669; font-weight:700; display:none;"></div>
+    </div>
+
+    <button type="button" class="btn btn-courier" id="btnSubmitCourier" style="font-size:14px; padding:12px;" onclick="submitCourierParcelEntry()">
+      📦 Log Courier & Alert Concerned Person 🚀
+    </button>
+
+    <div class="admin-section-title" style="margin-top:12px;">📂 Recent Chikhali HO Couriers & Parcels</div>
+    <div id="recentCouriersList" style="font-size:12px; color:#64748b;">कोई कूरियर रिकॉर्ड नहीं है।</div>
+  </div>
+</div>
+
+<script>
+  let catHState = {
+    mySkillProfile: null,
+    allSkillsList: [],
+    myUncollectedParcels: [],
+    recentCouriers: []
+  };
+  let preparedCourierPhoto = { base64: "", mimeType: "", fileName: "" };
+
+  async function catHPostCall(payloadObj, retries = 2) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payloadObj),
+          redirect: "follow"
+        });
+        if (response.ok) return await response.json();
+      } catch (err) {
+        if (attempt < retries) await new Promise(r => setTimeout(r, 900 * attempt));
+        else throw err;
+      }
+    }
+  }
+
+  function initCategoryHModulesUI() {
+    // 1. Inject Uncollected Inward Parcel Inbox Card inside .user-pill
+    const userPill = document.querySelector(".user-pill");
+    if (userPill && !document.getElementById("parcelInboxContainer")) {
+      const pBox = document.createElement("div");
+      pBox.id = "parcelInboxContainer";
+      pBox.style.display = "none";
+      userPill.appendChild(pBox);
+    }
+
+    // 2. Inject #30 Skill Matrix & #32 Courier Log Tiles into Super-App Grid
+    const superGrid = document.querySelector(".super-app-grid");
+    if (superGrid && !document.getElementById("tileSkillMatrix")) {
+      const catHTiles = `
+        <div class="super-tile" id="tileSkillMatrix" onclick="openSkillMatrixModal()">
+          <div class="ico" style="background:#e0e7ff;color:#4338ca;">🎓</div>
+          <div class="lbl">Skill Matrix</div>
+        </div>
+        <div class="super-tile" id="tileCourierLog" onclick="openCourierParcelModal()">
+          <div class="ico" style="background:#ccfbf1;color:#0f766e;">📦</div>
+          <div class="lbl">Courier Log</div>
+        </div>
+      `;
+      superGrid.insertAdjacentHTML("beforeend", catHTiles);
+
+      const titleSpan = document.querySelector(".super-grid-title span:last-child");
+      if (titleSpan) {
+        titleSpan.innerText = `${superGrid.querySelectorAll(".super-tile").length} Mini-Portals`;
+      }
+    } else if (!superGrid && !document.getElementById("catHFallbackBtnGroup")) {
+      const calBtn = document.querySelector(".btn-cal");
+      if (calBtn) {
+        const grp = document.createElement("div");
+        grp.id = "catHFallbackBtnGroup";
+        grp.className = "btn-grid-2";
+        grp.style.marginBottom = "8px";
+        grp.innerHTML = `
+          <button type="button" class="btn btn-skill" onclick="openSkillMatrixModal()">🎓 Skill Matrix</button>
+          <button type="button" class="btn btn-courier" onclick="openCourierParcelModal()">📦 Courier Log</button>
+        `;
+        calBtn.parentNode.insertBefore(grp, calBtn);
+      }
+    }
+
+    // 3. Inject Sumeet Sir's Skill Matrix & Courier Monitor into #managerModal
+    const mgrCard = document.querySelector("#managerModal .modal-card");
+    const firstSec = mgrCard ? mgrCard.querySelector(".admin-section-title") : null;
+    if (mgrCard && firstSec && !document.getElementById("managerSkillMatrixBox")) {
+      const hSec = document.createElement("div");
+      hSec.innerHTML = `
+        <div class="admin-section-title" style="color:#4338ca;">🎓 Team Skill Matrix & Certification (Sumeet Sir)</div>
+        <div id="managerSkillMatrixBox">लोड हो रहा है...</div>
+        <div class="admin-section-title" style="color:#0f766e;">📦 Recent Office Couriers & Pending Parcels</div>
+        <div id="managerCouriersList">लोड हो रहा है...</div>
+      `;
+      mgrCard.insertBefore(hSec, firstSec);
+    }
+  }
+
+  // Chain onto ultraReliableApiCall to auto-sync Skill Matrix & Courier Logs
+  if (typeof window.ultraReliableApiCall === "function") {
+    const _prevUltraApiCallCatH = window.ultraReliableApiCall;
+    window.ultraReliableApiCall = async function(paramsObj, retries = 3) {
+      const res = await _prevUltraApiCallCatH(paramsObj, retries);
+      try {
+        if (paramsObj && paramsObj.action === "checkStatus" && res && res.catHData) {
+          catHState.mySkillProfile = res.catHData.mySkillProfile || null;
+          catHState.allSkillsList = res.catHData.allSkillsList || [];
+          catHState.myUncollectedParcels = res.catHData.myUncollectedParcels || [];
+          catHState.recentCouriers = res.catHData.recentCouriers || [];
+          renderMyUncollectedParcelsInbox();
+          renderCouriersListUI("recentCouriersList", catHState.recentCouriers);
+        }
+        if (paramsObj && paramsObj.action === "getAdminOverview" && res && !res.unauthorized) {
+          renderManagerSkillMatrixUI(res.allSkillsList || []);
+          renderCouriersListUI("managerCouriersList", res.recentCouriersList || []);
+        }
+      } catch (eCatH) {}
+      return res;
+    };
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initCategoryHModulesUI);
+  } else {
+    initCategoryHModulesUI();
+  }
+
+  function startCatHVoice(inputId, btnId) {
+    if (typeof startVoiceDictation === "function") {
+      startVoiceDictation(inputId, btnId);
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // #30: EMPLOYEE SKILL MATRIX & TRAINING TRACKER FUNCTIONS
+  // -------------------------------------------------------------------------
+  function openSkillMatrixModal() {
+    triggerHaptic(15);
+    const sp = catHState.mySkillProfile;
+    if (sp) {
+      document.getElementById("skPower").value = String(sp.power || 0);
+      document.getElementById("skControl").value = String(sp.control || 0);
+      document.getElementById("skPlc").value = String(sp.plc || 0);
+      document.getElementById("skVfd").value = String(sp.vfd || 0);
+      document.getElementById("skCad").value = String(sp.cad || 0);
+      document.getElementById("skFat").value = String(sp.fat || 0);
+      document.getElementById("skTrainingGoal").value = sp.goal || "";
+    }
+    updateSkillModalKpis();
+    renderTeamSkillDirectory();
+    document.getElementById("skillMatrixModal").style.display = "flex";
+  }
+
+  function closeSkillMatrixModal() {
+    document.getElementById("skillMatrixModal").style.display = "none";
+  }
+
+  function updateSkillModalKpis() {
+    const vals = [
+      parseInt(document.getElementById("skPower").value, 10) || 0,
+      parseInt(document.getElementById("skControl").value, 10) || 0,
+      parseInt(document.getElementById("skPlc").value, 10) || 0,
+      parseInt(document.getElementById("skVfd").value, 10) || 0,
+      parseInt(document.getElementById("skCad").value, 10) || 0,
+      parseInt(document.getElementById("skFat").value, 10) || 0
+    ];
+    const total = vals.reduce((a, b) => a + b, 0);
+    const experts = vals.filter(v => v === 3).length;
+    document.getElementById("skMyScore").innerText = `${total}/18`;
+    document.getElementById("skExpertCount").innerText = `${experts}`;
+    const verStatus = (catHState.mySkillProfile && catHState.mySkillProfile.verified === "Verified by Sumeet Sir")
+      ? "👑 Verified" : "Self-Rated";
+    document.getElementById("skVerifyBadge").innerText = verStatus;
+  }
+
+  async function submitMySkillMatrix() {
+    const power = parseInt(document.getElementById("skPower").value, 10) || 0;
+    const control = parseInt(document.getElementById("skControl").value, 10) || 0;
+    const plc = parseInt(document.getElementById("skPlc").value, 10) || 0;
+    const vfd = parseInt(document.getElementById("skVfd").value, 10) || 0;
+    const cad = parseInt(document.getElementById("skCad").value, 10) || 0;
+    const fat = parseInt(document.getElementById("skFat").value, 10) || 0;
+    const goal = document.getElementById("skTrainingGoal").value.trim() || "Continuous Shopfloor Improvement";
+
+    const btn = document.getElementById("btnSaveSkillMatrix");
+    btn.disabled = true;
+    btn.innerText = "⏳ सेव हो रहा है...";
+
+    try {
+      const res = await catHPostCall({
+        action: "saveSkillMatrix",
+        phone: currentEmp.phone,
+        name: currentEmp.name,
+        power: power,
+        control: control,
+        plc: plc,
+        vfd: vfd,
+        cad: cad,
+        fat: fat,
+        goal: goal
+      }, 2);
+
+      btn.disabled = false;
+      btn.innerText = "🎓 Save My Skill Matrix & Training Goal 🚀";
+
+      if (res && res.catHData) {
+        catHState.mySkillProfile = res.catHData.mySkillProfile;
+        catHState.allSkillsList = res.catHData.allSkillsList || [];
+      }
+      updateSkillModalKpis();
+      renderTeamSkillDirectory();
+      triggerHaptic([60, 40, 100]);
+      speakHindi("आपका तकनीकी कौशल मैट्रिक्स और प्रशिक्षण लक्ष्य सफलतापूर्वक अपडेट हो गया है।");
+      showMessage("🎓 Skill Matrix & Training Goal saved!", "#059669");
+    } catch (e) {
+      btn.disabled = false;
+      btn.innerText = "🎓 Save My Skill Matrix & Training Goal 🚀";
+      alert("⚠️ नेटवर्क धीमा है, कृपया पुनः प्रयास करें।");
+    }
+  }
+
+  function renderTeamSkillDirectory() {
+    const box = document.getElementById("teamSkillDirectoryBox");
+    if (!box) return;
+    const filter = document.getElementById("skFilterDomain").value;
+    let list = (catHState.allSkillsList || []).slice();
+
+    if (filter !== "ALL") {
+      list = list.filter(item => (item[filter] || 0) >= 2);
+      list.sort((a, b) => (b[filter] || 0) - (a[filter] || 0));
+    }
+
+    if (list.length === 0) {
+      box.innerHTML = "<div class='admin-list-item'>⚪ इस श्रेणी में अभी कोई प्रोफ़ाइल दर्ज नहीं है।</div>";
+      return;
+    }
+
+    box.innerHTML = "";
+    list.forEach(s => {
+      const badge = s.verified === "Verified by Sumeet Sir" ? `<span style="color:#059669;font-weight:800;">👑 Verified</span>` : `<span style="color:#64748b;">Self</span>`;
+      const d = document.createElement("div");
+      d.className = "issue-card-item";
+      d.innerHTML = `
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+          <b>👤 ${s.name} (⚡ ${s.total}/18 pts)</b>
+          <span style="font-size:11px;">${badge}</span>
+        </div>
+        <div style="font-size:11px;color:#334155;line-height:1.45;">
+          ⚡Busbar: <b>L${s.power}</b> | 🔌Wiring: <b>L${s.control}</b> | 💻PLC: <b>L${s.plc}</b> | ⚙️VFD: <b>L${s.vfd}</b> | 📐CAD: <b>L${s.cad}</b> | 🛠️FAT: <b>L${s.fat}</b>
+        </div>
+        ${s.goal ? `<div style="font-size:10.5px;color:#4338ca;font-weight:700;margin-top:3px;">🎯 Learning Goal: ${s.goal}</div>` : ""}
+      `;
+      box.appendChild(d);
+    });
+  }
+
+  function renderManagerSkillMatrixUI(list) {
+    const box = document.getElementById("managerSkillMatrixBox");
+    if (!box) return;
+    if (!list || list.length === 0) {
+      box.innerHTML = "<div class='admin-list-item'>⚪ अभी तक किसी कर्मचारी ने Skill Matrix अपडेट नहीं किया है।</div>";
+      return;
+    }
+    box.innerHTML = "";
+    list.forEach(s => {
+      const isVer = s.verified === "Verified by Sumeet Sir";
+      const verBtn = isVer
+        ? `<span style="color:#059669;font-weight:800;font-size:11px;">👑 Certified</span>`
+        : `<button class="mini-act-btn" style="background:#4338ca;" onclick="certifyEmployeeSkillAsSumeet('${s.name}')">✅ Certify</button>`;
+      const d = document.createElement("div");
+      d.className = "admin-list-item";
+      d.innerHTML = `
+        <div>
+          <b>🎓 ${s.name} (${s.total}/18)</b><br>
+          <span style="font-size:10.8px;color:#475569;">⚡P:${s.power} 🔌W:${s.control} 💻PLC:${s.plc} ⚙️VFD:${s.vfd} 📐CAD:${s.cad} 🛠️FAT:${s.fat}</span>
+        </div>
+        ${verBtn}
+      `;
+      box.appendChild(d);
+    });
+  }
+
+  async function certifyEmployeeSkillAsSumeet(empName) {
+    if (currentEmp.phone !== SUMEET_SINGH_PHONE) return;
+    triggerHaptic(25);
+    await catHPostCall({
+      action: "verifyEmployeeSkill",
+      targetEmployee: empName,
+      managerPhone: currentEmp.phone,
+      pin: localStorage.getItem("aa_mgr_pin") || ""
+    }, 2);
+    loadManagerOverview();
+  }
+
+  // -------------------------------------------------------------------------
+  // #32: OFFICE COURIER & PARCEL INWARD / OUTWARD LOG FUNCTIONS
+  // -------------------------------------------------------------------------
+  function openCourierParcelModal() {
+    triggerHaptic(15);
+    renderCouriersListUI("recentCouriersList", catHState.recentCouriers);
+    document.getElementById("courierParcelModal").style.display = "flex";
+  }
+
+  function closeCourierParcelModal() {
+    document.getElementById("courierParcelModal").style.display = "none";
+  }
+
+  function appendCpChip(text) {
+    triggerHaptic(15);
+    const el = document.getElementById("cpContents");
+    el.value = el.value.trim() ? (el.value.trim() + " - " + text) : text;
+  }
+
+  function handleCourierPhotoSelect(inputEl) {
+    const previewEl = document.getElementById("cpPhotoPreviewText");
+    const file = inputEl.files && inputEl.files[0];
+    if (!file) {
+      preparedCourierPhoto = { base64: "", mimeType: "", fileName: "" };
+      previewEl.style.display = "none";
+      return;
+    }
+    previewEl.style.display = "block";
+    previewEl.innerText = "⏳ पार्सल फोटो तैयार हो रही है...";
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement("canvas");
+        const maxDim = 1100;
+        let w = img.width, h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+          else { w = Math.round((w * maxDim) / h); h = maxDim; }
+        }
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.76);
+        preparedCourierPhoto = {
+          base64: dataUrl.split(",")[1],
+          mimeType: "image/jpeg",
+          fileName: "courier_" + Date.now() + ".jpg"
+        };
+        previewEl.innerText = "✅ पार्सल फोटो तैयार!";
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function submitCourierParcelEntry() {
+    const direction = document.getElementById("cpDirection").value;
+    const courierName = document.getElementById("cpCourierName").value;
+    const partyName = document.getElementById("cpPartyName").value.trim();
+    const docketNo = document.getElementById("cpDocketNo").value.trim() || "N/A";
+    const forEmployee = document.getElementById("cpForEmployee").value;
+    const contents = document.getElementById("cpContents").value.trim();
+
+    if (!partyName || !contents) {
+      alert("कृपया पार्टी/वेंडर का नाम और पार्सल का विवरण दर्ज करें।");
+      return document.getElementById("cpPartyName").focus();
+    }
+
+    const btn = document.getElementById("btnSubmitCourier");
+    btn.disabled = true;
+    btn.innerText = "⏳ पार्सल लॉग सेव हो रहा है...";
+
+    try {
+      const res = await catHPostCall({
+        action: "submitCourierLog",
+        loggedByPhone: currentEmp.phone,
+        loggedByName: currentEmp.name,
+        direction: direction,
+        courierName: courierName,
+        partyName: partyName,
+        docketNo: docketNo,
+        forEmployee: forEmployee,
+        contents: contents,
+        fileBase64: preparedCourierPhoto.base64 || "",
+        fileMimeType: preparedCourierPhoto.mimeType || "",
+        fileName: preparedCourierPhoto.fileName || ""
+      }, 2);
+
+      btn.disabled = false;
+      btn.innerText = "📦 Log Courier & Alert Concerned Person 🚀";
+
+      const newEntry = {
+        id: (res && res.courierId) || "CR-NEW",
+        date: getISTDateString(),
+        direction: direction,
+        courierName: courierName,
+        partyName: partyName,
+        docketNo: docketNo,
+        forEmployee: forEmployee,
+        contents: contents,
+        status: direction.includes("Inward") ? "WAITING_COLLECTION" : "DISPATCHED",
+        photoUrl: (res && res.photoUrl) || ""
+      };
+      catHState.recentCouriers.unshift(newEntry);
+      renderCouriersListUI("recentCouriersList", catHState.recentCouriers);
+
+      document.getElementById("cpPartyName").value = "";
+      document.getElementById("cpDocketNo").value = "";
+      document.getElementById("cpContents").value = "";
+      document.getElementById("cpPhotoInput").value = "";
+      document.getElementById("cpPhotoPreviewText").style.display = "none";
+      preparedCourierPhoto = { base64: "", mimeType: "", fileName: "" };
+
+      closeCourierParcelModal();
+      triggerHaptic([60, 40, 100]);
+      speakHindi(`कूरियर पार्सल सफलतापूर्वक दर्ज कर लिया गया है और ${forEmployee} जी को सूचना भेज दी गई है।`);
+      showMessage(`📦 Courier Log (${partyName} -> ${forEmployee}) saved & notified!`, "#059669");
+    } catch (e) {
+      btn.disabled = false;
+      btn.innerText = "📦 Log Courier & Alert Concerned Person 🚀";
+      alert("⚠️ नेटवर्क धीमा है, कृपया पुनः प्रयास करें।");
+    }
+  }
+
+  function renderMyUncollectedParcelsInbox() {
+    const box = document.getElementById("parcelInboxContainer");
+    if (!box) return;
+    const list = catHState.myUncollectedParcels || [];
+    if (list.length === 0) {
+      box.style.display = "none";
+      return;
+    }
+    box.style.display = "block";
+    box.innerHTML = list.map(p => `
+      <div class="parcel-inbox-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+          <span style="font-weight:900;color:#0f766e;">📦 Parcel Arrived for You (${p.date})</span>
+          <button type="button" class="mini-act-btn" style="background:#059669;" onclick="markCourierCollected('${p.id}')">✅ Collected</button>
+        </div>
+        <div><b>From ${p.partyName} (${p.courierName}):</b> ${p.contents}</div>
+      </div>
+    `).join("");
+  }
+
+  async function markCourierCollected(courierId) {
+    triggerHaptic(25);
+    await catHPostCall({
+      action: "collectCourierParcel",
+      courierId: courierId,
+      phone: currentEmp.phone,
+      name: currentEmp.name
+    }, 2);
+    catHState.myUncollectedParcels = (catHState.myUncollectedParcels || []).filter(p => p.id !== courierId);
+    renderMyUncollectedParcelsInbox();
+    speakHindi("पार्सल प्राप्ति की पुष्टि दर्ज हो गई है।");
+    showMessage("✅ Parcel marked as Collected!", "#059669");
+    if (document.getElementById("managerModal").style.display === "flex") {
+      loadManagerOverview();
+    }
+  }
+
+  function renderCouriersListUI(targetBoxId, list) {
+    const box = document.getElementById(targetBoxId);
+    if (!box) return;
+    if (!list || list.length === 0) {
+      box.innerHTML = "<div class='admin-list-item'>⚪ कोई हालिया कूरियर या पार्सल रिकॉर्ड नहीं है।</div>";
+      return;
+    }
+    box.innerHTML = "";
+    list.forEach(c => {
+      const photoBtn = c.photoUrl ? `<a class="mini-act-btn" style="background:#0284c7;" href="${c.photoUrl}" target="_blank">📸 Photo</a>` : "";
+      const collectBtn = c.status === "WAITING_COLLECTION"
+        ? `<button class="mini-act-btn" style="background:#059669;" onclick="markCourierCollected('${c.id}')">✅ Received</button>`
+        : `<span style="font-size:10.5px;font-weight:800;color:#059669;">${c.status}</span>`;
+      const d = document.createElement("div");
+      d.className = "admin-list-item";
+      d.innerHTML = `
+        <div>
+          <b>${c.direction.includes("Inward") ? "📥" : "📤"} ${c.partyName} &rarr; ${c.forEmployee}</b><br>
+          <span style="font-size:11px;color:#475569;">📦 ${c.contents} (${c.courierName} | #${c.docketNo})</span>
+        </div>
+        <div style="display:flex;align-items:center;">${photoBtn}${collectBtn}</div>
+      `;
+      box.appendChild(d);
+    });
+  }
+</script>
+
 </body>
 </html>
