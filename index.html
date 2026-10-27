@@ -9679,5 +9679,700 @@
   })();
 </script>
 
+<!-- ===================================================================== -->
+<!-- 🚀 CATEGORY L: #45 BIOMETRIC LOCK, #46 VFD/PLC TROUBLESHOOTER,        -->
+<!-- #47 DARK/SUNLIGHT MODE & #48 SMART SHIFT ALARM BELL                   -->
+<!-- Paste this entire block at the very bottom of index.html              -->
+<!-- ===================================================================== -->
+<style>
+  .btn-biometric { background: linear-gradient(135deg, #0f766e, #134e4a); color: #fff; font-size: 13px; padding: 12px 10px; }
+  .btn-trouble   { background: linear-gradient(135deg, #7c3aed, #4c1d95); color: #fff; font-size: 13px; padding: 12px 10px; }
+  .btn-alarm     { background: linear-gradient(135deg, #e11d48, #881337); color: #fff; font-size: 13px; padding: 12px 10px; }
+
+  /* #47: Dark Cyber Mode Theme */
+  body.aa-dark-mode {
+    background: radial-gradient(circle at top, #020617, #0f172a) !important;
+    color: #f8fafc !important;
+  }
+  body.aa-dark-mode .app-card,
+  body.aa-dark-mode .modal-card {
+    background: #0f172a !important;
+    color: #f1f5f9 !important;
+    border: 1.5px solid #334155 !important;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.85) !important;
+  }
+  body.aa-dark-mode h2,
+  body.aa-dark-mode h3,
+  body.aa-dark-mode label,
+  body.aa-dark-mode .user-pill .name,
+  body.aa-dark-mode .super-tile .lbl {
+    color: #f8fafc !important;
+  }
+  body.aa-dark-mode .user-pill,
+  body.aa-dark-mode .radar-strip,
+  body.aa-dark-mode .super-tile,
+  body.aa-dark-mode .admin-list-item,
+  body.aa-dark-mode .issue-card-item,
+  body.aa-dark-mode .cal-kpi,
+  body.aa-dark-mode select,
+  body.aa-dark-mode input,
+  body.aa-dark-mode textarea {
+    background: #1e293b !important;
+    color: #f8fafc !important;
+    border-color: #475569 !important;
+  }
+  body.aa-dark-mode .pill-mini {
+    background: #1e293b !important;
+    color: #38bdf8 !important;
+    border-color: #38bdf8 !important;
+  }
+
+  /* #47: Outdoor High-Contrast Sunlight Mode Theme */
+  body.aa-sunlight-mode {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  body.aa-sunlight-mode .app-card,
+  body.aa-sunlight-mode .modal-card {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 3px solid #000000 !important;
+    box-shadow: none !important;
+  }
+  body.aa-sunlight-mode .user-pill,
+  body.aa-sunlight-mode .super-tile,
+  body.aa-sunlight-mode select,
+  body.aa-sunlight-mode input,
+  body.aa-sunlight-mode textarea {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 2px solid #000000 !important;
+    font-weight: 800 !important;
+  }
+
+  /* #46: Fault Troubleshooter Cards */
+  .fault-card {
+    background: #f8fafc;
+    border: 1.5px solid #cbd5e1;
+    border-left: 4px solid #7c3aed;
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    text-align: left;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+  .fault-code-tag {
+    display: inline-block;
+    background: #ede9fe;
+    color: #5b21b6;
+    font-weight: 900;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+  }
+</style>
+
+<!-- #45: Biometric Fingerprint / Face-ID App Lock Modal -->
+<div id="biometricLockModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>👆 Biometric Fingerprint Lock</h3>
+      <span class="close-btn" onclick="closeBiometricLockModal()">&times;</span>
+    </div>
+    <p style="font-size:11.5px; color:#475569; margin-bottom:10px;">
+      🛡️ <b>100% Anti-Proxy Biometric Shield:</b> अपने फोन के फिंगरप्रिंट या Face-ID को आर्यावर्त पोर्टल से जोड़ें। इसके बाद आपके फिंगरप्रिंट के बिना कोई भी व्यक्ति आपके फोन से Clock-In, Clock-Out या प्राइवेट पोर्टल नहीं खोल सकेगा:
+    </p>
+
+    <div id="bioStatusCard" style="background:#f0fdfa; border:1.5px solid #5eead4; border-radius:12px; padding:12px; text-align:center; margin-bottom:12px;">
+      <div style="font-size:28px;">👆</div>
+      <div id="bioStatusTitle" style="font-size:13.5px; font-weight:900; color:#115e59; margin-top:4px;">
+        Biometric Lock: Not Registered
+      </div>
+      <div id="bioStatusSub" style="font-size:11px; color:#0f766e; margin-top:2px;">
+        नीचे दिए गए बटन को दबाकर अपना फिंगरप्रिंट / Face-ID सक्रिय करें।
+      </div>
+    </div>
+
+    <div class="btn-stack">
+      <button type="button" class="btn btn-biometric" id="btnRegisterBio" onclick="registerPhoneBiometricPasskey()">
+        👆 Register My Fingerprint / Face-ID Now
+      </button>
+      <button type="button" class="btn btn-clockin" id="btnTestBio" style="display:none;" onclick="verifyPhoneBiometricNow(true)">
+        ✅ Test Fingerprint Verification
+      </button>
+      <button type="button" class="btn" id="btnDisableBio" style="display:none; background:#64748b; padding:10px; font-size:12.5px;" onclick="disablePhoneBiometricLock()">
+        🔓 Disable Biometric Lock on This Phone
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- #46: "Ask Aryavarta" Pocket VFD / PLC / Panel Fault Troubleshooter Modal -->
+<div id="troubleshooterModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>🧠 VFD / PLC / Panel Fault Solver</h3>
+      <span class="close-btn" onclick="closeTroubleshooterModal()">&times;</span>
+    </div>
+    <p style="font-size:11.5px; color:#475569; margin-bottom:8px;">
+      साइट या शॉपफ्लोर टेस्टिंग के दौरान आने वाले VFD, PLC, वायरिंग या मेगर फॉल्ट का तुरंत समाधान खोजें (100% Offline Ready):
+    </p>
+
+    <input type="text" id="faultSearchInput" placeholder="🔍 फॉल्ट कोड या समस्या लिखें (उदा: OC, OV, GF, Modbus, 4-20mA, Megger)..." oninput="renderFaultTroubleshooterList()" style="margin-bottom:6px;">
+
+    <div class="chip-row" style="margin-bottom:10px;">
+      <span class="task-chip" onclick="filterFaultByChip('')">🌟 All (10)</span>
+      <span class="task-chip" onclick="filterFaultByChip('VFD')">⚙️ VFD Drives</span>
+      <span class="task-chip" onclick="filterFaultByChip('PLC')">💻 PLC / Modbus</span>
+      <span class="task-chip" onclick="filterFaultByChip('Panel')">⚡ Panel / Megger</span>
+    </div>
+
+    <div id="faultTroubleshooterListBox" style="max-height:270px; overflow-y:auto; margin-bottom:10px;"></div>
+
+    <!-- Log Solved Site Fault to Knowledge Base -->
+    <div style="background:#f5f3ff; border:1.5px solid #c4b5fd; border-radius:12px; padding:10px;">
+      <div style="font-size:11.5px; font-weight:800; color:#4c1d95; margin-bottom:5px;">
+        🛠️ नया साइट फॉल्ट समाधान रिकॉर्ड करें (Share New Fix with Team):
+      </div>
+      <input type="text" id="newFaultTitle" placeholder="फॉल्ट कोड / पैनल (उदा: Delta VFD Err-14 at Tata Site)" style="font-size:12px; padding:8px; margin-bottom:5px;">
+      <input type="text" id="newFaultFix" placeholder="आपने इसे कैसे ठीक किया? (How did you solve it?)" style="font-size:12px; padding:8px; margin-bottom:6px;">
+      <button type="button" class="btn btn-trouble" style="padding:10px; font-size:12.5px;" onclick="submitSolvedSiteFaultLog()">
+        📤 Save Solved Fault to Aryavarta Log 🚀
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- #48: Smart Shift Alarm & Missed-Punch Prevention Bell Modal -->
+<div id="shiftAlarmModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>⏰ Smart Shift Punch Alarms</h3>
+      <span class="close-btn" onclick="closeShiftAlarmModal()">&times;</span>
+    </div>
+    <p style="font-size:11.5px; color:#475569; margin-bottom:10px;">
+      सुबह 10:00 AM से पहले समय पर Clock-In करने और शाम को बिना भूले Clock-Out करने के लिए अपना ऑटोमैटिक हिंदी वॉइस अलार्म सेट करें:
+    </p>
+
+    <label class="ppe-check-row" style="background:#fff1f2; border-color:#fecdd3; color:#881337;">
+      <input type="checkbox" id="almEnableToggle" checked>
+      <span>🔔 Enable Smart Shift Voice & Notification Alarms</span>
+    </label>
+
+    <div class="btn-grid-2">
+      <div>
+        <label>🌅 Morning Clock-In Bell:</label>
+        <input type="time" id="almMorningTime" value="09:25">
+      </div>
+      <div>
+        <label>🌆 Evening Clock-Out Bell:</label>
+        <input type="time" id="almEveningTime" value="18:00">
+      </div>
+    </div>
+
+    <div class="btn-grid-2" style="margin-top:8px;">
+      <button type="button" class="btn btn-alarm" onclick="saveShiftAlarmSettings()">
+        💾 Save Alarm Settings
+      </button>
+      <button type="button" class="btn btn-cal" onclick="triggerShiftAlarmBellNow('🔔 टेस्ट अलार्म: कृपया अपनी आर्यावर्त उपस्थिति की जांच करें!')">
+        🔊 Test Alarm Bell
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // -------------------------------------------------------------------------
+  // #46: BUILT-IN OFFLINE VFD / PLC / PANEL FAULT KNOWLEDGE BASE
+  // -------------------------------------------------------------------------
+  const ARYAVARTA_FAULT_DB = [
+    {
+      cat: "VFD",
+      code: "OC / OC1 / OC2 / OC3 (VFD Overcurrent)",
+      cause: "Sudden current spike (>200% rated Amps) during acceleration, deceleration, or constant run.",
+      fix: "1) Disconnect motor cable from VFD U-V-W and check motor winding & cable insulation with Megger. 2) Increase Acceleration Time (e.g. from 5s to 15s). 3) Check mechanical jamming on pump/fan shaft. 4) Check VFD output IGBT health with multimeter diode mode."
+    },
+    {
+      cat: "VFD",
+      code: "OV / OVH (DC Bus Overvoltage)",
+      cause: "Regenerative back-EMF from heavy inertia load or high incoming 415V AC supply.",
+      fix: "1) Increase Deceleration Time parameter so motor coasts down smoothly. 2) Enable Overvoltage Stall Prevention in VFD parameters. 3) Connect Dynamic Braking Resistor (DBR) across B1-B2 / P-DB terminals."
+    },
+    {
+      cat: "VFD",
+      code: "GF / EF (Ground Fault / Earth Leakage)",
+      cause: "Current leakage (>50% rated) from motor phase U/V/W to earth.",
+      fix: "1) Inspect outdoor armoured motor cable gland & trench for water ingress or nicked insulation. 2) Megger motor phase-to-body (must be >10 MΩ). 3) Reduce VFD Carrier Frequency (PWM) to 2–4 kHz if motor cable is longer than 50 meters."
+    },
+    {
+      cat: "VFD",
+      code: "OL / OL1 / OL2 (Motor / Drive Overload)",
+      cause: "Motor drawing current higher than parameter FLC setting for too long.",
+      fix: "1) Verify Motor Nameplate Rated Current matches VFD Motor Amps parameter. 2) Measure R-Y-B output currents with Clamp Meter to check phase unbalance. 3) Check VFD cooling fan and panel filter mat."
+    },
+    {
+      cat: "PLC",
+      code: "RS485 Modbus Comm Error / Timeout",
+      cause: "PLC / HMI unable to read VFD, Energy Meter, or Remote I/O over RS485.",
+      fix: "1) Swap RS485 Data+ (A) and Data- (B) wires at one end and test. 2) Verify Slave ID, Baud Rate (9600/19200), Parity (8-Even-1 or 8-None-1) match identically. 3) Install 120Ω termination resistor at first and last node. 4) Earth shield wire at PLC end ONLY."
+    },
+    {
+      cat: "PLC",
+      code: "4-20mA Analog Value Jumping / Zero Reading",
+      cause: "Electrical noise from VFD power cables or open 24V DC current loop.",
+      fix: "1) Put multimeter in mA series mode to verify physical 4–20mA signal. 2) Route analog shielded cable in separate PVC channel away from 415V power wires. 3) Connect 0V of 24VDC SMPS to common reference if using 4-wire transmitter."
+    },
+    {
+      cat: "PLC",
+      code: "PLC SF / BF Red LED Blinking",
+      cause: "System Fault (program/addressing error) or Bus Fault (Profinet/Profibus slave missing).",
+      fix: "1) Check 24V DC power supply on all remote I/O racks and Ethernet switches. 2) Inspect RJ45 / Profibus connector shielding and loose plugs. 3) Check out-of-range analog channel or division-by-zero in PLC diagnostic buffer."
+    },
+    {
+      cat: "Panel",
+      code: "Contactor Chattering / Loud Humming",
+      cause: "Low control voltage on coil (A1-A2) or dust/rust on magnet core face.",
+      fix: "1) Measure A1-A2 coil voltage when energized (must be >205V for 230V AC coil). 2) Check loose neutral wire on control TB or overloaded control transformer. 3) Clean contactor magnet pole faces with dry cloth."
+    },
+    {
+      cat: "Panel",
+      code: "Low Megger IR Value (< 5 Mega-Ohm)",
+      cause: "Moisture on busbar SMC supports, carbon dust, or pinched control wire.",
+      fix: "1) Isolate sensitive PLC/VFD/Meters before 500V/1000V Megger test! 2) Clean busbar supports and insulators with isopropyl alcohol/dry cloth. 3) Check control wires passing through sharp sheet-metal gland plates."
+    },
+    {
+      cat: "Panel",
+      code: "Multifunction Meter Negative kW / Wrong PF",
+      cause: "CT S1-S2 polarity reversed or CT phase mismatched with PT voltage phase.",
+      fix: "1) Ensure R-phase CT is wired to I1, Y-phase CT to I2, B-phase CT to I3 matching V1-V2-V3. 2) Check that P1 faces incoming supply and P2 faces load (or swap S1-S2 in meter setup). 3) Verify CT Primary/Secondary ratio (e.g., 200/5A) in meter programming."
+    }
+  ];
+
+  window.isBiometricVerifiedSession = false;
+
+  // -------------------------------------------------------------------------
+  // INITIALIZE CATEGORY L UI (TOP-BAR THEME SWITCHER + 3 SUPER-GRID TILES)
+  // -------------------------------------------------------------------------
+  function initCategoryLModulesUI() {
+    // 1. #47 Inject 1-Tap Theme Switcher Pill in .top-bar
+    const topBar = document.querySelector(".top-bar");
+    if (topBar && !document.getElementById("themeSwitchPill")) {
+      const thBtn = document.createElement("button");
+      thBtn.type = "button";
+      thBtn.id = "themeSwitchPill";
+      thBtn.className = "pill-mini";
+      thBtn.style.fontSize = "10.5px";
+      thBtn.onclick = cycleAppThemeMode;
+      topBar.insertBefore(thBtn, topBar.lastElementChild);
+      applySavedThemeMode(localStorage.getItem("aa_theme_mode") || "standard");
+    }
+
+    // 2. Inject #45 Biometric Lock, #46 Fault Solver, #48 Shift Alarms into Super-App Grid
+    const superGrid = document.querySelector(".super-app-grid");
+    if (superGrid && !document.getElementById("tileBiometricLock")) {
+      const catLTiles = `
+        <div class="super-tile" id="tileBiometricLock" onclick="openBiometricLockModal()">
+          <div class="ico" style="background:#ccfbf1;color:#0f766e;">👆</div>
+          <div class="lbl">Biometric Lock</div>
+        </div>
+        <div class="super-tile" id="tileFaultSolver" onclick="openTroubleshooterModal()">
+          <div class="ico" style="background:#ede9fe;color:#6d28d9;">🧠</div>
+          <div class="lbl">Fault Solver</div>
+        </div>
+        <div class="super-tile" id="tileShiftAlarms" onclick="openShiftAlarmModal()">
+          <div class="ico" style="background:#ffe4e6;color:#e11d48;">⏰</div>
+          <div class="lbl">Shift Alarms</div>
+        </div>
+      `;
+      superGrid.insertAdjacentHTML("beforeend", catLTiles);
+
+      const titleSpan = document.querySelector(".super-grid-title span:last-child");
+      if (titleSpan) {
+        titleSpan.innerText = `${superGrid.querySelectorAll(".super-tile").length} Mini-Portals`;
+      }
+    }
+
+    updateBiometricModalUI();
+    renderFaultTroubleshooterList();
+    initShiftAlarmSettingsAndTicker();
+  }
+
+  // -------------------------------------------------------------------------
+  // #47: 1-TAP OUTDOOR SUNLIGHT / DARK CYBER MODE THEME SWITCHER
+  // -------------------------------------------------------------------------
+  function applySavedThemeMode(mode) {
+    document.body.classList.remove("aa-dark-mode", "aa-sunlight-mode");
+    const pill = document.getElementById("themeSwitchPill");
+    if (mode === "dark") {
+      document.body.classList.add("aa-dark-mode");
+      if (pill) pill.innerText = "🌙 Dark";
+    } else if (mode === "sunlight") {
+      document.body.classList.add("aa-sunlight-mode");
+      if (pill) pill.innerText = "☀️ Sun";
+    } else {
+      if (pill) pill.innerText = "🎨 Theme";
+    }
+    localStorage.setItem("aa_theme_mode", mode);
+  }
+
+  function cycleAppThemeMode() {
+    triggerHaptic(20);
+    const cur = localStorage.getItem("aa_theme_mode") || "standard";
+    const next = cur === "standard" ? "dark" : (cur === "dark" ? "sunlight" : "standard");
+    applySavedThemeMode(next);
+  }
+
+  // -------------------------------------------------------------------------
+  // #45: FINGERPRINT / FACE-ID BIOMETRIC APP LOCK (WEBAUTHN PASSKEY)
+  // -------------------------------------------------------------------------
+  function openBiometricLockModal() {
+    triggerHaptic(15);
+    updateBiometricModalUI();
+    document.getElementById("biometricLockModal").style.display = "flex";
+  }
+
+  function closeBiometricLockModal() {
+    document.getElementById("biometricLockModal").style.display = "none";
+  }
+
+  function updateBiometricModalUI() {
+    const isEnabled = localStorage.getItem("aa_bio_enabled") === "true";
+    const title = document.getElementById("bioStatusTitle");
+    const sub = document.getElementById("bioStatusSub");
+    const btnReg = document.getElementById("btnRegisterBio");
+    const btnTest = document.getElementById("btnTestBio");
+    const btnDis = document.getElementById("btnDisableBio");
+    if (!title) return;
+
+    if (isEnabled) {
+      title.innerText = "🛡️ Biometric Fingerprint Lock: ACTIVE";
+      title.style.color = "#059669";
+      sub.innerText = "आपकी उपस्थिति और गोपनीय पोर्टल आपके फिंगरप्रिंट / Face-ID से सुरक्षित हैं।";
+      btnReg.style.display = "none";
+      btnTest.style.display = "flex";
+      btnDis.style.display = "flex";
+    } else {
+      title.innerText = "🔓 Biometric Lock: Not Active";
+      title.style.color = "#0f766e";
+      sub.innerText = "प्रॉक्सी पंच रोकने के लिए अपना फिंगरप्रिंट या Face-ID रजिस्टर करें।";
+      btnReg.style.display = "flex";
+      btnTest.style.display = "none";
+      btnDis.style.display = "none";
+    }
+  }
+
+  async function registerPhoneBiometricPasskey() {
+    if (!window.PublicKeyCredential || !navigator.credentials) {
+      return alert("⚠️ आपके ब्राउज़र में WebAuthn Biometric सेंसर उपलब्ध नहीं है।");
+    }
+    triggerHaptic(30);
+    try {
+      const challenge = new Uint8Array(32);
+      window.crypto.getRandomValues(challenge);
+      const userId = new Uint8Array(16);
+      window.crypto.getRandomValues(userId);
+
+      const cred = await navigator.credentials.create({
+        publicKey: {
+          challenge: challenge,
+          rp: { name: "Aryavarta Attendance Portal" },
+          user: {
+            id: userId,
+            name: currentEmp.phone || "aryavarta_user",
+            displayName: currentEmp.name || "Aryavarta Staff"
+          },
+          pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
+          authenticatorSelection: {
+            authenticatorAttachment: "platform",
+            userVerification: "required"
+          },
+          timeout: 45000
+        }
+      });
+
+      if (cred && cred.rawId) {
+        const b64Id = btoa(String.fromCharCode(...new Uint8Array(cred.rawId)));
+        localStorage.setItem("aa_bio_cred_id", b64Id);
+        localStorage.setItem("aa_bio_enabled", "true");
+        window.isBiometricVerifiedSession = true;
+        window.currentDeviceTelemetry = (window.currentDeviceTelemetry || "") + " | 👆 Bio-OK";
+        updateBiometricModalUI();
+        triggerHaptic([60, 40, 100]);
+        speakHindi("बधाई हो! आपका बायोमेट्रिक फिंगरप्रिंट लॉक सफलतापूर्वक सक्रिय हो गया है।");
+        showMessage("👆 Biometric Fingerprint / Face-ID Lock Activated!", "#059669");
+      }
+    } catch (err) {
+      alert("👆 फिंगरप्रिंट पंजीकरण रद्द किया गया या आपके फोन में स्क्रीन लॉक सेट नहीं है।");
+    }
+  }
+
+  async function verifyPhoneBiometricNow(showAlert = false) {
+    const savedId = localStorage.getItem("aa_bio_cred_id");
+    if (!savedId || !window.PublicKeyCredential) return true;
+    try {
+      const rawId = Uint8Array.from(atob(savedId), c => c.charCodeAt(0));
+      const challenge = new Uint8Array(32);
+      window.crypto.getRandomValues(challenge);
+
+      await navigator.credentials.get({
+        publicKey: {
+          challenge: challenge,
+          allowCredentials: [{ id: rawId, type: "public-key" }],
+          userVerification: "required",
+          timeout: 40000
+        }
+      });
+
+      window.isBiometricVerifiedSession = true;
+      if (window.currentDeviceTelemetry && !window.currentDeviceTelemetry.includes("👆")) {
+        window.currentDeviceTelemetry += " | 👆 Bio-OK";
+      }
+      triggerHaptic([40, 30, 80]);
+      if (showAlert) {
+        speakHindi("फिंगरप्रिंट सत्यापन सफल रहा।");
+        alert("✅ Fingerprint / Face-ID Verified Successfully!");
+      }
+      return true;
+    } catch (e) {
+      alert("❌ Biometric Verification Failed! कृपया अपना फिंगरप्रिंट पुनः स्कैन करें।");
+      return false;
+    }
+  }
+
+  async function disablePhoneBiometricLock() {
+    const ok = await verifyPhoneBiometricNow(false);
+    if (!ok) return;
+    localStorage.removeItem("aa_bio_enabled");
+    localStorage.removeItem("aa_bio_cred_id");
+    updateBiometricModalUI();
+    showMessage("🔓 Biometric Lock Disabled.", "#64748b");
+  }
+
+  // Guard handlePunch & openManagerModal with Biometric Fingerprint if enabled on this phone
+  if (typeof window.handlePunch === "function") {
+    const _prevHandlePunchCatL = window.handlePunch;
+    window.handlePunch = async function(punchType) {
+      if (localStorage.getItem("aa_bio_enabled") === "true" && !window.isBiometricVerifiedSession) {
+        const verified = await verifyPhoneBiometricNow(false);
+        if (!verified) return;
+      }
+      return _prevHandlePunchCatL(punchType);
+    };
+  }
+
+  if (typeof window.openManagerModal === "function") {
+    const _prevOpenMgrCatL = window.openManagerModal;
+    window.openManagerModal = async function() {
+      if (localStorage.getItem("aa_bio_enabled") === "true" && !window.isBiometricVerifiedSession) {
+        const verified = await verifyPhoneBiometricNow(false);
+        if (!verified) return;
+      }
+      return _prevOpenMgrCatL();
+    };
+  }
+
+  // -------------------------------------------------------------------------
+  // #46: VFD / PLC / PANEL FAULT TROUBLESHOOTER FUNCTIONS
+  // -------------------------------------------------------------------------
+  function openTroubleshooterModal() {
+    triggerHaptic(15);
+    renderFaultTroubleshooterList();
+    document.getElementById("troubleshooterModal").style.display = "flex";
+  }
+
+  function closeTroubleshooterModal() {
+    document.getElementById("troubleshooterModal").style.display = "none";
+  }
+
+  function filterFaultByChip(keyword) {
+    triggerHaptic(15);
+    document.getElementById("faultSearchInput").value = keyword;
+    renderFaultTroubleshooterList();
+  }
+
+  function renderFaultTroubleshooterList() {
+    const box = document.getElementById("faultTroubleshooterListBox");
+    if (!box) return;
+    const q = (document.getElementById("faultSearchInput") ? document.getElementById("faultSearchInput").value : "").toLowerCase().trim();
+
+    let customFaults = [];
+    try { customFaults = JSON.parse(localStorage.getItem("aa_custom_faults") || "[]"); } catch (e) {}
+    const allFaults = [...customFaults, ...ARYAVARTA_FAULT_DB];
+
+    const filtered = allFaults.filter(f =>
+      !q || f.cat.toLowerCase().includes(q) || f.code.toLowerCase().includes(q) || f.cause.toLowerCase().includes(q) || f.fix.toLowerCase().includes(q)
+    );
+
+    if (filtered.length === 0) {
+      box.innerHTML = "<div class='admin-list-item'>🔍 कोई मैच नहीं मिला। नीचे नया फॉल्ट और समाधान जोड़ें!</div>";
+      return;
+    }
+
+    box.innerHTML = filtered.map(f => `
+      <div class="fault-card">
+        <span class="fault-code-tag">⚙️ ${f.cat}: ${f.code}</span>
+        <div style="color:#475569; font-size:11.2px; margin-bottom:3px;"><b>⚠️ Cause:</b> ${f.cause}</div>
+        <div style="color:#0f172a; font-weight:700;"><b>✅ Action / Solution:</b> ${f.fix}</div>
+      </div>
+    `).join("");
+  }
+
+  async function submitSolvedSiteFaultLog() {
+    const code = document.getElementById("newFaultTitle").value.trim();
+    const fix = document.getElementById("newFaultFix").value.trim();
+    if (!code || !fix) {
+      return alert("कृपया फॉल्ट कोड और उसका समाधान दोनों लिखें।");
+    }
+
+    const newEntry = {
+      cat: "Site Fix (" + (currentEmp.name || "Engineer") + ")",
+      code: code,
+      cause: "Field / Shopfloor Logged Issue",
+      fix: fix
+    };
+
+    let customFaults = [];
+    try { customFaults = JSON.parse(localStorage.getItem("aa_custom_faults") || "[]"); } catch (e) {}
+    customFaults.unshift(newEntry);
+    localStorage.setItem("aa_custom_faults", JSON.stringify(customFaults.slice(0, 25)));
+
+    if (typeof window.ultraReliablePostCall === "function") {
+      window.ultraReliablePostCall({
+        action: "submitSiteFaultLog",
+        phone: currentEmp.phone,
+        name: currentEmp.name,
+        faultCode: code,
+        solution: fix
+      });
+    }
+
+    document.getElementById("newFaultTitle").value = "";
+    document.getElementById("newFaultFix").value = "";
+    renderFaultTroubleshooterList();
+    triggerHaptic([60, 40, 100]);
+    speakHindi("धन्यवाद! आपका फॉल्ट समाधान आर्यावर्त नॉलेज बेस में जोड़ दिया गया है।");
+    showMessage(`🧠 Solved Fault (${code}) saved to Aryavarta Knowledge Base!`, "#059669");
+  }
+
+  // -------------------------------------------------------------------------
+  // #48: SMART SHIFT ALARM & MISSED-PUNCH PREVENTION BELL
+  // -------------------------------------------------------------------------
+  function openShiftAlarmModal() {
+    triggerHaptic(15);
+    document.getElementById("shiftAlarmModal").style.display = "flex";
+  }
+
+  function closeShiftAlarmModal() {
+    document.getElementById("shiftAlarmModal").style.display = "none";
+  }
+
+  function initShiftAlarmSettingsAndTicker() {
+    const enabled = localStorage.getItem("aa_alm_enabled") !== "false";
+    const mTime = localStorage.getItem("aa_alm_morning") || "09:25";
+    const eTime = localStorage.getItem("aa_alm_evening") || "18:00";
+
+    if (document.getElementById("almEnableToggle")) {
+      document.getElementById("almEnableToggle").checked = enabled;
+      document.getElementById("almMorningTime").value = mTime;
+      document.getElementById("almEveningTime").value = eTime;
+    }
+
+    // Check every 35 seconds if Morning or Evening Punch Alarm time has arrived
+    setInterval(() => {
+      if (localStorage.getItem("aa_alm_enabled") === "false") return;
+      const now = new Date();
+      if (now.getDay() === 0 && !isSundayDutyUnlocked) return; // Skip Sunday if not on duty
+
+      const hh = String(now.getHours()).padStart(2, "0");
+      const mm = String(now.getMinutes()).padStart(2, "0");
+      const curHm = `${hh}:${mm}`;
+      const todayIST = getISTDateString();
+
+      const targetM = localStorage.getItem("aa_alm_morning") || "09:25";
+      const targetE = localStorage.getItem("aa_alm_evening") || "18:00";
+
+      if (curHm === targetM && currentDutyState === "NEEDS_CLOCK_IN") {
+        const mKey = `aa_alm_fired_m_${todayIST}`;
+        if (!localStorage.getItem(mKey)) {
+          localStorage.setItem(mKey, "true");
+          triggerShiftAlarmBellNow(`सुप्रभात ${currentEmp.name || ""} जी! सुबह के ${targetM} बज चुके हैं। कृपया 10 बजे से पहले अपना क्लॉक-इन दर्ज करें।`);
+        }
+      }
+
+      if (curHm === targetE && currentDutyState === "WORKING") {
+        const eKey = `aa_alm_fired_e_${todayIST}`;
+        if (!localStorage.getItem(eKey)) {
+          localStorage.setItem(eKey, "true");
+          triggerShiftAlarmBellNow(`ध्यान दें ${currentEmp.name || ""} जी! शाम के ${targetE} बज चुके हैं। घर निकलने से पहले पोर्टल में क्लॉक-आउट करना न भूलें।`);
+        }
+      }
+    }, 35000);
+  }
+
+  function saveShiftAlarmSettings() {
+    triggerHaptic(25);
+    const enabled = document.getElementById("almEnableToggle").checked;
+    const mTime = document.getElementById("almMorningTime").value || "09:25";
+    const eTime = document.getElementById("almEveningTime").value || "18:00";
+
+    localStorage.setItem("aa_alm_enabled", enabled ? "true" : "false");
+    localStorage.setItem("aa_alm_morning", mTime);
+    localStorage.setItem("aa_alm_evening", eTime);
+
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+
+    closeShiftAlarmModal();
+    speakHindi(`स्मार्ट शिफ्ट अलार्म सुबह ${mTime} और शाम ${eTime} बजे के लिए सेट हो गया है।`);
+    showMessage(`⏰ Shift Alarms set for ${mTime} (In) & ${eTime} (Out)!`, "#059669");
+  }
+
+  function playWebAudioAlarmChime() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      [587.33, 880, 1174.66].forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.18, ctx.currentTime + idx * 0.18);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.18 + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + idx * 0.18);
+        osc.stop(ctx.currentTime + idx * 0.18 + 0.36);
+      });
+    } catch (e) {}
+  }
+
+  function triggerShiftAlarmBellNow(msgText) {
+    triggerHaptic([100, 50, 100, 50, 150]);
+    playWebAudioAlarmChime();
+    speakHindi(msgText);
+    showMessage(msgText, "#e11d48");
+
+    if ("serviceWorker" in navigator && "Notification" in window && Notification.permission === "granted") {
+      navigator.serviceWorker.ready.then(reg => {
+        reg.showNotification("⏰ आर्यावर्त उपस्थिति अलार्म", {
+          body: msgText,
+          icon: "./logo.png",
+          vibrate: [200, 100, 200]
+        });
+      }).catch(() => {});
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initCategoryLModulesUI);
+  } else {
+    initCategoryLModulesUI();
+  }
+</script>
+
 </body>
 </html>
