@@ -10459,5 +10459,92 @@
   })();
 </script>
 
+<!-- ===================================================================== -->
+<!-- 📋 ENGINEER FAT & INSPECTION LOGS APP LAUNCHER (PASTE BEFORE </body>) -->
+<!-- Opens https://mr2ashish.github.io/fat-inspection-app/ on click        -->
+<!-- ===================================================================== -->
+<style>
+  .btn-fat-portal {
+    background: linear-gradient(135deg, #1e40af, #0f172a);
+    border: 1.5px solid #38bdf8;
+    color: #fff;
+    font-size: 13px;
+    padding: 12px 10px;
+  }
+  #tileFatInspectionApp {
+    border-color: #93c5fd;
+    background: linear-gradient(145deg, #eff6ff, #dbeafe);
+  }
+</style>
+
+<script>
+  const FAT_INSPECTION_APP_URL = "https://mr2ashish.github.io/fat-inspection-app/";
+
+  function launchEngineerFatPortal() {
+    if (typeof triggerHaptic === "function") triggerHaptic(25);
+    if (typeof speakHindi === "function") {
+      speakHindi("एफएटी और इंस्पेक्शन पोर्टल खुल रहा है।");
+    }
+
+    const newWin = window.open(FAT_INSPECTION_APP_URL, "_blank");
+    if (!newWin) {
+      window.location.href = FAT_INSPECTION_APP_URL;
+    }
+  }
+
+  function initEngineerFatPortalTile() {
+    // 1. Inject "📋 FAT & QC App" Tile into the Super-App Grid
+    const superGrid = document.querySelector(".super-app-grid");
+    if (superGrid && !document.getElementById("tileFatInspectionApp")) {
+      const fatTileHtml = `
+        <div class="super-tile" id="tileFatInspectionApp" onclick="launchEngineerFatPortal()">
+          <div class="ico" style="background:#1e3a8a;color:#38bdf8;">📋</div>
+          <div class="lbl" style="color:#1e3a8a;">FAT & QC App</div>
+        </div>
+      `;
+      superGrid.insertAdjacentHTML("beforeend", fatTileHtml);
+
+      // Update the Mini-Portals counter in the grid header automatically
+      const titleSpan = document.querySelector(".super-grid-title span:last-child");
+      if (titleSpan) {
+        titleSpan.innerText = `${superGrid.querySelectorAll(".super-tile").length} Mini-Portals`;
+      }
+    } else if (!superGrid && !document.getElementById("btnFallbackFatPortal")) {
+      // Fallback button if Super-App Grid is not active
+      const calBtn = document.querySelector(".btn-cal");
+      if (calBtn) {
+        const fatBtn = document.createElement("button");
+        fatBtn.type = "button";
+        fatBtn.id = "btnFallbackFatPortal";
+        fatBtn.className = "btn btn-fat-portal";
+        fatBtn.innerHTML = "📋 Open Engineer FAT & Inspection App 🚀";
+        fatBtn.onclick = launchEngineerFatPortal;
+        calBtn.parentNode.insertBefore(fatBtn, calBtn);
+      }
+    }
+
+    // 2. Also add a 1-Tap Launch button inside Manager Sumeet Singh's Command Center
+    const mgrSyncBtn = document.getElementById("btnSyncSheetsMgr");
+    if (mgrSyncBtn && !document.getElementById("btnMgrOpenFatApp")) {
+      const mgrFatBtn = document.createElement("button");
+      mgrFatBtn.type = "button";
+      mgrFatBtn.id = "btnMgrOpenFatApp";
+      mgrFatBtn.className = "btn btn-fat-portal";
+      mgrFatBtn.style.padding = "9px";
+      mgrFatBtn.style.fontSize = "12.5px";
+      mgrFatBtn.style.marginBottom = "10px";
+      mgrFatBtn.innerHTML = "📋 Open Shopfloor FAT & Inspection Logs App ↗️";
+      mgrFatBtn.onclick = launchEngineerFatPortal;
+      mgrSyncBtn.insertAdjacentElement("afterend", mgrFatBtn);
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initEngineerFatPortalTile);
+  } else {
+    initEngineerFatPortalTile();
+  }
+</script>
+
 </body>
 </html>
