@@ -10546,5 +10546,139 @@
   }
 </script>
 
+<!-- ===================================================================== -->
+<!-- 👑 SUMEET SIR COMMAND CENTER 24-QUEUE RENDERER & BILL VIEWER FIX       -->
+<!-- Paste this entire block at the VERY BOTTOM of index.html              -->
+<!-- ===================================================================== -->
+<script>
+  // 1. Enhanced Renderer for 🧾 GPS-Verified Site Expense Claims (Shows GPS Status + Bill Photo Button)
+  window.renderManagerSiteExpenses = function(list) {
+    const box = document.getElementById("managerPendingSiteExpenses");
+    if (!box) return;
+    if (!list || list.length === 0) {
+      box.innerHTML = "<div class='admin-list-item'>✅ कोई लंबित साइट खर्च क्लेम नहीं है।</div>";
+      return;
+    }
+    box.innerHTML = "";
+    list.forEach(se => {
+      const gpsText = se.gpsTag || "✅ GPS Checked";
+      const isVerified = gpsText.includes("Verified") || gpsText.includes("✅");
+      const gpsBadgeBg = isVerified ? "#dcfce7" : "#fef3c7";
+      const gpsBadgeCol = isVerified ? "#166534" : "#92400e";
+
+      const billBtn = se.billUrl
+        ? `<a class="mini-act-btn" style="background:#2563eb;" href="${se.billUrl}" target="_blank">🧾 View Bill Photo</a>`
+        : `<span style="font-size:10.5px;background:#f1f5f9;color:#64748b;padding:4px 7px;border-radius:6px;font-weight:700;">📄 No Photo</span>`;
+
+      const card = document.createElement("div");
+      card.className = "issue-card-item";
+      card.id = "mgrExpCard_" + se.id;
+      card.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <b>👤 ${se.name} <span style="font-size:11px;color:#64748b;">(${se.date})</span></b>
+          <span style="font-size:14px;font-weight:900;color:#0369a1;">₹${se.amount}</span>
+        </div>
+        <div style="margin-bottom:4px;">
+          <span style="display:inline-block;background:${gpsBadgeBg};color:${gpsBadgeCol};font-size:10.8px;font-weight:800;padding:3px 8px;border-radius:8px;">
+            ${gpsText}
+          </span>
+        </div>
+        <div style="color:#0f172a;font-size:11.8px;">
+          <b>📍 Site:</b> ${se.siteName} &nbsp;|&nbsp; <b>📂 Type:</b> ${se.category}<br>
+          <b>📋 Details:</b> ${se.notes || "Site expense"}
+        </div>
+        <div style="display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-top:8px;">
+          ${billBtn}
+          <button class="mini-act-btn" style="background:#059669;" onclick="decideSiteExpAsSumeet('${se.id}', 'Approved')">✅ Approve</button>
+          <button class="mini-act-btn" style="background:#dc2626;" onclick="decideSiteExpAsSumeet('${se.id}', 'Rejected')">❌ Reject</button>
+        </div>
+      `;
+      box.appendChild(card);
+    });
+  };
+
+  // 2. Enhanced Renderer for 📸 Watermarked Site Selfies (Supports Both Photo & GPS Map Pin Fallback)
+  window.renderManagerSiteSelfiesList = function(list) {
+    const box = document.getElementById("managerSiteSelfiesList");
+    if (!box) return;
+    if (!list || list.length === 0) {
+      box.innerHTML = "<div class='admin-list-item'>⚪ कोई हालिया साइट सेल्फी पंच नहीं है।</div>";
+      return;
+    }
+    box.innerHTML = "";
+    list.forEach(sf => {
+      const btnHtml = sf.selfieUrl
+        ? `<a class="mini-act-btn" style="background:#0284c7;" href="${sf.selfieUrl}" target="_blank">${sf.isMapFallback ? "📍 View Site GPS Pin" : "📸 View Site Selfie"}</a>`
+        : `<span style="font-size:10.5px;color:#059669;font-weight:800;">✅ Logged</span>`;
+      const item = document.createElement("div");
+      item.className = "admin-list-item";
+      item.innerHTML = `
+        <div>
+          <b>${sf.name}</b> <span style="font-size:11px;color:#0284c7;font-weight:800;">(📍 ${sf.siteName})</span><br>
+          <span style="font-size:11px;color:#64748b;">📅 ${sf.time}</span>
+        </div>
+        ${btnHtml}
+      `;
+      box.appendChild(item);
+    });
+  };
+
+  // 3. Instant Manager Decision Handlers (Removes approved/rejected item from screen immediately & syncs sheet)
+  window.decideSiteExpAsSumeet = async function(claimId, decision) {
+    if (currentEmp.phone !== SUMEET_SINGH_PHONE) return;
+    triggerHaptic(25);
+    const cardEl = document.getElementById("mgrExpCard_" + claimId);
+    if (cardEl) cardEl.style.display = "none";
+    await catAPostCall({
+      action: "siteExpenseDecision",
+      claimId: claimId,
+      decision: decision,
+      managerPhone: currentEmp.phone,
+      pin: localStorage.getItem("aa_mgr_pin") || ""
+    }, 2);
+    alert(`✅ Site Expense Claim (${claimId}) ${decision.toUpperCase()} by Sumeet Singh!`);
+    setTimeout(loadManagerOverview, 1200);
+  };
+
+  // 4. Master Direct Loader for Sumeet Sir's Command Center (Populates ALL 24 Sections Explicitly!)
+  const _origLoadManagerOverview = window.loadManagerOverview;
+  window.loadManagerOverview = function() {
+    if (typeof _origLoadManagerOverview === "function") {
+      _origLoadManagerOverview();
+    }
+
+    const mgrPin = localStorage.getItem("aa_mgr_pin") || "";
+    const qs = `action=getAdminOverview&phone=${encodeURIComponent(currentEmp.phone)}&pin=${encodeURIComponent(mgrPin)}&_t=${Date.now()}`;
+
+    fetch(`${SCRIPT_URL}?${qs}`, { method: "GET", redirect: "follow" })
+      .then(r => r.json())
+      .then(res => {
+        if (!res || res.unauthorized) return;
+        latestAdminOverviewCache = res;
+
+        if (typeof renderManagerSiteExpenses === "function") renderManagerSiteExpenses(res.pendingSiteExpenses || []);
+        if (typeof renderManagerMaterialAlerts === "function") renderManagerMaterialAlerts(res.pendingMaterialAlerts || []);
+        if (typeof renderManagerHandovers === "function") renderManagerHandovers(res.activeHandoversList || []);
+        if (typeof renderManagerGatePassesList === "function") renderManagerGatePassesList(res.pendingGatePasses || []);
+        if (typeof renderManagerKaizensList === "function") renderManagerKaizensList(res.pendingKaizens || []);
+        if (typeof renderManagerToolCustodyList === "function") renderManagerToolCustodyList(res.activeToolsList || []);
+        if (typeof renderManagerVisualAnalytics === "function") renderManagerVisualAnalytics(res.analyticsData || null, res.floorList || []);
+        if (typeof renderManagerSalaryAdvancesList === "function") renderManagerSalaryAdvancesList(res.pendingSalaryAdvances || []);
+        if (typeof renderManagerSosList === "function") renderManagerSosList(res.activeSosList || []);
+        if (typeof renderManagerSiteSelfiesList === "function") renderManagerSiteSelfiesList(res.recentSiteSelfies || []);
+        if (typeof renderManagerWalkieMemos === "function") renderManagerWalkieMemos(res.walkieMemosList || []);
+        if (typeof renderManagerTeaHeadcount === "function") renderManagerTeaHeadcount(res.teaSummary || { reg: 0, ot: 0, skip: 0 });
+        if (typeof renderManagerPreFatList === "function") renderManagerPreFatList(res.recentPreFatChecks || []);
+        if (typeof renderVisitorsListUI === "function") renderVisitorsListUI("managerVisitorsList", res.todayVisitorsList || [], true);
+        if (typeof renderDispatchesListUI === "function") renderDispatchesListUI("managerDispatchesList", res.recentDispatchesList || []);
+        if (typeof renderManagerDrawingAlertsUI === "function") renderManagerDrawingAlertsUI(res.activeDrawingAlertsList || []);
+        if (typeof renderManagerSkillMatrixUI === "function") renderManagerSkillMatrixUI(res.allSkillsList || []);
+        if (typeof renderCouriersListUI === "function") renderCouriersListUI("managerCouriersList", res.recentCouriersList || []);
+        if (typeof renderManagerSpoofAlertsUI === "function") renderManagerSpoofAlertsUI(res.spoofAlertsList || []);
+      })
+      .catch(() => {});
+  };
+</script>
+
 </body>
 </html>
