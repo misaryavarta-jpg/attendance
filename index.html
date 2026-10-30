@@ -10680,5 +10680,137 @@
   };
 </script>
 
+<!-- ===================================================================== -->
+<!-- 👑 MASTER COMMAND CENTER DOM REPAIR & 1-TAP ACTION QUEUES INJECTOR    -->
+<!-- Paste this entire block at the VERY BOTTOM of index.html              -->
+<!-- Fixes missing SOS, Site Selfies, Walkie-Talkie, Tea Poll,             -->
+<!-- Material Shortfall & GPS Site Expense Queues on Sumeet Sir's screen   -->
+<!-- ===================================================================== -->
+<style>
+  .mgr-priority-hub {
+    background: #f8fafc;
+    border: 2px solid #3b82f6;
+    border-radius: 16px;
+    padding: 12px;
+    margin-bottom: 14px;
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.12);
+  }
+  .mgr-hub-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #1e3a8a, #0f172a);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 900;
+    margin-bottom: 10px;
+  }
+  .mgr-pin-lock-btn {
+    background: #fde047;
+    color: #0f172a;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 10.5px;
+    font-weight: 900;
+    cursor: pointer;
+  }
+</style>
+
+<script>
+  function lockManagerCommandCenterPin() {
+    localStorage.removeItem("aa_mgr_pin");
+    closeManagerModal();
+    alert("🔒 Manager Command Center Locked! अगली बार खोलने पर पुनः PIN (9766) मांगा जाएगा।");
+  }
+
+  function ensureAllManagerQueueContainersExist() {
+    const mgrCard = document.querySelector("#managerModal .modal-card");
+    if (!mgrCard) return;
+
+    // If our repaired hub is not yet in the Command Center, inject it right at the top!
+    if (!document.getElementById("mgrRepairedActionQueuesHub")) {
+      const hub = document.createElement("div");
+      hub.id = "mgrRepairedActionQueuesHub";
+      hub.className = "mgr-priority-hub";
+      hub.innerHTML = `
+        <div class="mgr-hub-header">
+          <span>⚡ 1-TAP APPROVALS & LIVE ACTION QUEUES</span>
+          <button type="button" class="mgr-pin-lock-btn" onclick="lockManagerCommandCenterPin()">🔒 Lock PIN (9766)</button>
+        </div>
+
+        <div class="admin-section-title" style="color:#dc2626; margin-top:4px;">🚨 Active SOS Alerts (1-Tap Call & GPS Map)</div>
+        <div id="managerActiveSosList">🔄 लोड हो रहा है...</div>
+
+        <div class="admin-section-title" style="color:#0369a1;">🧾 GPS-Verified Site Expense Claims (Bill Photo + GPS)</div>
+        <div id="managerPendingSiteExpenses">🔄 लोड हो रहा है...</div>
+
+        <div class="admin-section-title" style="color:#c2410c;">⚡ Urgent Store Material Shortfalls (Mark Ordered)</div>
+        <div id="managerPendingMaterialAlerts">🔄 लोड हो रहा है...</div>
+
+        <div class="admin-section-title" style="color:#be123c;">🎙️ Voice Walkie-Talkie Memos (▶️ Listen + Battery %)</div>
+        <div id="managerWalkieMemosList">🔄 लोड हो रहा है...</div>
+
+        <div class="admin-section-title" style="color:#0284c7;">📸 Watermarked Site Selfies (1-Tap Photo View)</div>
+        <div id="managerSiteSelfiesList">🔄 लोड हो रहा है...</div>
+
+        <div class="admin-section-title" style="color:#b45309;">☕ Today's Live Tea & Evening OT Snack Headcount</div>
+        <div id="managerTeaHeadcountBox" class="admin-list-item">🔄 लोड हो रहा है...</div>
+
+        <div class="admin-section-title" style="color:#4338ca;">🔄 Active Shift Handovers on Floor</div>
+        <div id="managerActiveHandovers">🔄 लोड हो रहा है...</div>
+
+        <div class="admin-section-title" style="color:#0369a1;">🚛 Recent Panel Dispatches & Vehicle Logs</div>
+        <div id="managerDispatchesList">🔄 लोड हो रहा है...</div>
+
+        <div class="admin-section-title" style="color:#b45309;">📐 Active Shopfloor Drawing Revision Alerts</div>
+        <div id="managerDrawingAlertsList">🔄 लोड हो रहा है...</div>
+
+        <div class="admin-section-title" style="color:#6d28d9;">🤝 Today's Client FAT & Office Visitors</div>
+        <div id="managerVisitorsList">🔄 लोड हो रहा है...</div>
+
+        <div class="admin-section-title" style="color:#1e3a8a;">✅ Recent Pre-FAT Quality Sign-Offs</div>
+        <div id="managerPreFatList">🔄 लोड हो रहा है...</div>
+
+        <div class="admin-section-title" style="color:#4338ca;">🎓 Team Skill Matrix & Certification</div>
+        <div id="managerSkillMatrixBox">🔄 लोड हो रहा है...</div>
+
+        <div class="admin-section-title" style="color:#0f766e;">📦 Recent Office Couriers & Pending Parcels</div>
+        <div id="managerCouriersList">🔄 लोड हो रहा है...</div>
+
+        <div class="admin-section-title" style="color:#dc2626;">🕵️‍♂️ Anti-Fake-GPS & Clock Tamper Security Log</div>
+        <div id="managerSpoofAlertsList">🔄 लोड हो रहा है...</div>
+      `;
+
+      // Insert right below the "Open Shopfloor FAT & Inspection Logs App" button (or Sync button)
+      const fatBtn = document.getElementById("btnMgrOpenFatApp");
+      const syncBtn = document.getElementById("btnSyncSheetsMgr");
+      const anchor = fatBtn || syncBtn;
+      if (anchor && anchor.parentNode === mgrCard) {
+        anchor.insertAdjacentElement("afterend", hub);
+      } else {
+        mgrCard.appendChild(hub);
+      }
+    }
+  }
+
+  // Ensure containers exist on page load AND whenever Sumeet Sir opens the Command Center
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", ensureAllManagerQueueContainersExist);
+  } else {
+    ensureAllManagerQueueContainersExist();
+  }
+
+  const _prevLoadMgrOverviewFix = window.loadManagerOverview;
+  window.loadManagerOverview = function() {
+    ensureAllManagerQueueContainersExist();
+    if (typeof _prevLoadMgrOverviewFix === "function") {
+      _prevLoadMgrOverviewFix();
+    }
+  };
+</script>
+
 </body>
 </html>
