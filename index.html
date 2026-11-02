@@ -10896,5 +10896,519 @@
   })();
 </script>
 
+<!-- ===================================================================== -->
+<!-- 🔒 5-LAYER PERMANENT LOGIN VAULT & 📅 AUTO-EXPIRY BADGE ENGINE        -->
+<!-- Paste this entire block at the VERY BOTTOM of index.html              -->
+<!-- 1. Never asks for 10-digit mobile number again after 1st login        -->
+<!-- 2. Auto-hides top badges & manager queues after Target Date + 2 Days  -->
+<!-- ===================================================================== -->
+<style>
+  .status-badge-item {
+    position: relative;
+    padding-right: 28px !important;
+  }
+  .badge-dismiss-x {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(15, 23, 42, 0.12);
+    border: none;
+    color: inherit;
+    font-size: 11px;
+    font-weight: 900;
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+</style>
+
+<script>
+  // =========================================================================
+  // PART 1: 5-LAYER PERMANENT LOGIN VAULT (NEVER FORGETS 10-DIGIT PHONE)
+  // Layers: 1) localStorage, 2) 10-Year Cookie, 3) IndexedDB,
+  //         4) Service Worker CacheStorage, 5) URL Hash + Storage Persist Lock
+  // =========================================================================
+  const PERM_COOKIE_PHONE = "aa_perm_phone_v1";
+  const PERM_COOKIE_NAME  = "aa_perm_name_v1";
+  const PERM_CACHE_NAME   = "aa-permanent-login-vault-v1";
+
+  function setTenYearCookie(name, val) {
+    try {
+      const exp = "Thu, 31 Dec 2037 23:59:59 GMT";
+      document.cookie = `${name}=${encodeURIComponent(val)}; expires=${exp}; max-age=315360000; path=/; SameSite=Lax`;
+    } catch (e) {}
+  }
+
+  function getTenYearCookie(name) {
+    try {
+      const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+      return match ? decodeURIComponent(match[2]) : "";
+    } catch (e) {
+      return "";
+    }
+  }
+
+  function clearTenYearCookies() {
+    try {
+      document.cookie = `${PERM_COOKIE_PHONE}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0; path=/`;
+      document.cookie = `${PERM_COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0; path=/`;
+    } catch (e) {}
+  }
+
+  function saveToIndexedDbVault(phone, name) {
+    try {
+      if (!("indexedDB" in window)) return;
+      const req = indexedDB.open("AryavartaPermanentAuthDB", 1);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains("auth")) db.createObjectStore("auth", { keyPath: "id" });
+      };
+      req.onsuccess = (e) => {
+        const db = e.target.result;
+        const tx = db.transaction("auth", "readwrite");
+        tx.objectStore("auth").put({ id: "primary_user", phone: phone, name: name, ts: Date.now() });
+      };
+    } catch (e) {}
+  }
+
+  function readFromIndexedDbVault() {
+    return new Promise((resolve) => {
+      try {
+        if (!("indexedDB" in window)) return resolve(null);
+        const req = indexedDB.open("AryavartaPermanentAuthDB", 1);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains("auth")) db.createObjectStore("auth", { keyPath: "id" });
+        };
+        req.onsuccess = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains("auth")) return resolve(null);
+          const tx = db.transaction("auth", "readonly");
+          const getReq = tx.objectStore("auth").get("primary_user");
+          getReq.onsuccess = () => resolve(getReq.result || null);
+          getReq.onerror = () => resolve(null);
+        };
+        req.onerror = () => resolve(null);
+      } catch (e) {
+        resolve(null);
+      }
+    });
+  }
+
+  function clearIndexedDbVault() {
+    try {
+      if (!("indexedDB" in window)) return;
+      const req = indexedDB.open("AryavartaPermanentAuthDB", 1);
+      req.onsuccess = (e) => {
+        const db = e.target.result;
+        if (db.objectStoreNames.contains("auth")) {
+          db.transaction("auth", "readwrite").objectStore("auth").clear();
+        }
+      };
+    } catch (e) {}
+  }
+
+  async function saveToCacheStorageVault(phone, name) {
+    try {
+      if (!("caches" in window)) return;
+      const cache = await caches.open(PERM_CACHE_NAME);
+      const resp = new Response(JSON.stringify({ phone, name }), {
+        headers: { "Content-Type": "application/json" }
+      });
+      await cache.put("/__aa_permanent_auth__", resp);
+    } catch (e) {}
+  }
+
+  async function readFromCacheStorageVault() {
+    try {
+      if (!("caches" in window)) return null;
+      const cache = await caches.open(PERM_CACHE_NAME);
+      const resp = await cache.match("/__aa_permanent_auth__");
+      if (resp) return await resp.json();
+    } catch (e) {}
+    return null;
+  }
+
+  async function clearCacheStorageVault() {
+    try {
+      if ("caches" in window) await caches.delete(PERM_CACHE_NAME);
+    } catch (e) {}
+  }
+
+  // Save Employee Identity Across All 5 Permanent Layers
+  window.lockEmployeeLoginPermanently = function(phone, name) {
+    const cleanP = (phone || "").toString().replace(/\D/g, "").slice(-10);
+    if (cleanP.length !== 10) return;
+    const cleanN = (name || localStorage.getItem("aa_user_name") || "कर्मचारी").toString().trim();
+
+    try {
+      // Prevent localStorage overflow by trimming old daily keys before saving
+      Object.keys(localStorage).forEach(k => {
+        if ((k.startsWith("aa_sun_unlocked_") || k.startsWith("aa_ppe_ok_") || k.startsWith("aa_alm_fired_") || k.startsWith("aa_celeb_greet_")) && !k.includes(getISTDateString())) {
+          localStorage.removeItem(k);
+        }
+      });
+      localStorage.setItem("aa_user_phone", cleanP);
+      if (cleanN) localStorage.setItem("aa_user_name", cleanN);
+    } catch (eLs) {}
+
+    // Layer 2: 10-Year Cookie
+    setTenYearCookie(PERM_COOKIE_PHONE, cleanP);
+    if (cleanN) setTenYearCookie(PERM_COOKIE_NAME, cleanN);
+
+    // Layer 3: IndexedDB
+    saveToIndexedDbVault(cleanP, cleanN);
+
+    // Layer 4: Service Worker CacheStorage
+    saveToCacheStorageVault(cleanP, cleanN);
+
+    // Layer 5: window.name + URL Hash Backup + OS Persistent Storage Lock
+    try {
+      window.name = `AA_AUTH_${cleanP}_${encodeURIComponent(cleanN)}`;
+      if (!window.location.search.includes("Action=")) {
+        history.replaceState(null, document.title, window.location.pathname + window.location.search + "#p=" + cleanP);
+      }
+      if (navigator.storage && navigator.storage.persist) {
+        navigator.storage.persist().catch(() => {});
+      }
+    } catch (eUrl) {}
+  };
+
+  // Synchronous Instant Recovery (Runs BEFORE window.onload!)
+  (function restoreLoginSynchronouslyBeforeLoad() {
+    let phone = localStorage.getItem("aa_user_phone") || "";
+    let name  = localStorage.getItem("aa_user_name") || "";
+
+    // Check 10-Year Cookie
+    if (phone.length !== 10) {
+      const cPhone = getTenYearCookie(PERM_COOKIE_PHONE).replace(/\D/g, "").slice(-10);
+      if (cPhone.length === 10) phone = cPhone;
+    }
+    if (!name) {
+      const cName = getTenYearCookie(PERM_COOKIE_NAME);
+      if (cName) name = cName;
+    }
+
+    // Check URL Hash (#p=9322476735)
+    if (phone.length !== 10 && window.location.hash.includes("p=")) {
+      const hPhone = (window.location.hash.split("p=")[1] || "").replace(/\D/g, "").slice(0, 10);
+      if (hPhone.length === 10) phone = hPhone;
+    }
+
+    // Check window.name backup
+    if (phone.length !== 10 && window.name && window.name.startsWith("AA_AUTH_")) {
+      const parts = window.name.split("_");
+      if (parts[2] && parts[2].length === 10) {
+        phone = parts[2];
+        if (!name && parts[3]) name = decodeURIComponent(parts[3]);
+      }
+    }
+
+    if (phone.length === 10) {
+      window.lockEmployeeLoginPermanently(phone, name || "कर्मचारी");
+    } else {
+      // Async Recovery from IndexedDB or Service Worker CacheStorage if sync layers were wiped
+      Promise.all([readFromIndexedDbVault(), readFromCacheStorageVault()]).then(([idbData, cacheData]) => {
+        const rec = (idbData && idbData.phone) ? idbData : cacheData;
+        if (rec && rec.phone && String(rec.phone).replace(/\D/g, "").slice(-10).length === 10) {
+          const recoveredPhone = String(rec.phone).replace(/\D/g, "").slice(-10);
+          const recoveredName  = rec.name || "कर्मचारी";
+          window.lockEmployeeLoginPermanently(recoveredPhone, recoveredName);
+          if (typeof loadEmployeeSessionInstant === "function") {
+            loadEmployeeSessionInstant(recoveredPhone, getISTDateString(), new Date().getDay() === 0);
+          }
+        }
+      });
+    }
+  })();
+
+  // Hook loadEmployeeSessionInstant & switchEmployeeAccount so login stays locked forever until user taps "🔄 बदलें"
+  if (typeof window.loadEmployeeSessionInstant === "function") {
+    const _origLoadSessionPerm = window.loadEmployeeSessionInstant;
+    window.loadEmployeeSessionInstant = function(phone, todayIST, isSunday) {
+      window.lockEmployeeLoginPermanently(phone, localStorage.getItem("aa_user_name") || currentEmp.name || "कर्मचारी");
+      return _origLoadSessionPerm(phone, todayIST, isSunday);
+    };
+  }
+
+  window.switchEmployeeAccount = async function() {
+    if (!confirm("क्या आप किसी अन्य मोबाइल नंबर से लॉग इन करना चाहते हैं?")) return;
+    localStorage.removeItem("aa_user_phone");
+    localStorage.removeItem("aa_user_name");
+    localStorage.removeItem("aa_duty_status");
+    localStorage.removeItem("aa_badge_html");
+    localStorage.removeItem("aa_mgr_pin");
+    clearTenYearCookies();
+    clearIndexedDbVault();
+    await clearCacheStorageVault();
+    window.name = "";
+    location.href = window.location.pathname;
+  };
+
+  // =========================================================================
+  // PART 2: AUTO-EXPIRY DATE ENGINE (TARGET DATE + 2 DAYS GRACE)
+  // Example: Request for 24th appears on 24th, 25th, 26th -> Disappears on 27th!
+  // Range Request (e.g. 24th to 26th) appears till 26th -> Disappears after!
+  // =========================================================================
+  window.extractEndAndStartDates = function(rawDateInput, fallbackEndDate) {
+    const todayStr = getISTDateString();
+    let str = (fallbackEndDate || rawDateInput || "").toString().trim();
+    if (!str || str === "Today" || str === "Just Now" || str === "Recent") {
+      return { startStr: todayStr, endStr: todayStr, isRange: false };
+    }
+
+    // Handle "YYYY-MM-DD to YYYY-MM-DD" range
+    if (str.includes(" to ")) {
+      const parts = str.split(" to ").map(s => s.trim());
+      return { startStr: parts[0], endStr: parts[1] || parts[0], isRange: parts[0] !== (parts[1] || parts[0]) };
+    }
+
+    // Handle YYYY-MM-DD anywhere in string
+    const isoMatches = str.match(/\d{4}-\d{2}-\d{2}/g);
+    if (isoMatches && isoMatches.length > 0) {
+      return {
+        startStr: isoMatches[0],
+        endStr: isoMatches[isoMatches.length - 1],
+        isRange: isoMatches.length > 1 && isoMatches[0] !== isoMatches[isoMatches.length - 1]
+      };
+    }
+
+    // Handle DD/MM/YYYY or DD-MM-YYYY
+    const dmyMatch = str.match(/(\d{2})[\/\-](\d{2})[\/\-](\d{4})/);
+    if (dmyMatch) {
+      const iso = `${dmyMatch[3]}-${dmyMatch[2]}-${dmyMatch[1]}`;
+      return { startStr: iso, endStr: iso, isRange: false };
+    }
+
+    // Handle "28 Oct, 02:30 PM" format
+    const shortMonMatch = str.match(/(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i);
+    if (shortMonMatch) {
+      const monMap = { jan:"01", feb:"02", mar:"03", apr:"04", may:"05", jun:"06", jul:"07", aug:"08", sep:"09", oct:"10", nov:"11", dec:"12" };
+      const yr = new Date().getFullYear();
+      const dd = String(shortMonMatch[1]).padStart(2, "0");
+      const mm = monMap[shortMonMatch[2].toLowerCase().slice(0, 3)] || "01";
+      const iso = `${yr}-${mm}-${dd}`;
+      return { startStr: iso, endStr: iso, isRange: false };
+    }
+
+    return { startStr: todayStr, endStr: todayStr, isRange: false };
+  };
+
+  // Returns TRUE if item should still be shown today, FALSE if expired
+  window.isNotificationStillValidToday = function(rawDateInput, optionalEndDate, graceDaysForSingle = 2) {
+    try {
+      const todayStr = getISTDateString();
+      const { startStr, endStr, isRange } = window.extractEndAndStartDates(rawDateInput, optionalEndDate);
+
+      const endParts = endStr.split("-").map(Number);
+      if (endParts.length !== 3 || isNaN(endParts[0])) return true;
+
+      // Target End Date at 00:00:00
+      const endDt = new Date(endParts[0], endParts[1] - 1, endParts[2]);
+      // Single-day request gets +2 days visibility (e.g., 24th -> visible till 26th);
+      // Multi-day range (e.g., 24th to 26th) is visible till max(EndDate, StartDate + 2 days)
+      const startParts = startStr.split("-").map(Number);
+      const startPlusTwo = new Date(startParts[0], startParts[1] - 1, startParts[2] + graceDaysForSingle);
+      const singlePlusTwo = new Date(endParts[0], endParts[1] - 1, endParts[2] + graceDaysForSingle);
+
+      const finalExpiryDt = isRange ? (endDt > startPlusTwo ? endDt : startPlusTwo) : singlePlusTwo;
+
+      const tParts = todayStr.split("-").map(Number);
+      const todayDt = new Date(tParts[0], tParts[1] - 1, tParts[2]);
+
+      return todayDt <= finalExpiryDt;
+    } catch (e) {
+      return true;
+    }
+  };
+
+  // Manual 1-Tap Dismiss Helper for Top Status Badges
+  window.dismissTopBadgeByUser = function(badgeId, itemKey) {
+    if (typeof triggerHaptic === "function") triggerHaptic(15);
+    const el = document.getElementById(badgeId);
+    if (el) el.style.display = "none";
+    if (badgeId === "leaveStatusBadge") localStorage.removeItem("aa_badge_html");
+    if (itemKey) localStorage.setItem("aa_dismissed_badge_" + itemKey, "true");
+  };
+
+  function attachDismissButtonToBadge(badgeId, uniqueKey) {
+    const el = document.getElementById(badgeId);
+    if (!el || el.style.display === "none") return;
+    if (uniqueKey && localStorage.getItem("aa_dismissed_badge_" + uniqueKey) === "true") {
+      el.style.display = "none";
+      if (badgeId === "leaveStatusBadge") localStorage.removeItem("aa_badge_html");
+      return;
+    }
+    if (!el.querySelector(".badge-dismiss-x")) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "badge-dismiss-x";
+      btn.title = "Hide Notification";
+      btn.innerHTML = "&times;";
+      btn.onclick = (ev) => {
+        ev.stopPropagation();
+        window.dismissTopBadgeByUser(badgeId, uniqueKey);
+      };
+      el.appendChild(btn);
+    }
+  }
+
+  // Clear stale cached leave badge immediately on startup if expired
+  (function purgeExpiredCachedLeaveBadgeOnStartup() {
+    const cachedHtml = localStorage.getItem("aa_badge_html") || "";
+    if (cachedHtml) {
+      if (!window.isNotificationStillValidToday(cachedHtml, null, 2)) {
+        localStorage.removeItem("aa_badge_html");
+        localStorage.removeItem("aa_badge_cls");
+        const lb = document.getElementById("leaveStatusBadge");
+        if (lb) lb.style.display = "none";
+      }
+    }
+  })();
+
+  // 1. Wrap Employee Top Badge Renderers with Date-Expiry Check
+  if (typeof window.renderLeaveBadge === "function") {
+    const _origRenderLeave = window.renderLeaveBadge;
+    window.renderLeaveBadge = function(leaveInfo) {
+      if (leaveInfo && !window.isNotificationStillValidToday(leaveInfo.dates || leaveInfo.startDate, leaveInfo.endDate, 2)) {
+        leaveInfo = null;
+      }
+      _origRenderLeave(leaveInfo);
+      if (leaveInfo) {
+        const key = "LV_" + (leaveInfo.dates || leaveInfo.startDate) + "_" + leaveInfo.status;
+        attachDismissButtonToBadge("leaveStatusBadge", key);
+      }
+    };
+  }
+
+  if (typeof window.renderRegBadge === "function") {
+    const _origRenderReg = window.renderRegBadge;
+    window.renderRegBadge = function(regInfo) {
+      if (regInfo && !window.isNotificationStillValidToday(regInfo.date, null, 2)) {
+        regInfo = null;
+      }
+      _origRenderReg(regInfo);
+      if (regInfo) attachDismissButtonToBadge("regStatusBadge", "RG_" + regInfo.date + "_" + regInfo.status);
+    };
+  }
+
+  if (typeof window.renderOtBadge === "function") {
+    const _origRenderOt = window.renderOtBadge;
+    window.renderOtBadge = function(otInfo) {
+      if (otInfo && !window.isNotificationStillValidToday(otInfo.dutyDate, null, 2)) {
+        otInfo = null;
+      }
+      _origRenderOt(otInfo);
+      if (otInfo) attachDismissButtonToBadge("otStatusBadge", "OT_" + otInfo.dutyDate + "_" + otInfo.status);
+    };
+  }
+
+  if (typeof window.renderIssueBadge === "function") {
+    const _origRenderIssue = window.renderIssueBadge;
+    window.renderIssueBadge = function(issueInfo) {
+      if (issueInfo && !window.isNotificationStillValidToday(issueInfo.date, null, 2)) {
+        issueInfo = null;
+      }
+      _origRenderIssue(issueInfo);
+      if (issueInfo) attachDismissButtonToBadge("issueStatusBadge", "ISS_" + (issueInfo.id || issueInfo.date) + "_" + issueInfo.status);
+    };
+  }
+
+  if (typeof window.renderGatePassStatusBadge === "function") {
+    const _origRenderGp = window.renderGatePassStatusBadge;
+    window.renderGatePassStatusBadge = function(gp) {
+      if (gp && !window.isNotificationStillValidToday(gp.date, null, 2)) {
+        gp = null;
+      }
+      _origRenderGp(gp);
+      if (gp) attachDismissButtonToBadge("gatePassStatusBadge", "GP_" + (gp.id || gp.date) + "_" + gp.status);
+    };
+  }
+
+  if (typeof window.renderSalaryAdvanceBadge === "function") {
+    const _origRenderSa = window.renderSalaryAdvanceBadge;
+    window.renderSalaryAdvanceBadge = function(sa) {
+      if (sa && !window.isNotificationStillValidToday(sa.date, null, 2)) {
+        sa = null;
+      }
+      _origRenderSa(sa);
+      if (sa) attachDismissButtonToBadge("salaryAdvanceStatusBadge", "SA_" + (sa.id || sa.date) + "_" + sa.status);
+    };
+  }
+
+  if (typeof window.renderSiteExpenseBadge === "function") {
+    const _origRenderSe = window.renderSiteExpenseBadge;
+    window.renderSiteExpenseBadge = function(exp) {
+      if (exp && !window.isNotificationStillValidToday(exp.date, null, 2)) {
+        exp = null;
+      }
+      _origRenderSe(exp);
+      if (exp) attachDismissButtonToBadge("siteExpenseStatusBadge", "SE_" + (exp.id || exp.date) + "_" + exp.status);
+    };
+  }
+
+  if (typeof window.renderIncomingHandoversInbox === "function") {
+    const _origRenderHoInbox = window.renderIncomingHandoversInbox;
+    window.renderIncomingHandoversInbox = function() {
+      if (catAState && Array.isArray(catAState.incomingHandovers)) {
+        catAState.incomingHandovers = catAState.incomingHandovers.filter(h => window.isNotificationStillValidToday(h.date, null, 2));
+      }
+      _origRenderHoInbox();
+    };
+  }
+
+  if (typeof window.renderMyUncollectedParcelsInbox === "function") {
+    const _origRenderParcelInbox = window.renderMyUncollectedParcelsInbox;
+    window.renderMyUncollectedParcelsInbox = function() {
+      if (catHState && Array.isArray(catHState.myUncollectedParcels)) {
+        catHState.myUncollectedParcels = catHState.myUncollectedParcels.filter(p => window.isNotificationStillValidToday(p.date, null, 2));
+      }
+      _origRenderParcelInbox();
+    };
+  }
+
+  if (typeof window.renderDrawingRevBannerAndModal === "function") {
+    const _origRenderDrw = window.renderDrawingRevBannerAndModal;
+    window.renderDrawingRevBannerAndModal = function() {
+      if (catGState && Array.isArray(catGState.activeDrawingAlerts)) {
+        catGState.activeDrawingAlerts = catGState.activeDrawingAlerts.filter(a => window.isNotificationStillValidToday(a.date, null, 2));
+      }
+      _origRenderDrw();
+    };
+  }
+
+  // 2. Wrap Manager Sumeet Singh's Command Center Renderers so Expired Items Disappear Automatically
+  function wrapManagerListWithExpiry(fnName, dateField, optEndField) {
+    if (typeof window[fnName] === "function") {
+      const _origFn = window[fnName];
+      window[fnName] = function(list, ...rest) {
+        const activeList = Array.isArray(list)
+          ? list.filter(item => window.isNotificationStillValidToday(item[dateField] || item.date || item.time, optEndField ? item[optEndField] : null, 2))
+          : [];
+        return _origFn(activeList, ...rest);
+      };
+    }
+  }
+
+  wrapManagerListWithExpiry("renderManagerSiteExpenses", "date");
+  wrapManagerListWithExpiry("renderManagerMaterialAlerts", "date");
+  wrapManagerListWithExpiry("renderManagerHandovers", "date");
+  wrapManagerListWithExpiry("renderManagerGatePassesList", "date");
+  wrapManagerListWithExpiry("renderManagerKaizensList", "date");
+  wrapManagerListWithExpiry("renderManagerSalaryAdvancesList", "date");
+  wrapManagerListWithExpiry("renderManagerSosList", "time");
+  wrapManagerListWithExpiry("renderManagerSiteSelfiesList", "time");
+  wrapManagerListWithExpiry("renderManagerWalkieMemos", "time");
+  wrapManagerListWithExpiry("renderManagerPreFatList", "time");
+  wrapManagerListWithExpiry("renderManagerDrawingAlertsUI", "date");
+  wrapManagerListWithExpiry("renderManagerSpoofAlertsUI", "time");
+</script>
+
 </body>
 </html>
