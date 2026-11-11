@@ -11410,5 +11410,80 @@
   wrapManagerListWithExpiry("renderManagerSpoofAlertsUI", "time");
 </script>
 
+<!-- ===================================================================== -->
+<!-- 🛡️ 11,400-LINE ANTI-CRASH SHIELD & DUPLICATE DOM CLEANER (v25 FINAL)  -->
+<!-- Paste right before </body> in index.html                              -->
+<!-- ===================================================================== -->
+<script>
+  (function initMasterAntiCrashShield() {
+    // 1. Global Error & Promise Shield so a minor glitch never freezes the app
+    window.addEventListener("error", function(e) {
+      console.warn("Aryavarta Shield caught error:", e.message);
+      if (typeof setPunchButtonsDisabled === "function") setPunchButtonsDisabled(false);
+    });
+    window.addEventListener("unhandledrejection", function(e) {
+      console.warn("Aryavarta Shield caught promise rejection:", e.reason);
+      if (typeof setPunchButtonsDisabled === "function") setPunchButtonsDisabled(false);
+    });
+
+    // 2. Safe localStorage Quota Guard (Prevents 5MB QuotaExceededError from wiping login)
+    try {
+      const _origSetItem = Storage.prototype.setItem;
+      Storage.prototype.setItem = function(key, val) {
+        try {
+          _origSetItem.call(this, key, val);
+        } catch (eQuota) {
+          // Clear heavy calendar/status cache while preserving login phone & name!
+          const keepPhone = localStorage.getItem("aa_user_phone");
+          const keepName  = localStorage.getItem("aa_user_name");
+          const keepPin   = localStorage.getItem("aa_mgr_pin");
+          localStorage.clear();
+          if (keepPhone) _origSetItem.call(this, "aa_user_phone", keepPhone);
+          if (keepName)  _origSetItem.call(this, "aa_user_name", keepName);
+          if (keepPin)   _origSetItem.call(this, "aa_mgr_pin", keepPin);
+          try { _origSetItem.call(this, key, val); } catch (e2) {}
+        }
+      };
+    } catch (eStorage) {}
+
+    // 3. Automatic Duplicate DOM ID & Super-Tile Deduplicator (For 11,000+ Line HTML Files)
+    function deduplicateDomElements() {
+      try {
+        const seenModalIds = new Set();
+        document.querySelectorAll(".modal[id]").forEach(modalEl => {
+          if (seenModalIds.has(modalEl.id)) {
+            modalEl.remove();
+          } else {
+            seenModalIds.add(modalEl.id);
+          }
+        });
+
+        const superGrid = document.querySelector(".super-app-grid");
+        if (superGrid) {
+          const seenTileLabels = new Set();
+          Array.from(superGrid.querySelectorAll(".super-tile")).forEach(tile => {
+            const lbl = (tile.innerText || "").trim();
+            if (seenTileLabels.has(lbl)) {
+              tile.remove();
+            } else {
+              seenTileLabels.add(lbl);
+            }
+          });
+          const titleSpan = document.querySelector(".super-grid-title span:last-child");
+          if (titleSpan) {
+            titleSpan.innerText = `${superGrid.querySelectorAll(".super-tile").length} Mini-Portals`;
+          }
+        }
+      } catch (eDedup) {}
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => setTimeout(deduplicateDomElements, 200));
+    } else {
+      setTimeout(deduplicateDomElements, 200);
+    }
+  })();
+</script>
+
 </body>
 </html>
