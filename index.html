@@ -11486,36 +11486,35 @@
 </script>
 
 <!-- ===================================================================== -->
-<!-- 🛡️ EVENING MISSED-PUNCH GUARD & FAKE-GPS CLIENT SHIELD (v26 FINAL)    -->
+<!-- 🛡️ v26 CLIENT SHIELD: SYNC LOCK, EVENING GUARD & FAKE-GPS BLOCKER     -->
 <!-- Paste right before </body> in index.html                              -->
 <!-- ===================================================================== -->
 <script>
-  (function enableEveningMissedPunchAndFakeGpsGuard() {
-    // 1. Prevent "0 hrs worked" when someone forgot morning Clock-In and taps Clock-In at 5:30 PM
+  (function enableV26ClientAttendanceShield() {
     if (typeof window.handlePunch === "function") {
       const _origHandlePunchV26 = window.handlePunch;
       window.handlePunch = function(punchType) {
         const nowHr = new Date().getHours();
         const mode = document.getElementById("workMode") ? document.getElementById("workMode").value : "Office";
 
-        // If it's after 4:30 PM (16:30) in Office mode and they are trying to Clock In for the first time today
-        if (punchType === "Clock In" && mode === "Office" && nowHr >= 16) {
-          const openMissedPunchInstead = confirm(
-            "⚠️ ध्यान दें (Evening Clock-In Alert):\n\n" +
-            "अभी शाम के 4:00 PM से अधिक हो चुके हैं। यदि आप सुबह Clock-In करना भूल गए थे और अभी घर जाते समय Clock-In/Out करेंगे, तो आपके केवल '0 hrs worked' दर्ज होंगे!\n\n" +
-            "👉 क्या आप इसके बजाय '🛠️ Missed Punch (Regularization)' फॉर्म खोलना चाहते हैं ताकि आपके पूरे दिन (9:30 AM - 6:00 PM) के 8.5 घंटे दर्ज हों?\n\n" +
-            "(OK = Missed Punch फॉर्म खोलें | Cancel = अभी नई शिफ्ट Clock-In करें)"
-          );
-          if (openMissedPunchInstead) {
-            if (typeof openRegModal === "function") openRegModal();
+        // 1. Block Fake GPS / Mock Location outside India
+        if (warmGPS && warmGPS.lat && warmGPS.lon) {
+          if (warmGPS.lat < 6.0 || warmGPS.lat > 38.0 || warmGPS.lon < 68.0 || warmGPS.lon > 98.0) {
+            alert("🚨 Fake GPS / Mock Location Detected!\n\nआपके फोन की लोकेशन भारत से बाहर दिख रही है। कृपया कोई भी Mock GPS या VPN ऐप बंद करें और पुनः प्रयास करें।");
             return;
           }
         }
 
-        // 2. Client-Side India GPS Bounding-Box Check (Blocks Fake GPS apps outside India)
-        if (warmGPS && warmGPS.lat && warmGPS.lon) {
-          if (warmGPS.lat < 6.0 || warmGPS.lat > 38.0 || warmGPS.lon < 68.0 || warmGPS.lon > 98.0) {
-            alert("🚨 Fake GPS / Mock Location Detected!\n\nआपके फोन की लोकेशन भारत से बाहर दिख रही है। कृपया कोई भी Mock GPS या VPN ऐप बंद करें और पुनः प्रयास करें।");
+        // 2. Prevent "0 hrs worked" when someone forgot morning Clock-In and taps Clock-In after 4:00 PM
+        if (punchType === "Clock In" && mode === "Office" && nowHr >= 16) {
+          const openMissedPunchInstead = confirm(
+            "⚠️ ध्यान दें (Evening Clock-In Alert):\n\n" +
+            "अभी शाम के 4:00 PM से अधिक हो चुके हैं। यदि आप सुबह Clock-In करना भूल गए थे और अभी घर जाते समय Clock-In/Out करेंगे, तो आपके केवल '0 hrs worked' दर्ज होंगे!\n\n" +
+            "👉 क्या आप इसके बजाय '🛠️ Missed Punch (Regularization)' फॉर्म खोलना चाहते हैं ताकि आपके पूरे दिन के 8.5 घंटे दर्ज हों?\n\n" +
+            "(OK = Missed Punch फॉर्म खोलें | Cancel = अभी नई शिफ्ट Clock-In करें)"
+          );
+          if (openMissedPunchInstead) {
+            if (typeof openRegModal === "function") openRegModal();
             return;
           }
         }
