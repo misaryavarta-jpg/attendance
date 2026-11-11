@@ -11525,5 +11525,50 @@
   })();
 </script>
 
+<!-- ===================================================================== -->
+<!-- 🇮🇳 v27 TRUE IST MIDNIGHT DATE FIX & LIVE STATUS SYNC (BEFORE </body>) -->
+<!-- Fixes 12:00 AM - 5:30 AM IST date mismatch & syncs COMPLETED state    -->
+<!-- ===================================================================== -->
+<script>
+  // 1. True IST Date String (Always returns exact Asia/Kolkata YYYY-MM-DD, even at 12:01 AM IST!)
+  window.getISTDateString = function(d = new Date()) {
+    const istEpoch = d.getTime() + (5.5 * 60 * 60 * 1000);
+    const istDate = new Date(istEpoch);
+    const yyyy = istDate.getUTCFullYear();
+    const mm = String(istDate.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(istDate.getUTCDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  // 2. Re-sync immediately with the True IST Date so COMPLETED status shows right away
+  window.addEventListener("load", function() {
+    const trueTodayIST = window.getISTDateString();
+    const savedPhone = localStorage.getItem("aa_user_phone");
+    if (savedPhone && savedPhone.length === 10) {
+      const url = `${SCRIPT_URL}?action=checkStatus&phone=${encodeURIComponent(savedPhone)}&name=${encodeURIComponent(currentEmp.name || "")}&month=${calDate.getMonth() + 1}&year=${calDate.getFullYear()}&_t=${Date.now()}`;
+      fetch(url, { method: "GET", redirect: "follow" })
+        .then(r => r.json())
+        .then(res => {
+          if (res && res.status) {
+            localStorage.setItem("aa_duty_date", trueTodayIST);
+            localStorage.setItem("aa_duty_status", res.status);
+            if (res.clockInTime) localStorage.setItem("aa_clockin_iso", res.clockInTime);
+            renderDutyButtons(res.status, res.clockInTime, new Date().getDay() === 0, false);
+
+            if (res.calendarHistory && res.calendarHistory[trueTodayIST]) {
+              const todayEntry = res.calendarHistory[trueTodayIST];
+              const tlBox = document.getElementById("todayTimelineBox");
+              if (tlBox && todayEntry.punches && todayEntry.punches.length > 0) {
+                tlBox.style.display = "block";
+                tlBox.innerHTML = `<b>📌 आज का रिकॉर्ड (${trueTodayIST}):</b><br>` + todayEntry.punches.join(" &bull; ");
+              }
+            }
+          }
+        })
+        .catch(() => {});
+    }
+  });
+</script>
+
 </body>
 </html>
