@@ -11526,11 +11526,202 @@
 </script>
 
 <!-- ===================================================================== -->
-<!-- 🇮🇳 v27 TRUE IST MIDNIGHT DATE FIX & LIVE STATUS SYNC (BEFORE </body>) -->
-<!-- Fixes 12:00 AM - 5:30 AM IST date mismatch & syncs COMPLETED state    -->
+<!-- 🚀 ARYAVARTA v27 MIRACLE EDITION UPGRADE PACK (PASTE BEFORE </body>)  -->
+<!-- 1. True-IST Midnight Date Fix & "Undo Clock-Out / Resume Shift"       -->
+<!-- 2. ⚡ Electrical Panel Calculator (Motor Feeder, Busbar & APFC kVAR)  -->
+<!-- 3. 👥 Live Team Whereabouts Radar (Office / Site / WFH Directory)     -->
+<!-- 4. 🗂️ Super-App Category Filter Pills & Instant Search Bar            -->
+<!-- 5. 🤖 "Hey Aryavarta" Voice Command Assistant                         -->
+<!-- 6. 👑 Sumeet Sir's 1-Tap Company Master Payroll PDF Sheet Generator   -->
 <!-- ===================================================================== -->
+<style>
+  .super-filter-bar {
+    display: flex;
+    gap: 5px;
+    overflow-x: auto;
+    padding: 4px 2px 8px 2px;
+    margin-bottom: 6px;
+    scrollbar-width: none;
+  }
+  .super-filter-bar::-webkit-scrollbar { display: none; }
+  .super-cat-pill {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 6px 11px;
+    border-radius: 18px;
+    background: #f1f5f9;
+    color: #334155;
+    border: 1.5px solid #cbd5e1;
+    cursor: pointer;
+    user-select: none;
+  }
+  .super-cat-pill.active {
+    background: #1e3a8a;
+    color: #fff;
+    border-color: #1e3a8a;
+  }
+  .calc-res-card {
+    background: linear-gradient(135deg, #0f172a, #1e3a8a);
+    color: #fff;
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-top: 8px;
+    font-size: 12.2px;
+    line-height: 1.55;
+  }
+  .calc-res-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+    margin-top: 8px;
+  }
+  .calc-res-box {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 9px;
+    padding: 7px 9px;
+  }
+  .calc-res-box .k { font-size: 10px; color: #93c5fd; font-weight: 700; text-transform: uppercase; }
+  .calc-res-box .v { font-size: 13.5px; color: #38bdf8; font-weight: 900; margin-top: 2px; }
+  #btnResumeShiftToday {
+    display: none;
+    background: linear-gradient(135deg, #0284c7, #1e3a8a);
+    margin-top: 8px;
+    font-size: 13px;
+    padding: 11px 12px;
+  }
+</style>
+
+<!-- ⚡ 1. Electrical & Panel Engineering Calculator Modal -->
+<div id="panelCalcModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>⚡ Panel & Motor Engineering Calc</h3>
+      <span class="close-btn" onclick="document.getElementById('panelCalcModal').style.display='none'">&times;</span>
+    </div>
+
+    <div class="super-filter-bar" style="margin-bottom:10px;">
+      <span class="super-cat-pill active" id="tabBtnMotor" onclick="switchCalcTab('motor')">⚙️ Motor Feeder</span>
+      <span class="super-cat-pill" id="tabBtnBusbar" onclick="switchCalcTab('busbar')">📏 Busbar Amps</span>
+      <span class="super-cat-pill" id="tabBtnApfc" onclick="switchCalcTab('apfc')">🔋 APFC kVAR</span>
+    </div>
+
+    <!-- Tab A: 3-Phase Motor Feeder Wizard -->
+    <div id="calcTabMotor">
+      <p style="font-size:11px; color:#475569; margin-bottom:8px;">
+        415V 3-Phase इंडक्शन मोटर के लिए FLC Amps, MCB/MCCB, Contactor, OLR और केबल साइज तुरंत निकालें:
+      </p>
+      <div class="btn-grid-2">
+        <div>
+          <label>मोटर क्षमता (Motor Rating):</label>
+          <input type="number" id="mcPowerVal" value="15" min="0.37" step="0.5" oninput="runMotorFeederCalc()">
+        </div>
+        <div>
+          <label>इकाई चुनें (Unit):</label>
+          <select id="mcPowerUnit" onchange="runMotorFeederCalc()">
+            <option value="kW">kW (Kilowatt)</option>
+            <option value="HP">HP (Horsepower)</option>
+          </select>
+        </div>
+      </div>
+      <div id="motorCalcResultBox" class="calc-res-card"></div>
+    </div>
+
+    <!-- Tab B: Copper / Aluminum Busbar Ampacity Calculator -->
+    <div id="calcTabBusbar" style="display:none;">
+      <p style="font-size:11px; color:#475569; margin-bottom:8px;">
+        पैनल बसबार (Copper / Aluminum) की चौड़ाई और मोटाई से सुरक्षित करंट क्षमता (Amps) जानें:
+      </p>
+      <label>बसबार धातु (Material):</label>
+      <select id="bbMaterial" onchange="runBusbarCalc()">
+        <option value="Cu">🟧 Electrolytic Copper (तांबा - Cu)</option>
+        <option value="Al">⬜ Aluminum Alloy (एल्यूमीनियम - Al)</option>
+      </select>
+      <div class="btn-grid-2">
+        <div>
+          <label>चौड़ाई Width (mm):</label>
+          <select id="bbWidth" onchange="runBusbarCalc()">
+            <option value="20">20 mm</option>
+            <option value="25">25 mm</option>
+            <option value="30">30 mm</option>
+            <option value="40">40 mm</option>
+            <option value="50" selected>50 mm</option>
+            <option value="60">60 mm</option>
+            <option value="80">80 mm</option>
+            <option value="100">100 mm</option>
+          </select>
+        </div>
+        <div>
+          <label>मोटाई Thickness (mm):</label>
+          <select id="bbThick" onchange="runBusbarCalc()">
+            <option value="3">3 mm</option>
+            <option value="5">5 mm</option>
+            <option value="6" selected>6 mm</option>
+            <option value="10">10 mm</option>
+          </select>
+        </div>
+      </div>
+      <label>प्रति फेज पट्टियाँ (Runs per Phase):</label>
+      <select id="bbRuns" onchange="runBusbarCalc()">
+        <option value="1" selected>1 Run per Phase (Single Strip)</option>
+        <option value="2">2 Runs per Phase (Double Strip)</option>
+      </select>
+      <div id="busbarCalcResultBox" class="calc-res-card"></div>
+    </div>
+
+    <!-- Tab C: APFC Capacitor Bank kVAR Calculator -->
+    <div id="calcTabApfc" style="display:none;">
+      <p style="font-size:11px; color:#475569; margin-bottom:8px;">
+        पावर फैक्टर (PF) को 0.99 तक सुधारने के लिए आवश्यक APFC Capacitor kVAR की गणना करें:
+      </p>
+      <label>कुल सक्रिय लोड (Active Load in kW):</label>
+      <input type="number" id="apfcKw" value="100" min="5" oninput="runApfcCalc()">
+      <div class="btn-grid-2">
+        <div>
+          <label>वर्तमान PF (Existing PF):</label>
+          <input type="number" id="apfcCurPf" value="0.78" min="0.50" max="0.98" step="0.01" oninput="runApfcCalc()">
+        </div>
+        <div>
+          <label>लक्ष्य PF (Target PF):</label>
+          <input type="number" id="apfcTarPf" value="0.99" min="0.90" max="1.0" step="0.01" oninput="runApfcCalc()">
+        </div>
+      </div>
+      <div id="apfcCalcResultBox" class="calc-res-card"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 👥 2. Live Team Whereabouts Radar Modal (Public Floor & Site Directory) -->
+<div id="teamRadarModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>👥 Live Team Whereabouts Radar</h3>
+      <span class="close-btn" onclick="document.getElementById('teamRadarModal').style.display='none'">&times;</span>
+    </div>
+    <p style="font-size:11.5px; color:#475569; margin-bottom:8px;">
+      आज कौन-सा इंजीनियर Chikhali Office में है, कौन किस Client Site पर है, और कौन WFH पर है — सीधे समन्वय (Call/WhatsApp) करें:
+    </p>
+
+    <div class="cal-kpi-bar" style="margin-bottom:10px;">
+      <div class="cal-kpi"><div class="v" id="trCountOffice" style="color:#1e3a8a;">0</div><div class="k">🏢 At HO Office</div></div>
+      <div class="cal-kpi"><div class="v" id="trCountSite" style="color:#0284c7;">0</div><div class="k">🚚 At Client Site</div></div>
+      <div class="cal-kpi"><div class="v" id="trCountWfh" style="color:#d97706;">0</div><div class="k">🏠 On WFH</div></div>
+    </div>
+
+    <input type="text" id="trSearchInput" placeholder="🔍 सहकर्मी या साइट का नाम खोजें..." oninput="renderPublicTeamRadarList()" style="margin-bottom:8px;">
+    <div id="publicTeamRadarBox" style="max-height:330px; overflow-y:auto; font-size:12px; color:#64748b;">
+      🔄 टीम की लाइव स्थिति लोड हो रही है...
+    </div>
+  </div>
+</div>
+
 <script>
-  // 1. True IST Date String (Always returns exact Asia/Kolkata YYYY-MM-DD, even at 12:01 AM IST!)
+  let publicTeamRadarCache = [];
+
+  // =========================================================================
+  // 1. TRUE IST MIDNIGHT DATE FIX (SOLVES 12:00 AM - 5:30 AM UTC BUG!)
+  // =========================================================================
   window.getISTDateString = function(d = new Date()) {
     const istEpoch = d.getTime() + (5.5 * 60 * 60 * 1000);
     const istDate = new Date(istEpoch);
@@ -11540,8 +11731,446 @@
     return `${yyyy}-${mm}-${dd}`;
   };
 
-  // 2. Re-sync immediately with the True IST Date so COMPLETED status shows right away
+  // =========================================================================
+  // 2. "UNDO ACCIDENTAL CLOCK-OUT / RESUME TODAY'S SHIFT" ENGINE
+  // =========================================================================
+  function injectResumeShiftButtonAndSuperUpgrades() {
+    // A. Inject "🔄 Undo Clock-Out / Resume Shift" button below punchButtons
+    const punchStack = document.getElementById("punchButtons");
+    if (punchStack && !document.getElementById("btnResumeShiftToday")) {
+      const resBtn = document.createElement("button");
+      resBtn.type = "button";
+      resBtn.id = "btnResumeShiftToday";
+      resBtn.className = "btn";
+      resBtn.innerHTML = "🔄 Undo Clock-Out / Resume Today's Shift";
+      resBtn.onclick = undoAccidentalClockOutToday;
+      punchStack.appendChild(resBtn);
+    }
+
+    // Hook renderDutyButtons so COMPLETED state shows the Resume/Undo button
+    if (typeof window.renderDutyButtons === "function" && !window._renderDutyHookedV27) {
+      const _origRenderDuty = window.renderDutyButtons;
+      window.renderDutyButtons = function(status, clockInTime, isSunday, shouldSpeak) {
+        _origRenderDuty(status, clockInTime, isSunday, shouldSpeak);
+        const resumeBtn = document.getElementById("btnResumeShiftToday");
+        if (resumeBtn) {
+          resumeBtn.style.display = (status === "COMPLETED") ? "flex" : "none";
+        }
+      };
+      window._renderDutyHookedV27 = true;
+    }
+
+    // B. Inject Category Filter Pills & Search Bar above Super-App Grid
+    const superWrap = document.getElementById("superAppLauncherGrid");
+    const superGrid = document.querySelector(".super-app-grid");
+    if (superWrap && superGrid && !document.getElementById("superGridSearchInput")) {
+      // Add new tiles for ⚡ Panel Calc, 👥 Team Radar & 🤖 Voice Assistant
+      if (!document.getElementById("tilePanelCalc")) {
+        superGrid.insertAdjacentHTML("afterbegin", `
+          <div class="super-tile" id="tilePanelCalc" onclick="openPanelCalcModal()">
+            <div class="ico" style="background:#fef3c7;color:#d97706;">⚡</div>
+            <div class="lbl">Panel Calc</div>
+          </div>
+          <div class="super-tile" id="tileTeamRadar" onclick="openTeamRadarModal()">
+            <div class="ico" style="background:#e0f2fe;color:#0284c7;">👥</div>
+            <div class="lbl">Team Radar</div>
+          </div>
+          <div class="super-tile" id="tileVoiceAssistant" onclick="startHeyAryavartaVoiceAssistant()">
+            <div class="ico" style="background:#fce7f3;color:#db2777;">🤖</div>
+            <div class="lbl">Voice Cmd</div>
+          </div>
+        `);
+      }
+
+      const filterHtml = `
+        <input type="text" id="superGridSearchInput" placeholder="🔍 Search 29 Mini-Portals (e.g. Leave, Calc, Gate, Tool, Slip)..." oninput="filterSuperAppTiles()" style="margin-bottom:6px; padding:9px 12px; font-size:12.5px;">
+        <div class="super-filter-bar">
+          <span class="super-cat-pill active" onclick="selectSuperCategory('ALL', this)">🌟 All</span>
+          <span class="super-cat-pill" onclick="selectSuperCategory('HR', this)">🕒 HR & Leave</span>
+          <span class="super-cat-pill" onclick="selectSuperCategory('SHOP', this)">⚡ Shopfloor & FAT</span>
+          <span class="super-cat-pill" onclick="selectSuperCategory('SITE', this)">🚚 Site & Tools</span>
+          <span class="super-cat-pill" onclick="selectSuperCategory('TECH', this)">🧮 Smart Tech</span>
+        </div>
+      `;
+      superGrid.insertAdjacentHTML("beforebegin", filterHtml);
+
+      const titleSpan = document.querySelector(".super-grid-title span:last-child");
+      if (titleSpan) {
+        titleSpan.innerText = `${superGrid.querySelectorAll(".super-tile").length} Mini-Portals`;
+      }
+    }
+
+    // C. Inject Sumeet Sir's 1-Tap Master Company Payroll PDF Button in Command Center
+    const mgrSyncBtn = document.getElementById("btnSyncSheetsMgr");
+    if (mgrSyncBtn && !document.getElementById("btnMgrMasterPayrollPdf")) {
+      const payBtn = document.createElement("button");
+      payBtn.type = "button";
+      payBtn.id = "btnMgrMasterPayrollPdf";
+      payBtn.className = "btn btn-payslip";
+      payBtn.style.padding = "9px";
+      payBtn.style.fontSize = "12.5px";
+      payBtn.style.marginBottom = "10px";
+      payBtn.innerHTML = "📊 Print / Export All-Staff Monthly Payroll Master PDF";
+      payBtn.onclick = exportCompanyMasterPayrollAsSumeet;
+      mgrSyncBtn.insertAdjacentElement("afterend", payBtn);
+    }
+  }
+
+  async function undoAccidentalClockOutToday() {
+    if (!confirm("🔄 क्या आप आज के Clock-Out को रद्द करके अपनी ड्यूटी (Active Shift) पुनः चालू करना चाहते हैं?\n\n(इससे आपकी सुबह की Clock-In से पूरी शिफ्ट के घंटे जुड़ेंगे)")) {
+      return;
+    }
+    triggerHaptic([50, 30, 80]);
+    const todayIST = window.getISTDateString();
+    localStorage.setItem("aa_duty_date", todayIST);
+    localStorage.setItem("aa_duty_status", "WORKING");
+    renderDutyButtons("WORKING", localStorage.getItem("aa_clockin_iso") || new Date().toISOString(), new Date().getDay() === 0, false);
+    showMessage("✅ आपकी आज की शिफ्ट पुनः सक्रिय (WORKING) कर दी गई है!", "#059669");
+    speakHindi("आपकी आज की शिफ्ट पुनः चालू कर दी गई है।");
+
+    const url = `${SCRIPT_URL}?action=undoTodayClockOut&phone=${encodeURIComponent(currentEmp.phone)}&name=${encodeURIComponent(currentEmp.name)}&_t=${Date.now()}`;
+    try {
+      const r = await fetch(url, { method: "GET", redirect: "follow" });
+      const res = await r.json();
+      if (res && res.clockInTime) {
+        localStorage.setItem("aa_clockin_iso", res.clockInTime);
+        startShiftTimer(res.clockInTime);
+      }
+    } catch (e) {}
+  }
+
+  // =========================================================================
+  // 3. SUPER-APP CATEGORY FILTER PILLS & SEARCH ENGINE
+  // =========================================================================
+  let activeSuperCat = "ALL";
+  const TILE_CATEGORY_MAP = {
+    "HR": ["leave", "missed", "sunday", "gate pass", "salary", "issue", "passbook", "payslip", "digital id", "birthday", "emp of month"],
+    "SHOP": ["material", "handover", "wiring", "dispatch", "drawing", "kaizen", "fat", "tea", "courier", "visitor"],
+    "SITE": ["site", "tool", "safety", "voice memo", "spirit", "fault"],
+    "TECH": ["panel calc", "team radar", "voice cmd", "biometric", "alarm", "spirit", "fault"]
+  };
+
+  function selectSuperCategory(cat, pillEl) {
+    triggerHaptic(15);
+    activeSuperCat = cat;
+    document.querySelectorAll(".super-filter-bar .super-cat-pill").forEach(p => p.classList.remove("active"));
+    if (pillEl) pillEl.classList.add("active");
+    filterSuperAppTiles();
+  }
+
+  function filterSuperAppTiles() {
+    const q = (document.getElementById("superGridSearchInput") ? document.getElementById("superGridSearchInput").value : "").toLowerCase().trim();
+    const superGrid = document.querySelector(".super-app-grid");
+    if (!superGrid) return;
+
+    Array.from(superGrid.querySelectorAll(".super-tile")).forEach(tile => {
+      const text = (tile.innerText || "").toLowerCase();
+      let matchesCat = (activeSuperCat === "ALL");
+      if (!matchesCat && TILE_CATEGORY_MAP[activeSuperCat]) {
+        matchesCat = TILE_CATEGORY_MAP[activeSuperCat].some(k => text.includes(k));
+      }
+      const matchesQuery = !q || text.includes(q);
+      tile.style.display = (matchesCat && matchesQuery) ? "flex" : "none";
+    });
+  }
+
+  // =========================================================================
+  // 4. ⚡ ELECTRICAL PANEL & MOTOR FEEDER CALCULATOR SUITE
+  // =========================================================================
+  function openPanelCalcModal() {
+    triggerHaptic(15);
+    runMotorFeederCalc();
+    runBusbarCalc();
+    runApfcCalc();
+    document.getElementById("panelCalcModal").style.display = "flex";
+  }
+
+  function switchCalcTab(tab) {
+    triggerHaptic(15);
+    document.getElementById("calcTabMotor").style.display = (tab === "motor") ? "block" : "none";
+    document.getElementById("calcTabBusbar").style.display = (tab === "busbar") ? "block" : "none";
+    document.getElementById("calcTabApfc").style.display = (tab === "apfc") ? "block" : "none";
+
+    document.getElementById("tabBtnMotor").classList.toggle("active", tab === "motor");
+    document.getElementById("tabBtnBusbar").classList.toggle("active", tab === "busbar");
+    document.getElementById("tabBtnApfc").classList.toggle("active", tab === "apfc");
+  }
+
+  function runMotorFeederCalc() {
+    const val = parseFloat(document.getElementById("mcPowerVal").value) || 0;
+    const unit = document.getElementById("mcPowerUnit").value;
+    const kw = (unit === "HP") ? (val * 0.746) : val;
+    const hp = (unit === "kW") ? (val / 0.746) : val;
+
+    // 415V, 3-Phase, PF = 0.85, Eff = 0.89 -> ~1.85 Amps per kW
+    const flc = kw * 1.85;
+    const mcbStd = [6, 10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 630];
+    const contStd = [9, 12, 18, 25, 32, 40, 50, 65, 80, 95, 115, 150, 185, 225, 265, 330, 400];
+
+    const mcbRating = mcbStd.find(r => r >= flc * 1.6) || 630;
+    const dolCont = contStd.find(c => c >= flc * 1.15) || 400;
+    const sdMainDelta = contStd.find(c => c >= flc * 0.60) || 400;
+    const sdStar = contStd.find(c => c >= flc * 0.35) || 400;
+
+    const olrMin = (flc * 0.8).toFixed(1);
+    const olrMax = (flc * 1.1).toFixed(1);
+    const sdOlrMin = (flc * 0.58 * 0.85).toFixed(1);
+    const sdOlrMax = (flc * 0.58 * 1.1).toFixed(1);
+
+    let cableRec = "1.5 sq.mm Cu";
+    if (flc > 14 && flc <= 20) cableRec = "2.5 sq.mm Cu";
+    else if (flc > 20 && flc <= 28) cableRec = "4 sq.mm Cu / 6 Al";
+    else if (flc > 28 && flc <= 36) cableRec = "6 sq.mm Cu / 10 Al";
+    else if (flc > 36 && flc <= 50) cableRec = "10 sq.mm Cu / 16 Al";
+    else if (flc > 50 && flc <= 68) cableRec = "16 sq.mm Cu / 25 Al";
+    else if (flc > 68 && flc <= 88) cableRec = "25 sq.mm Cu / 35 Al";
+    else if (flc > 88 && flc <= 110) cableRec = "35 sq.mm Cu / 50 Al";
+    else if (flc > 110 && flc <= 145) cableRec = "50 sq.mm Cu / 70 Al";
+    else if (flc > 145) cableRec = "70+ sq.mm Cu / 120+ Al";
+
+    document.getElementById("motorCalcResultBox").innerHTML = `
+      <div style="font-weight:900; color:#fde047; font-size:13.5px;">
+        ⚡ ${kw.toFixed(2)} kW / ${hp.toFixed(1)} HP (415V 3-Ph Motor)
+      </div>
+      <div class="calc-res-grid">
+        <div class="calc-res-box"><div class="k">Full Load Current</div><div class="v">${flc.toFixed(1)} Amps</div></div>
+        <div class="calc-res-box"><div class="k">MCB / MCCB (160%)</div><div class="v">${mcbRating}A (${mcbRating > 63 ? "MCCB" : "MCB"})</div></div>
+        <div class="calc-res-box"><div class="k">DOL Contactor & OLR</div><div class="v">${dolCont}A (${olrMin}-${olrMax}A)</div></div>
+        <div class="calc-res-box"><div class="k">Star-Delta Contactors</div><div class="v">M/D:${sdMainDelta}A | S:${sdStar}A</div></div>
+        <div class="calc-res-box"><div class="k">Star-Delta OLR (Ph)</div><div class="v">${sdOlrMin} - ${sdOlrMax} A</div></div>
+        <div class="calc-res-box"><div class="k">Recommended Cable</div><div class="v">${cableRec}</div></div>
+      </div>
+    `;
+  }
+
+  function runBusbarCalc() {
+    const mat = document.getElementById("bbMaterial").value;
+    const w = parseInt(document.getElementById("bbWidth").value, 10) || 50;
+    const t = parseInt(document.getElementById("bbThick").value, 10) || 6;
+    const runs = parseInt(document.getElementById("bbRuns").value, 10) || 1;
+
+    const areaSqMm = w * t * runs;
+    // Standard enclosed panel current density: Cu ~ 1.6 A/sq.mm (single), Al ~ 1.0 A/sq.mm
+    const density = (mat === "Cu") ? 1.65 : 1.05;
+    const runFactor = (runs === 2) ? 0.88 : 1.0; // Proximity derating for 2 parallel strips
+    const safeAmps = Math.round(areaSqMm * density * runFactor);
+
+    document.getElementById("busbarCalcResultBox").innerHTML = `
+      <div style="font-weight:900; color:#fde047; font-size:13.5px;">
+        📏 ${runs}R x ${w}mm x ${t}mm ${mat === "Cu" ? "Copper (Cu)" : "Aluminum (Al)"}
+      </div>
+      <div class="calc-res-grid">
+        <div class="calc-res-box"><div class="k">Total Cross-Section</div><div class="v">${areaSqMm} sq.mm</div></div>
+        <div class="calc-res-box"><div class="k">Safe Panel Rating</div><div class="v" style="color:#4ade80;">${safeAmps} Amps</div></div>
+      </div>
+    `;
+  }
+
+  function runApfcCalc() {
+    const kw = parseFloat(document.getElementById("apfcKw").value) || 100;
+    const pf1 = Math.min(0.99, Math.max(0.4, parseFloat(document.getElementById("apfcCurPf").value) || 0.78));
+    const pf2 = Math.min(1.0, Math.max(pf1, parseFloat(document.getElementById("apfcTarPf").value) || 0.99));
+
+    const phi1 = Math.acos(pf1);
+    const phi2 = Math.acos(pf2);
+    const reqKvar = Math.max(0, kw * (Math.tan(phi1) - Math.tan(phi2)));
+    const capAmps = reqKvar * 1.39;
+
+    document.getElementById("apfcCalcResultBox").innerHTML = `
+      <div style="font-weight:900; color:#fde047; font-size:13.5px;">
+        🔋 PF Correction: ${pf1} &rarr; ${pf2} (at ${kw} kW Load)
+      </div>
+      <div class="calc-res-grid">
+        <div class="calc-res-box"><div class="k">Required APFC Bank</div><div class="v" style="color:#4ade80;">${Math.ceil(reqKvar)} kVAR</div></div>
+        <div class="calc-res-box"><div class="k">Capacitor Current</div><div class="v">${capAmps.toFixed(1)} Amps</div></div>
+      </div>
+    `;
+  }
+
+  // =========================================================================
+  // 5. 👥 LIVE TEAM WHEREABOUTS RADAR (PUBLIC FLOOR & SITE DIRECTORY)
+  // =========================================================================
+  function openTeamRadarModal() {
+    triggerHaptic(15);
+    document.getElementById("teamRadarModal").style.display = "flex";
+    renderPublicTeamRadarList();
+
+    const url = `${SCRIPT_URL}?action=getPublicTeamRadar&_t=${Date.now()}`;
+    fetch(url, { method: "GET", redirect: "follow" })
+      .then(r => r.json())
+      .then(res => {
+        if (res && Array.isArray(res.teamList)) {
+          publicTeamRadarCache = res.teamList;
+          renderPublicTeamRadarList();
+        }
+      })
+      .catch(() => {});
+  }
+
+  function renderPublicTeamRadarList() {
+    const box = document.getElementById("publicTeamRadarBox");
+    if (!box) return;
+    const q = (document.getElementById("trSearchInput") ? document.getElementById("trSearchInput").value : "").toLowerCase().trim();
+
+    let offCnt = 0, siteCnt = 0, wfhCnt = 0;
+    publicTeamRadarCache.forEach(m => {
+      const md = (m.mode || "").toLowerCase();
+      if (md.includes("site")) siteCnt++;
+      else if (md.includes("wfh")) wfhCnt++;
+      else offCnt++;
+    });
+
+    if (document.getElementById("trCountOffice")) {
+      document.getElementById("trCountOffice").innerText = offCnt;
+      document.getElementById("trCountSite").innerText = siteCnt;
+      document.getElementById("trCountWfh").innerText = wfhCnt;
+    }
+
+    const filtered = publicTeamRadarCache.filter(m =>
+      !q || m.name.toLowerCase().includes(q) || (m.mode || "").toLowerCase().includes(q) || (m.detail || "").toLowerCase().includes(q)
+    );
+
+    if (filtered.length === 0) {
+      box.innerHTML = "<div class='admin-list-item'>⚪ आज का लाइव टीम डेटा लोड हो रहा है या अभी कोई पंच दर्ज नहीं हुआ है।</div>";
+      return;
+    }
+
+    box.innerHTML = filtered.map(emp => {
+      const modeIcon = (emp.mode || "").toLowerCase().includes("site") ? "🚚" : ((emp.mode || "").toLowerCase().includes("wfh") ? "🏠" : "🏢");
+      const stCol = emp.status === "WORKING" ? "#059669" : (emp.status === "COMPLETED" ? "#2563eb" : "#d97706");
+      const callBtn = emp.phone ? `<a class="mini-act-btn" style="background:#0284c7;" href="tel:+91${emp.phone}">📞 Call</a>` : "";
+      const waBtn = emp.phone ? `<a class="mini-act-btn" style="background:#10b981;" href="https://wa.me/91${emp.phone}" target="_blank">💬 WA</a>` : "";
+      return `
+        <div class="admin-list-item">
+          <div>
+            <b>${modeIcon} ${emp.name}</b> <span style="font-size:10.5px;font-weight:800;color:${stCol};">[${emp.status}]</span><br>
+            <span style="font-size:11px;color:#475569;">📍 ${emp.mode}: ${emp.detail || "Regular"} (In: ${emp.inTime})</span>
+          </div>
+          <div style="display:flex;">${callBtn}${waBtn}</div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  // =========================================================================
+  // 6. 🤖 "HEY ARYAVARTA" VOICE COMMAND ASSISTANT
+  // =========================================================================
+  function startHeyAryavartaVoiceAssistant() {
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRec) {
+      return alert("🎙️ आपके ब्राउज़र में वॉइस असिस्टेंट उपलब्ध नहीं है।");
+    }
+    triggerHaptic([40, 30, 60]);
+    speakHindi("बोलिए, मैं आपकी क्या सहायता करूँ? जैसे क्लॉक इन, गेट पास, छुट्टी, कैलकुलेटर या टीम रडार।");
+
+    const rec = new SpeechRec();
+    rec.lang = "hi-IN";
+    rec.interimResults = false;
+    showMessage("🎙️ सुन रहा हूँ... बोलें: 'Clock In', 'Gate Pass', 'Leave', 'Calculator', 'Team Radar', 'Payslip', 'Torch'", "#db2777");
+
+    rec.onresult = (e) => {
+      const cmd = (e.results[0][0].transcript || "").toLowerCase();
+      showMessage(`🤖 कमांड पहचानी गई: "${cmd}"`, "#059669");
+
+      if (cmd.includes("clock in") || cmd.includes("क्लॉक इन") || cmd.includes("उपस्थिति")) {
+        handlePunch("Clock In");
+      } else if (cmd.includes("clock out") || cmd.includes("क्लॉक आउट") || cmd.includes("छुट्टी हो गई")) {
+        handlePunch("Clock Out");
+      } else if (cmd.includes("leave") || cmd.includes("छुट्टी") || cmd.includes("अवकाश")) {
+        openLeaveModal();
+      } else if (cmd.includes("gate") || cmd.includes("गेट पास") || cmd.includes("बाहर")) {
+        openGatePassModal();
+      } else if (cmd.includes("calc") || cmd.includes("कैलकुलेटर") || cmd.includes("मोटर") || cmd.includes("busbar")) {
+        openPanelCalcModal();
+      } else if (cmd.includes("team") || cmd.includes("टीम") || cmd.includes("कौन") || cmd.includes("radar")) {
+        openTeamRadarModal();
+      } else if (cmd.includes("slip") || cmd.includes("स्लिप") || cmd.includes("वेतन") || cmd.includes("salary")) {
+        openPayslipCertModal();
+      } else if (cmd.includes("torch") || cmd.includes("टॉर्च") || cmd.includes("level") || cmd.includes("लेवल")) {
+        openPanelUtilityModal();
+      } else if (cmd.includes("tool") || cmd.includes("टूल") || cmd.includes("मीटर")) {
+        openToolCustodyModal();
+      } else {
+        speakHindi("क्षमा करें, कृपया पुनः स्पष्ट कमांड बोलें।");
+      }
+    };
+    setTimeout(() => { try { rec.start(); } catch (err) {} }, 1200);
+  }
+
+  // =========================================================================
+  // 7. 👑 SUMEET SIR'S 1-TAP COMPANY-WIDE MASTER PAYROLL PDF GENERATOR
+  // =========================================================================
+  async function exportCompanyMasterPayrollAsSumeet() {
+    if (currentEmp.phone !== SUMEET_SINGH_PHONE) return alert("🔒 केवल Sumeet Singh जी के लिए।");
+    triggerHaptic(25);
+    const btn = document.getElementById("btnMgrMasterPayrollPdf");
+    btn.disabled = true;
+    btn.innerText = "⏳ मास्टर पेरोल रिपोर्ट तैयार हो रही है...";
+
+    try {
+      const mgrPin = localStorage.getItem("aa_mgr_pin") || "";
+      const url = `${SCRIPT_URL}?action=getCompanyPayrollMaster&phone=${encodeURIComponent(currentEmp.phone)}&pin=${encodeURIComponent(mgrPin)}&_t=${Date.now()}`;
+      const r = await fetch(url, { method: "GET", redirect: "follow" });
+      const res = await r.json();
+      btn.disabled = false;
+      btn.innerText = "📊 Print / Export All-Staff Monthly Payroll Master PDF";
+
+      if (!res || !Array.isArray(res.payrollRows)) {
+        return alert("⚠️ पहले 'Sync, Clean & Repair' बटन दबाएं।");
+      }
+
+      const rowsHtml = res.payrollRows.map((row, idx) => `
+        <tr>
+          <td>${idx + 1}</td>
+          <td><b>${row.name}</b></td>
+          <td>+91 ${row.phone}</td>
+          <td>${row.present}d</td>
+          <td>${row.halfDays}</td>
+          <td>${row.hours}h</td>
+          <td style="color:#059669;font-weight:bold;">${row.overtime}h</td>
+          <td style="color:#dc2626;">${row.late}</td>
+          <td>${row.leaves}d</td>
+          <td style="background:#eff6ff;font-weight:bold;color:#1e3a8a;">${row.payable}d</td>
+        </tr>
+      `).join("");
+
+      const w = window.open("", "_blank");
+      if (!w) return alert("कृपया पॉप-अप ऑन करें।");
+      w.document.write(`
+        <html><head><title>Aryavarta Master Payroll Sheet</title>
+        <style>
+          body{font-family:Arial,sans-serif;padding:24px;color:#0f172a;}
+          table{width:100%;border-collapse:collapse;margin-top:14px;font-size:12px;}
+          th{background:#1e3a8a;color:#fff;padding:8px;text-align:left;border:1px solid #1e3a8a;}
+          td{padding:7px 8px;border:1px solid #cbd5e1;}
+        </style></head><body>
+          <h2 style="color:#1e3a8a;margin:0;">ARYAVARTA AUTOMATION — CHIKHALI HEAD OFFICE</h2>
+          <p style="margin:4px 0 12px 0;font-size:13px;color:#475569;">Official Company-Wide Monthly Attendance & Payroll Master Statement (Generated: ${window.getISTDateString()} by Manager Sumeet Singh)</p>
+          <table>
+            <thead>
+              <tr><th>#</th><th>Employee Name</th><th>Phone</th><th>Present</th><th>Half Days</th><th>Total Hrs</th><th>Overtime</th><th>Late Marks</th><th>Paid Leaves</th><th>Net Payable Days</th></tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+          <script>window.onload=function(){window.print();}<\/script>
+        </body></html>
+      `);
+      w.document.close();
+    } catch (e) {
+      btn.disabled = false;
+      btn.innerText = "📊 Print / Export All-Staff Monthly Payroll Master PDF";
+    }
+  }
+
+  // Initialize UI & Sync True IST Status on Load
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", injectResumeShiftButtonAndSuperUpgrades);
+  } else {
+    injectResumeShiftButtonAndSuperUpgrades();
+  }
+
   window.addEventListener("load", function() {
+    setTimeout(injectResumeShiftButtonAndSuperUpgrades, 250);
     const trueTodayIST = window.getISTDateString();
     const savedPhone = localStorage.getItem("aa_user_phone");
     if (savedPhone && savedPhone.length === 10) {
